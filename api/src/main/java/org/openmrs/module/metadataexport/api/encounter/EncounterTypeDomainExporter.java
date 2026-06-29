@@ -42,7 +42,6 @@ public class EncounterTypeDomainExporter extends CsvDomainExporter<EncounterType
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(EncounterType instance) {
-		// Encounter types reference only privileges, which are not an exported domain; nothing to close over.
 		return Collections.emptyList();
 	}
 	

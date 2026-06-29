@@ -40,7 +40,7 @@ public class MetadataExportActivator extends BaseModuleActivator implements Daem
 	private void exportAllMetadata() {
 		File outDir = new File(OpenmrsUtil.getApplicationDataDirectory(), "metadata_export");
 		try {
-			ExporterService exporterService = Context.getRegisteredComponents(ExporterService.class).get(0);
+			ExporterService exporterService = Context.getService(ExporterService.class);
 			exporterService.export(outDir, null);
 			log.info("Metadata Export: exported metadata to {}", outDir.getAbsolutePath());
 		}

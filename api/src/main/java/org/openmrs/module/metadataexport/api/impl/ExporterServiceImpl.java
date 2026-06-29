@@ -17,8 +17,6 @@ import org.openmrs.module.metadataexport.api.export.DomainExporterRegistry;
 import org.openmrs.module.metadataexport.api.export.ExportContext;
 import org.openmrs.module.metadataexport.api.select.ExportManifest;
 import org.openmrs.module.metadataexport.api.select.Selector;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,12 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Component
 public class ExporterServiceImpl implements ExporterService {
 	
 	private final DomainExporterRegistry registry;
 	
-	@Autowired
 	public ExporterServiceImpl(DomainExporterRegistry registry) {
 		this.registry = registry;
 	}
@@ -59,7 +55,6 @@ public class ExporterServiceImpl implements ExporterService {
 		return domains == null || domains.isEmpty() || domains.contains(domain);
 	}
 	
-	/** Captures the wildcard and narrows the bucket; safe since the manifest bucketed by handles(). */
 	@SuppressWarnings("unchecked")
 	private <T extends OpenmrsObject> void writeDomain(DomainExporter<T> exporter, Collection<OpenmrsObject> bucket,
 	        ExportContext context) throws IOException {

@@ -23,4 +23,29 @@
 
     <context:component-scan base-package="org.openmrs.module.metadataexport" />
 
+    <bean id="metadataexport.ExporterService"
+            class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="target">
+            <bean class="org.openmrs.module.metadataexport.api.impl.ExporterServiceImpl">
+                <constructor-arg ref="domainExporterRegistry" />
+            </bean>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors" />
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource" />
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.metadataexport.api.ExporterService</value>
+                <ref bean="metadataexport.ExporterService" />
+            </list>
+        </property>
+    </bean>
+
 </beans>

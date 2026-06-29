@@ -21,7 +21,6 @@ import org.openmrs.module.metadataexport.api.export.ExportLine;
  */
 public class EncounterTypeLineExporter extends BaseLineExporter<EncounterType> {
 	
-	// Duplicated from the protected EncounterTypeLineProcessor.HEADER_VIEW_PRIV / HEADER_EDIT_PRIV.
 	private static final String HEADER_VIEW_PRIV = "view privilege";
 	
 	private static final String HEADER_EDIT_PRIV = "edit privilege";
