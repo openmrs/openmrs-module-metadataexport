@@ -17,13 +17,13 @@
 	<id>${project.parent.artifactId}</id>
 	<name>${project.parent.name}</name>
 	<version>${project.parent.version}</version>
-	<package>org.openmrs.module.metadata.extract</package>
+	<package>org.openmrs.module.metadataexport</package>
 	<author>wikum</author>
 	<description>
 			${project.parent.description}
 	</description>
 
-	<activator>org.openmrs.module.metadata.extract.MetadataExtractActivator</activator>
+	<activator>org.openmrs.module.metadataexport.MetadataExportActivator</activator>
 	
 	<!-- <updateURL>https://modules.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL> -->
 	<!-- /Base Module Properties -->
@@ -36,7 +36,7 @@
 
 	<!-- Extensions -->
 	<extension>
-		<class>org.openmrs.module.metadata.extract.extension.html.AdminList</class>
+		<class>org.openmrs.module.metadataexport.extension.html.AdminList</class>
 	</extension>
 
 	<aware_of_modules>

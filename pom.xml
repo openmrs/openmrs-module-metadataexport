@@ -9,18 +9,18 @@
     </parent>
 
 	<groupId>org.openmrs.module</groupId>
-	<artifactId>metadata.extract</artifactId>
+	<artifactId>metadataexport</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>Metadata Extract</name>
+	<name>Metadata Export</name>
 	<description>no description</description>
 
 	<url>https://wiki.openmrs.org/x/FQ4z</url>
 
 	<scm>
-		<connection>scm:git:git@github.com:openmrs/openmrs-module-metadata.extract.git</connection>
-		<developerConnection>scm:git:git@github.com:openmrs/openmrs-module-metadata.extract.git</developerConnection>
-		<url>https://github.com/openmrs/openmrs-module-metadata.extract/</url>
+		<connection>scm:git:git@github.com:openmrs/openmrs-module-metadataexport.git</connection>
+		<developerConnection>scm:git:git@github.com:openmrs/openmrs-module-metadataexport.git</developerConnection>
+		<url>https://github.com/openmrs/openmrs-module-metadataexport/</url>
 	</scm>
 
 	<modules>

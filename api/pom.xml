@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.openmrs.module</groupId>
-		<artifactId>metadata.extract</artifactId>
+		<artifactId>metadataexport</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>metadata.extract-api</artifactId>
+	<artifactId>metadataexport-api</artifactId>
 	<packaging>jar</packaging>
-	<name>Metadata Extract API</name>
-	<description>API project for Metadata Extract</description>
+	<name>Metadata Export API</name>
+	<description>API project for Metadata Export</description>
 </project>

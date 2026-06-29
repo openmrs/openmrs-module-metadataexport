@@ -1,4 +1,4 @@
-Metadata Extract
+Metadata Export
 ================
 
 **Active development / experimental.** This module is an early proof of concept. APIs, output
@@ -25,7 +25,7 @@ How it works
 On module startup the activator runs an export on a daemon thread (so it has full read access and
 does not block startup). It writes to:
 
-    <OpenMRS application data directory>/metadata_extract/configuration/<domain>/...
+    <OpenMRS application data directory>/metadata_export/configuration/<domain>/...
 
 The export is built in two separated stages:
 
@@ -105,7 +105,7 @@ Known limitations
 
 Building from source
 --------------------
-Java 8+ and Maven. `mvn clean package` produces `omod/target/metadata.extract-*.omod`. Code
+Java 8+ and Maven. `mvn clean package` produces `omod/target/metadataexport-*.omod`. Code
 formatting is handled by Spotless during the build (`mvn spotless:apply` to format manually).
 
 Installation

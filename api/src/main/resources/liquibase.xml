@@ -24,17 +24,17 @@
         for a list of supported elements and attributes
     -->
  
- 	<!-- Uncomment the changeset below if you want to make the Item class persistable, see also Item and MetadataExtractDaoTest -->
+ 	<!-- Uncomment the changeset below if you want to make the Item class persistable, see also Item and MetadataExportDaoTest -->
  	<!--
-	<changeSet id="metadata.extract-2016-08-02-12-21" author="raff">
+	<changeSet id="metadataexport-2016-08-02-12-21" author="raff">
 		<preConditions onFail="MARK_RAN">
-			<not><tableExists tableName="metadata.extract_item"/></not>
+			<not><tableExists tableName="metadataexport_item"/></not>
 		</preConditions>
 		<comment>
-			Creating the metadata.extract_item table
+			Creating the metadataexport_item table
 		</comment>
-		<createTable tableName="metadata.extract_item">
-			<column name="metadata.extract_item_id" type="int" autoIncrement="true">
+		<createTable tableName="metadataexport_item">
+			<column name="metadataexport_item_id" type="int" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false"/>
 			</column>
 			<column name="uuid" type="char(38)">
@@ -43,7 +43,7 @@
 			<column name="owner" type="int" />
 			<column name="description" type="varchar(255)" />
 		</createTable>
-        <addForeignKeyConstraint constraintName="metadata.extract_item_owner_fk" baseTableName="metadata.extract_item" baseColumnNames="owner"  referencedTableName="users"
+        <addForeignKeyConstraint constraintName="metadataexport_item_owner_fk" baseTableName="metadataexport_item" baseColumnNames="owner"  referencedTableName="users"
                                  referencedColumnNames="user_id" />
     </changeSet> -->
  
