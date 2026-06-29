@@ -33,7 +33,6 @@ public abstract class CsvDomainExporter<T extends OpenmrsObject> implements Doma
 	
 	protected abstract String fileName();
 	
-	/** File name → the instances written to it. Default: everything in one file. */
 	protected Map<String, Collection<T>> partition(Collection<T> instances) {
 		return Collections.singletonMap(fileName(), instances);
 	}

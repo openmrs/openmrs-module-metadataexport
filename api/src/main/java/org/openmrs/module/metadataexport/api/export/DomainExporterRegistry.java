@@ -40,7 +40,6 @@ public class DomainExporterRegistry {
 		return Collections.unmodifiableList(exporters);
 	}
 	
-	/** The exporter whose domain owns {@code instance}, or null if no registered domain handles it. */
 	public DomainExporter<?> forObject(OpenmrsObject instance) {
 		for (DomainExporter<?> exporter : exporters) {
 			if (exporter.handles(instance)) {

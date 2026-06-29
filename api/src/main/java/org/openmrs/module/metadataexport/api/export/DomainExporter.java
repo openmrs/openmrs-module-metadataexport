@@ -29,18 +29,12 @@ public interface DomainExporter<T extends OpenmrsObject> {
 	
 	Domain getDomain();
 	
-	/** Whether this domain owns the given object (used to route dependencies to the right bucket). */
 	boolean handles(OpenmrsObject instance);
 	
-	/** Every instance of this domain — backs the "export everything" case. */
 	Collection<T> getAllInstances();
 	
-	/**
-	 * The objects {@code instance} depends on (e.g. a concept's answers and members); for closure.
-	 * Dependencies may belong to other domains, hence the wider element type.
-	 */
+	// dependencies may belong to other domains, hence the wider element type
 	Collection<? extends OpenmrsObject> getDependencies(T instance);
 	
-	/** Write the given instances under {@code context.getOutputDir()} however this domain sees fit. */
 	void export(Collection<T> instances, ExportContext context) throws IOException;
 }

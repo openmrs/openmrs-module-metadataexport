@@ -32,8 +32,6 @@ public class MetadataExportActivator extends BaseModuleActivator implements Daem
 	
 	@Override
 	public void started() {
-		// Export on a daemon thread: the daemon user is a super-user, so it can read every domain
-		// without juggling proxy privileges, and startup is not blocked on the export.
 		Daemon.runInDaemonThreadWithoutResult(this::exportAllMetadata, daemonToken);
 	}
 	

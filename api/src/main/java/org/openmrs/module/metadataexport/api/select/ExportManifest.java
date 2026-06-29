@@ -28,7 +28,6 @@ public class ExportManifest {
 	
 	private final Map<Domain, LinkedHashSet<OpenmrsObject>> byDomain = new LinkedHashMap<>();
 	
-	/** @return true if the object was newly added to its domain bucket. */
 	public boolean add(Domain domain, OpenmrsObject instance) {
 		return byDomain.computeIfAbsent(domain, d -> new LinkedHashSet<>()).add(instance);
 	}

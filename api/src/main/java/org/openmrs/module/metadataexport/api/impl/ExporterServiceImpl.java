@@ -34,8 +34,6 @@ public class ExporterServiceImpl implements ExporterService {
 	
 	@Override
 	public void export(File outDir, Collection<Domain> domains) throws IOException {
-		// Seed selection with every instance of each requested domain, then close over dependencies
-		// so the package is self-contained (cross-domain references are pulled in too).
 		List<OpenmrsObject> seeds = new ArrayList<>();
 		for (DomainExporter<?> exporter : registry.all()) {
 			if (isSelected(domains, exporter.getDomain())) {
