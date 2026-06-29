@@ -16,9 +16,9 @@ import java.io.IOException;
 import java.util.Collection;
 
 /**
- * A self-describing, format-neutral exporter for one Iniz {@link Domain}. The
- * {@link ExporterService} holds a registry of these and never contains any per-domain logic, so
- * adding a domain is a new class rather than a new service method.
+ * A self-describing, format-neutral exporter for one Iniz {@link Domain}. The ExporterService holds
+ * a registry of these and never contains any per-domain logic, so adding a domain is a new class
+ * rather than a new service method.
  * <p>
  * Implementations own their own output: a CSV domain writes one file, a future forms domain could
  * write many JSON files. The selection seam ({@link #getAllInstances} / {@link #getDependencies})
