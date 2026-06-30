@@ -7,7 +7,7 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.metadataexport.api.visittype;
+package org.openmrs.module.metadataexport.api.visitType;
 
 import org.junit.jupiter.api.Test;
 import org.openmrs.VisitType;
