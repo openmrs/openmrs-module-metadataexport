@@ -29,7 +29,7 @@ class EncounterTypeLineExporterTest {
 		type.setEditPrivilege(new Privilege("Edit Vitals"));
 		
 		ExportLine line = new ExportLine();
-		new EncounterTypeLineExporter().export(type, line);
+		new EncounterTypeLineExporter().writeLine(type, line);
 		
 		assertEquals("et", line.get("uuid"));
 		assertEquals("Vitals", line.get("name"));
@@ -46,7 +46,7 @@ class EncounterTypeLineExporterTest {
 		type.setRetired(true);
 		
 		ExportLine line = new ExportLine();
-		new EncounterTypeLineExporter().export(type, line);
+		new EncounterTypeLineExporter().writeLine(type, line);
 		
 		assertEquals("true", line.get("void/retire"));
 		assertNull(line.get("name"), "retired rows carry only uuid + flag");

@@ -16,23 +16,16 @@ import org.openmrs.ConceptName;
 import org.openmrs.api.ConceptNameType;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.initializer.api.c.ConceptLineProcessor;
-import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
+import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConceptLineExporter extends BaseLineExporter<Concept> {
+public class ConceptLineExporter extends MetadataLineExporter<Concept> {
 	
 	@Override
 	public void export(Concept concept, ExportLine line) {
-		line.put(BaseLineProcessor.HEADER_UUID, concept.getUuid());
-		
-		if (BooleanUtils.isTrue(concept.getRetired())) {
-			line.put(BaseLineProcessor.HEADER_VOID_RETIRE, "true");
-			return;
-		}
-		
 		exportNames(concept, line);
 		exportDescriptions(concept, line);
 		exportClassification(concept, line);

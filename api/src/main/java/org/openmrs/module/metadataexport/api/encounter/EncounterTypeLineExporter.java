@@ -9,17 +9,16 @@
  */
 package org.openmrs.module.metadataexport.api.encounter;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.EncounterType;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
-import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
+import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
 
 /**
  * Inverse of Initializer's EncounterTypeLineProcessor: uuid, name, description, and the view/edit
  * privileges (by name). A retired type is emitted as uuid + flag only.
  */
-public class EncounterTypeLineExporter extends BaseLineExporter<EncounterType> {
+public class EncounterTypeLineExporter extends MetadataLineExporter<EncounterType> {
 	
 	private static final String HEADER_VIEW_PRIV = "view privilege";
 	
@@ -27,13 +26,6 @@ public class EncounterTypeLineExporter extends BaseLineExporter<EncounterType> {
 	
 	@Override
 	public void export(EncounterType type, ExportLine line) {
-		line.put(BaseLineProcessor.HEADER_UUID, type.getUuid());
-		
-		if (BooleanUtils.isTrue(type.getRetired())) {
-			line.put(BaseLineProcessor.HEADER_VOID_RETIRE, "true");
-			return;
-		}
-		
 		line.put(BaseLineProcessor.HEADER_NAME, type.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, type.getDescription());
 		if (type.getViewPrivilege() != null) {

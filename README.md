@@ -74,19 +74,23 @@ public class EncounterTypeDomainExporter extends CsvDomainExporter<EncounterType
 }
 ```
 
-2. Write the line exporter(s). Each `BaseLineExporter<T>` writes header to value pairs into an
-   `ExportLine`; it is the inverse of Initializer's matching `BaseLineProcessor.fill(...)`. Reuse
-   Initializer's header constants where they are `public` so the two sides cannot drift:
+2. Write the line exporter(s). Each writes header to value pairs into an `ExportLine`; it is the
+   inverse of Initializer's matching `BaseLineProcessor.fill(...)`. Reuse Initializer's header
+   constants where they are `public` so the two sides cannot drift. For the primary exporter of a
+   domain, extend `MetadataLineExporter<T>`: it writes the uuid and the `void/retire` short-circuit
+   for you, so `export` only handles the live, domain-specific columns:
 
 ```java
-public class EncounterTypeLineExporter extends BaseLineExporter<EncounterType> {
+public class EncounterTypeLineExporter extends MetadataLineExporter<EncounterType> {
     public void export(EncounterType t, ExportLine line) {
-        line.put(BaseLineProcessor.HEADER_UUID, t.getUuid());
         line.put(BaseLineProcessor.HEADER_NAME, t.getName());
         line.put(BaseLineProcessor.HEADER_DESC, t.getDescription());
     }
 }
 ```
+
+Exporters that only contribute extra columns to an existing row (not the primary one) extend
+`BaseLineExporter<T>` directly instead.
 
 A CSV domain may emit more than one file by overriding `partition(instances)` (the default is one
 file). A non-CSV domain (for example forms as JSON) skips `CsvDomainExporter` and implements

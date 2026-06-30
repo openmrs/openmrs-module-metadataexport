@@ -9,25 +9,17 @@
  */
 package org.openmrs.module.metadataexport.api.privilege;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Privilege;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
-import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
+import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
 
-public class PrivilegeLineExporter extends BaseLineExporter<Privilege> {
+public class PrivilegeLineExporter extends MetadataLineExporter<Privilege> {
 	
 	static final String HEADER_PRIVILEGE_NAME = "privilege name";
 	
 	@Override
 	public void export(Privilege privilege, ExportLine line) {
-		line.put(BaseLineProcessor.HEADER_UUID, privilege.getUuid());
-		
-		if (BooleanUtils.isTrue(privilege.getRetired())) {
-			line.put(BaseLineProcessor.HEADER_VOID_RETIRE, "true");
-			return;
-		}
-		
 		line.put(HEADER_PRIVILEGE_NAME, privilege.getPrivilege());
 		line.put(BaseLineProcessor.HEADER_DESC, privilege.getDescription());
 	}

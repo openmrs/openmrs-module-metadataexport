@@ -15,6 +15,15 @@ public abstract class BaseLineExporter<T extends OpenmrsObject> {
 	
 	public static final String VERSION_LHS = "_version:";
 	
+	/** Domain-specific columns for one instance. Subclasses implement this. */
 	public abstract void export(T instance, ExportLine line);
+	
+	/**
+	 * Framework entry point. Defaults to {@link #export}; wrappers like {@link MetadataLineExporter}
+	 * override.
+	 */
+	public void writeLine(T instance, ExportLine line) {
+		export(instance, line);
+	}
 	
 }

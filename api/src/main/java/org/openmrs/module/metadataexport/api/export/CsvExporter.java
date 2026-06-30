@@ -36,7 +36,7 @@ public class CsvExporter<T extends OpenmrsObject> {
 		for (T instance : instances) {
 			ExportLine line = new ExportLine();
 			for (BaseLineExporter<T> exporter : chain) {
-				exporter.export(instance, line);
+				exporter.writeLine(instance, line);
 			}
 			lines.add(line);
 		}

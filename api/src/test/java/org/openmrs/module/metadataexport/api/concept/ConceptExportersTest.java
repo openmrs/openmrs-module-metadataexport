@@ -69,7 +69,7 @@ class ConceptExportersTest {
 		c.setVersion("1.2");
 		
 		ExportLine line = new ExportLine();
-		new ConceptLineExporter().export(c, line);
+		new ConceptLineExporter().writeLine(c, line);
 		
 		assertEquals("cu", line.get("uuid"));
 		assertEquals("Malaria", line.get("fully specified name:en"));
@@ -92,7 +92,7 @@ class ConceptExportersTest {
 		c.addName(fsn);
 		
 		ExportLine line = new ExportLine();
-		new ConceptLineExporter().export(c, line);
+		new ConceptLineExporter().writeLine(c, line);
 		
 		assertEquals("retired", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
