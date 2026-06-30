@@ -28,7 +28,7 @@ class ConceptSourceLineExporterTest {
 		source.setUniqueId("2.16.840.1.113883.6.96");
 		
 		ExportLine line = new ExportLine();
-		new ConceptSourceLineExporter().export(source, line);
+		new ConceptSourceLineExporter().writeLine(source, line);
 		
 		assertEquals("cs", line.get("uuid"));
 		assertEquals("SNOMED CT", line.get("name"));
@@ -44,7 +44,7 @@ class ConceptSourceLineExporterTest {
 		source.setName("Local");
 		
 		ExportLine line = new ExportLine();
-		new ConceptSourceLineExporter().export(source, line);
+		new ConceptSourceLineExporter().writeLine(source, line);
 		
 		assertNull(line.get("HL7 Code"), "blank HL7 code is not emitted");
 		assertNull(line.get("Unique ID"), "blank unique id is not emitted");
@@ -58,7 +58,7 @@ class ConceptSourceLineExporterTest {
 		source.setRetired(true);
 		
 		ExportLine line = new ExportLine();
-		new ConceptSourceLineExporter().export(source, line);
+		new ConceptSourceLineExporter().writeLine(source, line);
 		
 		assertEquals("true", line.get("void/retire"));
 		assertNull(line.get("name"), "retired rows carry only uuid + flag");
