@@ -19,6 +19,21 @@ Currently supported domains:
 
 * Concepts (names, descriptions, class/datatype/version, numeric, complex, answers, members,
   mappings, attributes)
+* Concept sources (name, description, HL7 code, unique ID)
+* Encounter types (name, description, view/edit privileges)
+* Privileges (name, description)
+
+Planned domains (openmrs-core metadata, not yet supported):
+
+* Tier 1 — flat metadata, no dependencies: concept classes, visit types, encounter roles, person
+  attribute types, global properties, relationship types, patient identifier types, location tags
+* Tier 2 — with reference/ordering dependencies: roles, locations, attribute types, order types
+* Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
+  concept reference ranges
+
+Domains backed by add-on modules (IDGen, appointments, queues, billing, OCL, MetadataSharing,
+FHIR, forms) and non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
+out of scope.
 
 How it works
 ------------
