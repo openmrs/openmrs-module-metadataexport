@@ -17,7 +17,7 @@ import org.openmrs.module.metadataexport.api.export.ExportLine;
 
 public class PrivilegeLineExporter extends BaseLineExporter<Privilege> {
 	
-	static final String HEADER_PRIVILEGE_NAME = "Privilege name";
+	static final String HEADER_PRIVILEGE_NAME = "privilege name";
 	
 	@Override
 	public void export(Privilege privilege, ExportLine line) {
