@@ -16,11 +16,10 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
 
+import static org.openmrs.module.initializer.api.c.ConceptSourceLineProcessor.HEADER_HL7_CODE;
+import static org.openmrs.module.initializer.api.c.ConceptSourceLineProcessor.HEADER_UNIQUE_ID;
+
 public class ConceptSourceLineExporter extends BaseLineExporter<ConceptSource> {
-	
-	public static final String HEADER_HL7_CODE = "HL7 Code";
-	
-	public static final String HEADER_UNIQUE_ID = "Unique ID";
 	
 	@Override
 	public void export(ConceptSource conceptSource, ExportLine line) {
