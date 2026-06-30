@@ -27,7 +27,7 @@ class PrivilegeLineExporterTest {
 		new PrivilegeLineExporter().export(privilege, line);
 		
 		assertEquals("cc9b0e0c-ecaf-479d-9d7c-3071c0c1bff2", line.get("uuid"));
-		assertEquals("App: stockmanagement.dashboard", line.get("Privilege name"));
+		assertEquals("App: stockmanagement.dashboard", line.get("privilege name"));
 		assertEquals("Able to view stock management dashboard", line.get("description"));
 	}
 	
@@ -41,7 +41,7 @@ class PrivilegeLineExporterTest {
 		new PrivilegeLineExporter().export(privilege, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("Privilege name"), "retired rows carry only uuid + flag");
+		assertNull(line.get("privilege name"), "retired rows carry only uuid + flag");
 	}
 	
 	@Test
@@ -52,7 +52,7 @@ class PrivilegeLineExporterTest {
 		ExportLine line = new ExportLine();
 		new PrivilegeLineExporter().export(privilege, line);
 		
-		assertEquals("Task: stockmanagement.stockItems.mutate", line.get("Privilege name"));
+		assertEquals("Task: stockmanagement.stockItems.mutate", line.get("privilege name"));
 		assertNull(line.get("description"));
 	}
 }
