@@ -21,12 +21,12 @@ class VisitTypeLineExporterTest {
 	@Test
 	void exportsUuidNameAndDescription() {
 		VisitType visitType = new VisitType("HIV", "HIV Description");
-		visitType.setUuid("2bcf7212-d218-4572-88o9-25c4b5b71934");
+		visitType.setUuid("2bcf7212-d218-4572-88e9-25c4b5b71934");
 		
 		ExportLine line = new ExportLine();
 		new VisitTypeLineExporter().writeLine(visitType, line);
 		
-		assertEquals("2bcf7212-d218-4572-88o9-25c4b5b71934", line.get("uuid"));
+		assertEquals("2bcf7212-d218-4572-88e9-25c4b5b71934", line.get("uuid"));
 		assertEquals("HIV", line.get("name"));
 		assertEquals("HIV Description", line.get("description"));
 	}
