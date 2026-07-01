@@ -12,22 +12,21 @@ package org.openmrs.module.metadataexport.api.role;
 import org.openmrs.Privilege;
 import org.openmrs.Role;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
-import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
+import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
 
 import java.util.stream.Collectors;
 
-public class RoleLineExporter extends BaseLineExporter<Role> {
+public class RoleLineExporter extends MetadataLineExporter<Role> {
 	
-	static final String HEADER_ROLE_NAME = "Role name";
+	static final String HEADER_ROLE_NAME = "role name";
 	
-	static final String HEADER_INHERITED_ROLES = "Inherited roles";
+	static final String HEADER_INHERITED_ROLES = "inherited roles";
 	
-	static final String HEADER_PRIVILEGES = "Privileges";
+	static final String HEADER_PRIVILEGES = "privileges";
 	
 	@Override
 	public void export(Role role, ExportLine line) {
-		line.put(BaseLineProcessor.HEADER_UUID, role.getUuid());
 		line.put(HEADER_ROLE_NAME, role.getRole());
 		line.put(BaseLineProcessor.HEADER_DESC, role.getDescription());
 		
