@@ -24,6 +24,8 @@ Currently supported domains:
 * Privileges (name, description)
 * Concept classes (name, description)
 * Roles (name, description, privileges)
+* Patient identifier types (name, description, required, format, format description, validator,
+    location/uniqueness behavior)
 
 Planned domains (openmrs-core metadata, not yet supported):
 
