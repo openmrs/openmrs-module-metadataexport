@@ -23,11 +23,13 @@ Currently supported domains:
 * Encounter types (name, description, view/edit privileges)
 * Privileges (name, description)
 * Concept classes (name, description)
+* Patient identifier types (name, description, required, format, format description, validator,
+    location/uniqueness behavior)
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 1 — flat metadata, no dependencies: visit types, encounter roles, person attribute types,
-  global properties, relationship types, patient identifier types, location tags
+* Tier 1 — flat metadata, no dependencies: visit types, encounter roles, person
+  attribute types, global properties, relationship types, location tags
 * Tier 2 — with reference/ordering dependencies: roles, locations, attribute types, order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
