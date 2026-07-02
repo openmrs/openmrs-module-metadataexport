@@ -15,7 +15,11 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
 import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
 public class RoleLineExporter extends MetadataLineExporter<Role> {
 	
@@ -30,11 +34,11 @@ public class RoleLineExporter extends MetadataLineExporter<Role> {
 		line.put(HEADER_ROLE_NAME, role.getRole());
 		line.put(BaseLineProcessor.HEADER_DESC, role.getDescription());
 		
-		String inheritedRoles = role.getInheritedRoles().stream().map(Role::getRole).sorted()
+		String inheritedRoles = emptyIfNull(role.getInheritedRoles()).stream().map(Role::getRole).sorted()
 		        .collect(Collectors.joining("; "));
 		line.put(HEADER_INHERITED_ROLES, inheritedRoles);
 		
-		String privileges = role.getPrivileges().stream().map(Privilege::getPrivilege).sorted()
+		String privileges = emptyIfNull(role.getPrivileges()).stream().map(Privilege::getPrivilege).sorted()
 		        .collect(Collectors.joining("; "));
 		line.put(HEADER_PRIVILEGES, privileges);
 	}

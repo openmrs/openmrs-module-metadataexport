@@ -72,7 +72,7 @@ class RoleLineExporterTest {
 		new RoleLineExporter().writeLine(role, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("role name"), "retired rows carry only uuid + flag");
+		assertNull(line.get("Role name"), "retired rows carry only uuid + flag");
 	}
 	
 	@Test
