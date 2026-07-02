@@ -15,8 +15,6 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
 import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
 
-import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
