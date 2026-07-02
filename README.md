@@ -23,6 +23,7 @@ Currently supported domains:
 * Encounter types (name, description, view/edit privileges)
 * Privileges (name, description)
 * Concept classes (name, description)
+* Roles (name, description, privileges)
 
 Planned domains (openmrs-core metadata, not yet supported):
 
