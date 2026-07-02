@@ -7,14 +7,13 @@
  * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
  * graphic logo is a trademark of OpenMRS Inc.
  */
-package org.openmrs.module.metadataexport.api.patientIdentifiertype;
+package org.openmrs.module.metadataexport.api.patientIdentifierType;
 
 import org.junit.jupiter.api.Test;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PatientIdentifierType.LocationBehavior;
 import org.openmrs.PatientIdentifierType.UniquenessBehavior;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
-import org.openmrs.module.metadataexport.api.patientIdentifierType.PatientIdentifierTypeLineExporter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
