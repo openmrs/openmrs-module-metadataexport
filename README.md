@@ -27,17 +27,16 @@ Currently supported domains:
 * Patient identifier types (name, description, required, format, format description, validator,
     location/uniqueness behavior)
 * Visit types (name, description)
+* Relationship types (name, description, a_is_to_b, b_is_to_a, preferred, weight)
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 1 — flat metadata, no dependencies: encounter roles, person
-  attribute types, global properties, relationship types, location tags
+* Tier 1 — flat metadata, no dependencies: encounter roles, person attribute types, global properties, location tags
 * Tier 2 — with reference/ordering dependencies: locations, attribute types, order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
 
-Domains backed by add-on modules (IDGen, appointments, queues, billing, OCL, MetadataSharing,
-FHIR, forms) and non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
+Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
 out of scope.
 
 How it works
