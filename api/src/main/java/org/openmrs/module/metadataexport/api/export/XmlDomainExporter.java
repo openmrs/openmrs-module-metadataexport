@@ -29,8 +29,8 @@ import java.util.Map;
  * and serialization, not document construction.
  * <p>
  * Like {@link CsvDomainExporter}, an XML domain is not assumed to be a single file:
- * {@link #toDocuments} maps file name -> the document for that file, so a domain may emit one file
- * (global properties) or many (e.g. one document per form).
+ * {@link #toDocuments} maps file name &rarr; the document for that file, so a domain may emit one
+ * file (global properties) or many (e.g. one document per form).
  */
 public abstract class XmlDomainExporter<T extends OpenmrsObject> implements DomainExporter<T> {
 	
