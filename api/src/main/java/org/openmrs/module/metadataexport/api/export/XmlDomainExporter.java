@@ -18,9 +18,25 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Base for domains whose Iniz format is XML. Subclasses build the DOM for their domain in
+ * {@link #toDocuments}; this class drives {@link XmlExporter} to place and serialize each document.
+ * <p>
+ * The abstraction boundary sits deliberately higher than {@link CsvDomainExporter}: a CSV subclass
+ * returns <em>data</em> (its line-exporter chain) and the framework owns the format, whereas an XML
+ * subclass returns an already-built {@link Document} and owns its full structure. XML shape is too
+ * domain-specific to factor into a shared per-field seam, so this class owns only file placement
+ * and serialization, not document construction.
+ * <p>
+ * Like {@link CsvDomainExporter}, an XML domain is not assumed to be a single file:
+ * {@link #toDocuments} maps file name -> the document for that file, so a domain may emit one file
+ * (global properties) or many (e.g. one document per form).
+ */
 public abstract class XmlDomainExporter<T extends OpenmrsObject> implements DomainExporter<T> {
 	
 	protected abstract Map<String, Document> toDocuments(Collection<T> instances);
+	
+	protected abstract String fileName();
 	
 	@Override
 	public void export(Collection<T> instances, ExportContext context) throws IOException {

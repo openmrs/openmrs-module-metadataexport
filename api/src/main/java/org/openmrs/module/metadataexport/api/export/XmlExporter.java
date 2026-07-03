@@ -21,6 +21,15 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Low-level writer for XML domains: serializes an already-built DOM {@link Document} to
+ * {@code configuration/<domain>/<fileName>} beneath the export root, indented and UTF-8 encoded.
+ * <p>
+ * The XML analogue of {@link CsvExporter}, but the division of labour differs: {@code CsvExporter}
+ * builds the document itself from a line-exporter chain, whereas here the caller hands in a
+ * finished {@link Document} and this class only places and serializes it (see
+ * {@link XmlDomainExporter} for why the seam sits higher for XML).
+ */
 public class XmlExporter {
 	
 	public void writeXml(Document document, Domain domain, File outDir, String fileName) throws IOException {

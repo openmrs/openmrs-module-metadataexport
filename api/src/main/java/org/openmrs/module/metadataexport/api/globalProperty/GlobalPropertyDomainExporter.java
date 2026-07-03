@@ -46,7 +46,12 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 		}
 		config.appendChild(container);
 		document.appendChild(config);
-		return Collections.singletonMap("globalProperties.xml", document);
+		return Collections.singletonMap(fileName(), document);
+	}
+	
+	@Override
+	protected String fileName() {
+		return "globalProperties.xml";
 	}
 	
 	@Override

@@ -28,10 +28,12 @@ Currently supported domains:
     location/uniqueness behavior)
 * Visit types (name, description)
 * Relationship types (name, description, a_is_to_b, b_is_to_a, preferred, weight)
+* Global properties (property, value) — written as XML, since Initializer loads this domain from
+  XML rather than CSV
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 1 — flat metadata, no dependencies: encounter roles, person attribute types, global properties, location tags
+* Tier 1 — flat metadata, no dependencies: encounter roles, person attribute types, location tags
 * Tier 2 — with reference/ordering dependencies: locations, attribute types, order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
@@ -112,7 +114,37 @@ Exporters that only contribute extra columns to an existing row (not the primary
 `BaseLineExporter<T>` directly instead.
 
 A CSV domain may emit more than one file by overriding `partition(instances)` (the default is one
-file). A non-CSV domain (for example forms as JSON) skips `CsvDomainExporter` and implements
+file).
+
+For an XML domain (Initializer loads some domains, such as global properties, from XML rather than
+CSV), extend `XmlDomainExporter<T>` instead of `CsvDomainExporter<T>`. Build the DOM in
+`toDocuments(instances)` — keyed by file name so a domain can emit one file or many — and use the
+inherited `newDocument()` to get a `Document` without JAXP boilerplate; the base handles indentation,
+encoding, and placement under `configuration/<domain>/`:
+
+```java
+@Component
+public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProperty> {
+
+    public Domain getDomain()               { return Domain.GLOBAL_PROPERTIES; }
+
+    public boolean handles(OpenmrsObject o) { return o instanceof GlobalProperty; }
+
+    public Collection<GlobalProperty> getAllInstances() {
+        return Context.getAdministrationService().getAllGlobalProperties();
+    }
+
+    protected String fileName() { return "globalProperties.xml"; }
+
+    protected Map<String, Document> toDocuments(Collection<GlobalProperty> gps) {
+        Document doc = newDocument();
+        // build <config><globalProperties><globalProperty>... and return
+        return Collections.singletonMap(fileName(), doc);
+    }
+}
+```
+
+Any other non-CSV, non-XML domain (for example forms as JSON) skips both base classes and implements
 `DomainExporter` directly, writing whatever files it likes in `export(bucket, context)`.
 
 That is all. Because the exporter is a `@Component`, it is registered automatically; there is no
