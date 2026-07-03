@@ -67,12 +67,10 @@ class GlobalPropertyDomainExporterTest {
 		assertEquals("", childText(property, "value"));
 	}
 	
-
 	@Test
 	void export_roundTripsThroughInitializerDeserializer(@TempDir File outDir) throws Exception {
 		exporter.export(Arrays.asList(new GlobalProperty("locale.allowed.list", "en & km_KH"),
-		    new GlobalProperty("some.property", null)),
-		    new ExportContext(outDir));
+		    new GlobalProperty("some.property", null)), new ExportContext(outDir));
 		
 		File written = new File(new File(outDir, "configuration"),
 		        Domain.GLOBAL_PROPERTIES.getName() + "/globalProperties.xml");
