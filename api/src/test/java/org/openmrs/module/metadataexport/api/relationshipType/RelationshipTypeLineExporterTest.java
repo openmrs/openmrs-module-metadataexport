@@ -33,7 +33,6 @@ public class RelationshipTypeLineExporterTest {
 		new RelationshipTypeLineExporter().writeLine(relationshipType, exportLine);
 		
 		assertEquals(relationshipType.getUuid(), exportLine.get("uuid"));
-		assertEquals(relationshipType.getName(), exportLine.get("name"));
 		assertEquals(relationshipType.getDescription(), exportLine.get("description"));
 		assertEquals(relationshipType.getaIsToB(), exportLine.get("a is to b"));
 		assertEquals(relationshipType.getbIsToA(), exportLine.get("b is to a"));
@@ -54,8 +53,6 @@ public class RelationshipTypeLineExporterTest {
 		
 		assertEquals(relationshipType.getUuid(), exportLine.get("uuid"));
 		assertEquals("true", exportLine.get("void/retire"));
-		assertNull(exportLine.get("name"));
 		assertNull(exportLine.get("description"));
-		
 	}
 }

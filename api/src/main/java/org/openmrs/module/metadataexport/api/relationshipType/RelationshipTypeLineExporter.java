@@ -19,7 +19,6 @@ public class RelationshipTypeLineExporter extends MetadataLineExporter<Relations
 	
 	@Override
 	public void export(RelationshipType relationshipType, ExportLine line) {
-		line.put(BaseLineProcessor.HEADER_NAME, relationshipType.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, relationshipType.getDescription());
 		line.put(RelationshipTypeLineProcessor.A_IS_TO_B, relationshipType.getaIsToB());
 		line.put(RelationshipTypeLineProcessor.B_IS_TO_A, relationshipType.getbIsToA());

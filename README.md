@@ -36,8 +36,7 @@ Planned domains (openmrs-core metadata, not yet supported):
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
 
-Domains backed by add-on modules (IDGen, appointments, queues, billing, OCL, MetadataSharing,
-FHIR, forms) and non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
+Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
 out of scope.
 
 How it works
