@@ -19,12 +19,16 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProperty> {
+
+	private static final String[] MODULE_STATE_SUFFIXES = { ".started", ".mandatory" };
 	
 	@Override
 	protected Map<String, Document> toDocuments(Collection<GlobalProperty> instances) {
@@ -66,11 +70,17 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 	
 	@Override
 	public Collection<GlobalProperty> getAllInstances() {
-		return Context.getAdministrationService().getAllGlobalProperties();
+		return Context.getAdministrationService().getAllGlobalProperties().stream()
+				.filter(globalProperty -> !isModuleStateProperty(globalProperty.getProperty()))
+				.collect(Collectors.toList());
 	}
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(GlobalProperty instance) {
 		return Collections.emptyList();
+	}
+
+	private static boolean isModuleStateProperty(String property) {
+		return property != null && Arrays.stream(MODULE_STATE_SUFFIXES).anyMatch(property::endsWith);
 	}
 }
