@@ -134,6 +134,11 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
         return Context.getAdministrationService().getAllGlobalProperties();
     }
 
+    // Objects from OTHER domains this one references, for cross-domain closure. Empty if none.
+    public Collection<? extends OpenmrsObject> getDependencies(GlobalProperty gp) {
+        return Collections.emptyList();
+    }
+
     protected String fileName() { return "globalProperties.xml"; }
 
     protected Map<String, Document> toDocuments(Collection<GlobalProperty> gps) {
