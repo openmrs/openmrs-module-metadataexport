@@ -36,8 +36,6 @@ public abstract class XmlDomainExporter<T extends OpenmrsObject> implements Doma
 	
 	protected abstract Map<String, Document> toDocuments(Collection<T> instances);
 	
-	protected abstract String fileName();
-	
 	@Override
 	public void export(Collection<T> instances, ExportContext context) throws IOException {
 		XmlExporter xmlExporter = new XmlExporter();

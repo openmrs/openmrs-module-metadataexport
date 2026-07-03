@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProperty> {
-
+	
 	private static final String[] MODULE_STATE_SUFFIXES = { ".started", ".mandatory" };
 	
 	@Override
@@ -54,11 +54,6 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 	}
 	
 	@Override
-	protected String fileName() {
-		return "globalProperties.xml";
-	}
-	
-	@Override
 	public Domain getDomain() {
 		return Domain.GLOBAL_PROPERTIES;
 	}
@@ -71,15 +66,18 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 	@Override
 	public Collection<GlobalProperty> getAllInstances() {
 		return Context.getAdministrationService().getAllGlobalProperties().stream()
-				.filter(globalProperty -> !isModuleStateProperty(globalProperty.getProperty()))
-				.collect(Collectors.toList());
+		        .filter(globalProperty -> !isModuleStateProperty(globalProperty.getProperty())).collect(Collectors.toList());
 	}
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(GlobalProperty instance) {
 		return Collections.emptyList();
 	}
-
+	
+	private String fileName() {
+		return "globalProperties.xml";
+	}
+	
 	private static boolean isModuleStateProperty(String property) {
 		return property != null && Arrays.stream(MODULE_STATE_SUFFIXES).anyMatch(property::endsWith);
 	}
