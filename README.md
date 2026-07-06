@@ -30,10 +30,11 @@ Currently supported domains:
 * Relationship types (name, description, a_is_to_b, b_is_to_a, preferred, weight)
 * Global properties (property, value) — written as XML, since Initializer loads this domain from
   XML rather than CSV
+* Encounter Roles (name, description)
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 1 — flat metadata, no dependencies: encounter roles, person attribute types, location tags
+* Tier 1 — flat metadata, no dependencies: person attribute types, location tags
 * Tier 2 — with reference/ordering dependencies: locations, attribute types, order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
