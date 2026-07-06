@@ -38,14 +38,14 @@ class EncounterRoleLineExporterTest {
 		EncounterRole role = new EncounterRole();
 		role.setUuid("a0b8f83c-1f3b-4c2a-9d1e-2f4a6b8c0d2e");
 		role.setName("Clinician");
-
+		
 		ExportLine line = new ExportLine();
 		new EncounterRoleLineExporter().writeLine(role, line);
-
+		
 		assertEquals("Clinician", line.get("name"));
 		assertNull(line.get("description"), "empty description is not written as a column");
 	}
-
+	
 	@Test
 	void retiredRoleEmitsUuidAndFlagOnly() {
 		EncounterRole role = new EncounterRole();
