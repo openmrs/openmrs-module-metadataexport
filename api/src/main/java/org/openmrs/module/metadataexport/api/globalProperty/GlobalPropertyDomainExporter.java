@@ -78,7 +78,7 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 		return "globalProperties.xml";
 	}
 	
-	private static boolean isModuleStateProperty(String property) {
+	static boolean isModuleStateProperty(String property) {
 		return property != null && Arrays.stream(MODULE_STATE_SUFFIXES).anyMatch(property::endsWith);
 	}
 }

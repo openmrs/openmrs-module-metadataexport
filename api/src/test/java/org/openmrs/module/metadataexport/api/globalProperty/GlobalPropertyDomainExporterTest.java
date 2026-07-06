@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GlobalPropertyDomainExporterTest {
@@ -90,6 +91,14 @@ class GlobalPropertyDomainExporterTest {
 		assertEquals("en & km_KH", byName.get("locale.allowed.list"));
 		assertTrue(byName.containsKey("some.property"), "null-valued GP should round-trip");
 		assertEquals("", StringUtils.defaultString(byName.get("some.property")));
+	}
+	
+	@Test
+	void isModuleStateProperty_excludesModuleRuntimeStateOnly() {
+		assertTrue(GlobalPropertyDomainExporter.isModuleStateProperty("initializer.started"));
+		assertTrue(GlobalPropertyDomainExporter.isModuleStateProperty("webservices.rest.mandatory"));
+		assertFalse(GlobalPropertyDomainExporter.isModuleStateProperty("locale.allowed.list"));
+		assertFalse(GlobalPropertyDomainExporter.isModuleStateProperty(null));
 	}
 	
 	private static String childText(Element parent, String tag) {
