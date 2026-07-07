@@ -33,10 +33,12 @@ Currently supported domains:
 * Encounter Roles (name, description)
 * Person Attribute Types (name, description, searchable, format, foreign uuid, edit privilege)
 * Location Tags (name, description)
+* Locations (name, description, parent location, tags, address fields) — parent locations and tags
+  are pulled in via cross-domain closure
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 2 — with reference/ordering dependencies: locations, attribute types, order types
+* Tier 2 — with reference/ordering dependencies: attribute types, order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
 
