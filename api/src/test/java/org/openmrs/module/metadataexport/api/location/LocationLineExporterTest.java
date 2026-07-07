@@ -88,6 +88,24 @@ class LocationLineExporterTest {
 	}
 	
 	@Test
+	void skipsRetiredTags() {
+		LocationTag retired = namedTag("Old Tag");
+		retired.setRetired(true);
+		
+		Location location = new Location();
+		location.setUuid("loc");
+		location.setName("Registration Desk");
+		location.addTag(namedTag("Login Location"));
+		location.addTag(retired);
+		
+		ExportLine line = export(location);
+		
+		assertEquals("TRUE", line.get("tag|Login Location"));
+		assertNull(line.get("tag|Old Tag"),
+		    "retired tags cannot resolve by name on import, so they must not be emitted as tag| columns");
+	}
+	
+	@Test
 	void referencesParentByUuidNotName() {
 		Location parent = new Location();
 		parent.setUuid("parent-uuid");

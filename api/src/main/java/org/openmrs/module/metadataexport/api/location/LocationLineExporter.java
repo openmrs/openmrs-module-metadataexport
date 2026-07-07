@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.api.location;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Location;
 import org.openmrs.LocationTag;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
@@ -54,6 +55,9 @@ public class LocationLineExporter extends MetadataLineExporter<Location> {
 		
 		if (location.getTags() != null) {
 			for (LocationTag locationTag : location.getTags()) {
+				if (BooleanUtils.isTrue(locationTag.getRetired())) {
+					continue;
+				}
 				line.put(LocationLineProcessor.HEADER_TAG_PREFIX + locationTag.getName(), "TRUE");
 			}
 		}

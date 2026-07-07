@@ -71,6 +71,25 @@ class LocationDomainExporterTest {
 	}
 	
 	@Test
+	void getDependencies_excludesRetiredTags() {
+		LocationTag live = new LocationTag();
+		live.setName("Login Location");
+		
+		LocationTag retired = new LocationTag();
+		retired.setName("Old Tag");
+		retired.setRetired(true);
+		
+		Location location = new Location();
+		location.addTag(live);
+		location.addTag(retired);
+		
+		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(location);
+		
+		assertEquals(1, dependencies.size());
+		assertTrue(dependencies.contains(live));
+	}
+	
+	@Test
 	void getDependencies_emptyWhenNoParentOrTags() {
 		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(new Location());
 		

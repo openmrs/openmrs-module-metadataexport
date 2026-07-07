@@ -9,7 +9,9 @@
  */
 package org.openmrs.module.metadataexport.api.location;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Location;
+import org.openmrs.LocationTag;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
@@ -52,8 +54,14 @@ public class LocationDomainExporter extends CsvDomainExporter<Location> {
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(Location instance) {
-		List<OpenmrsObject> dependencies = instance.getTags() == null ? new ArrayList<>()
-		        : new ArrayList<>(instance.getTags());
+		List<OpenmrsObject> dependencies = new ArrayList<>();
+		if (instance.getTags() != null) {
+			for (LocationTag tag : instance.getTags()) {
+				if (BooleanUtils.isNotTrue(tag.getRetired())) {
+					dependencies.add(tag);
+				}
+			}
+		}
 		if (instance.getParentLocation() != null) {
 			dependencies.add(instance.getParentLocation());
 		}
