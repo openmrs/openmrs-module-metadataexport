@@ -18,10 +18,10 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
  * Base for the primary line exporter of a metadata domain. Writes the columns every Initializer row
  * carries — the uuid, and for a retired object the {@code void/retire} flag — then delegates the
  * domain-specific columns to {@link #export}. A retired object is emitted as uuid + flag only, so
- * {@link #export} only ever sees a live instance.
- * Domains whose Initializer parser requires discriminator columns (e.g. {@code entity name}) even
- * on retired rows can override {@link #writeRetiredDiscriminators} to emit those columns after the
- * retire flag. The default implementation is a no operation
+ * {@link #export} only ever sees a live instance. Domains whose Initializer parser requires
+ * discriminator columns (e.g. {@code entity name}) even on retired rows can override
+ * {@link #writeRetiredDiscriminators} to emit those columns after the retire flag. The default
+ * implementation is a no operation
  */
 public abstract class MetadataLineExporter<T extends OpenmrsObject & Retireable> extends BaseLineExporter<T> {
 	
