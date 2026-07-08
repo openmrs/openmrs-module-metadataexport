@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.api.export;
 
+import org.hibernate.Hibernate;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.module.initializer.Domain;
 
@@ -37,4 +38,26 @@ public interface DomainExporter<T extends OpenmrsObject> {
 	Collection<? extends OpenmrsObject> getDependencies(T instance);
 	
 	void export(Collection<T> instances, ExportContext context) throws IOException;
+	
+	/**
+	 * Stable identity of an instance for de-duplication during selection: two objects with the same key
+	 * are treated as the same export row and are visited (and written) once.
+	 * <p>
+	 * The default is (real entity class, uuid). This matches OpenMRS's actual uniqueness guarantee,
+	 * which is per-table, not global: UUIDs are not globally unique and have historically been reused
+	 * across tables, so a bare-uuid key would silently drop one of two same-uuid objects that live in
+	 * different tables (e.g. a location and a visit attribute type, both under
+	 * {@code ATTRIBUTE_TYPES}). {@link Hibernate#getClass} is used so a lazy proxy keys the same as its
+	 * initialized twin.
+	 * <p>
+	 * Returning {@code null} excludes the instance from the export; the default does so for a null
+	 * uuid, which cannot be represented as an Initializer row. Override when a domain's identity is not
+	 * (class, uuid) — e.g. content we do not care to preserve as a stable row across versions.
+	 */
+	default String identityKey(T instance) {
+		if (instance.getUuid() == null) {
+			return null;
+		}
+		return Hibernate.getClass(instance).getName() + ' ' + instance.getUuid();
+	}
 }

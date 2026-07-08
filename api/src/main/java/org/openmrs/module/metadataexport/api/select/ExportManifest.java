@@ -15,7 +15,6 @@ import org.openmrs.module.initializer.Domain;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,10 +25,10 @@ import java.util.Set;
  */
 public class ExportManifest {
 	
-	private final Map<Domain, LinkedHashSet<OpenmrsObject>> byDomain = new LinkedHashMap<>();
+	private final Map<Domain, LinkedHashMap<String, OpenmrsObject>> byDomain = new LinkedHashMap<>();
 	
-	public boolean add(Domain domain, OpenmrsObject instance) {
-		return byDomain.computeIfAbsent(domain, d -> new LinkedHashSet<>()).add(instance);
+	public boolean add(Domain domain, String identityKey, OpenmrsObject instance) {
+		return byDomain.computeIfAbsent(domain, d -> new LinkedHashMap<>()).putIfAbsent(identityKey, instance) == null;
 	}
 	
 	public Set<Domain> getDomains() {
@@ -37,14 +36,19 @@ public class ExportManifest {
 	}
 	
 	public Collection<OpenmrsObject> get(Domain domain) {
-		return byDomain.getOrDefault(domain, new LinkedHashSet<>());
+		LinkedHashMap<String, OpenmrsObject> bucket = byDomain.get(domain);
+		return bucket == null ? Collections.<OpenmrsObject> emptyList() : bucket.values();
 	}
 	
 	public boolean isEmpty() {
 		return byDomain.isEmpty();
 	}
 	
-	public Map<Domain, LinkedHashSet<OpenmrsObject>> asMap() {
-		return Collections.unmodifiableMap(byDomain);
+	public Map<Domain, Collection<OpenmrsObject>> asMap() {
+		Map<Domain, Collection<OpenmrsObject>> out = new LinkedHashMap<>();
+		for (Map.Entry<Domain, LinkedHashMap<String, OpenmrsObject>> entry : byDomain.entrySet()) {
+			out.put(entry.getKey(), Collections.unmodifiableCollection(entry.getValue().values()));
+		}
+		return Collections.unmodifiableMap(out);
 	}
 }
