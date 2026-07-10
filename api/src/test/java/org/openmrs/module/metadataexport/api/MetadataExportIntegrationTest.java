@@ -20,6 +20,7 @@ import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,8 @@ class MetadataExportIntegrationTest extends BaseModuleContextSensitiveTest {
 		
 		service.export(outDir, Collections.singletonList(Domain.ENCOUNTER_TYPES));
 		
-		File csv = new File(new File(outDir, "configuration"), Domain.ENCOUNTER_TYPES.getName() + "/encounterTypes.csv");
+		File csv = outDir.toPath()
+		        .resolve(Paths.get("configuration", Domain.ENCOUNTER_TYPES.getName(), "encounterTypes.csv")).toFile();
 		assertTrue(csv.exists(), "expected " + csv);
 		
 		try (CSVReader reader = new CSVReader(new FileReader(csv))) {

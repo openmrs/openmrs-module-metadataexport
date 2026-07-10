@@ -19,6 +19,7 @@ import org.openmrs.module.initializer.Domain;
 
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,7 +104,7 @@ class CsvDomainExporterTest {
 		
 		new TestDomainExporter().export(Arrays.asList(c1, c2, retired), new ExportContext(outDir));
 		
-		File csv = new File(new File(outDir, "configuration"), DOMAIN_DIR + "/test.csv");
+		File csv = outDir.toPath().resolve(Paths.get("configuration", DOMAIN_DIR, "test.csv")).toFile();
 		assertTrue(csv.exists(), "expected " + csv);
 		
 		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
