@@ -55,6 +55,7 @@
     <properties>
         <openmrsPlatformVersion>2.8.0</openmrsPlatformVersion>
         <initializerVersion>2.12.0</initializerVersion>
+        <patientflagsVersion>3.0.10</patientflagsVersion>
         <jacocoVersion>0.8.12</jacocoVersion>
     </properties>
 
@@ -94,6 +95,13 @@
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>initializer-api</artifactId>
 			<version>${initializerVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>patientflags-api</artifactId>
+			<version>${patientflagsVersion}</version>
 			<scope>provided</scope>
 		</dependency>
 
