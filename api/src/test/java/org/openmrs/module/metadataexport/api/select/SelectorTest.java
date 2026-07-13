@@ -59,14 +59,44 @@ class SelectorTest {
 		}
 	}
 	
+	/** A test-double DomainExporter over encounter types, to exercise cross-table uuid collisions. */
+	private static class FakeEncounterTypeExporter implements DomainExporter<EncounterType> {
+		
+		public Domain getDomain() {
+			return Domain.ENCOUNTER_TYPES;
+		}
+		
+		public boolean handles(OpenmrsObject instance) {
+			return instance instanceof EncounterType;
+		}
+		
+		public Collection<EncounterType> getAllInstances() {
+			return Collections.emptyList();
+		}
+		
+		public Collection<? extends OpenmrsObject> getDependencies(EncounterType instance) {
+			return Collections.emptyList();
+		}
+		
+		public void export(Collection<EncounterType> instances, ExportContext context) {
+			// not exercised here
+		}
+	}
+	
 	private static Concept concept(String uuid) {
 		Concept c = new Concept();
 		c.setUuid(uuid);
 		return c;
 	}
 	
-	private Selector selectorWith(FakeConceptExporter exporter) {
-		return new Selector(new DomainExporterRegistry(Collections.<DomainExporter<?>> singletonList(exporter)));
+	private static EncounterType encounterType(String uuid) {
+		EncounterType t = new EncounterType();
+		t.setUuid(uuid);
+		return t;
+	}
+	
+	private Selector selectorWith(DomainExporter<?>... exporters) {
+		return new Selector(new DomainExporterRegistry(Arrays.<DomainExporter<?>> asList(exporters)));
 	}
 	
 	private List<String> conceptUuids(ExportManifest manifest) {
@@ -124,5 +154,34 @@ class SelectorTest {
 		
 		assertTrue(conceptUuids(manifest).contains("a"));
 		assertFalse(manifest.getDomains().contains(Domain.ENCOUNTER_TYPES), "unowned object must be skipped");
+	}
+	
+	@Test
+	void select_keepsSameUuidObjectsFromDifferentTables() {
+		// uuids are only unique per table; a bare-uuid visited set would drop one of these.
+		Concept concept = concept("shared");
+		EncounterType encounterType = encounterType("shared");
+		
+		ExportManifest manifest = selectorWith(new FakeConceptExporter(), new FakeEncounterTypeExporter())
+		        .select(Arrays.asList(concept, encounterType));
+		
+		assertEquals(Collections.singletonList("shared"), conceptUuids(manifest));
+		assertEquals(1, manifest.get(Domain.ENCOUNTER_TYPES).size(), "same-uuid object from another table must survive");
+	}
+	
+	@Test
+	void select_customIdentityKeyCollapsesRows() {
+		// A domain may override identity: here everything collapses to a single row regardless of uuid.
+		FakeConceptExporter exporter = new FakeConceptExporter() {
+			
+			@Override
+			public String identityKey(Concept instance) {
+				return "constant";
+			}
+		};
+		
+		ExportManifest manifest = selectorWith(exporter).select(Arrays.asList(concept("a"), concept("b")));
+		
+		assertEquals(1, conceptUuids(manifest).size(), "override should treat both concepts as one row");
 	}
 }
