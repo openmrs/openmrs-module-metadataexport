@@ -39,7 +39,7 @@ Currently supported domains:
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 2 — with reference/ordering dependencies: attribute types, order types
+* Tier 2 — with reference/ordering dependencies: order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
 
