@@ -52,18 +52,17 @@ public class DrugIngredientsExporter extends BaseLineExporter<Drug> {
 		            Comparator.comparing(i -> i.getIngredient().getUuid(), Comparator.nullsLast(Comparator.naturalOrder())))
 		        .collect(Collectors.toList());
 		
-		int index = 1;
-		for (DrugIngredient ingredient : ingredients) {
-			String base = HEADER_INGREDIENT + " " + index;
-			line.put(base, ingredient.getIngredient().getUuid());
-			if (ingredient.getStrength() != null) {
-				line.put(base + " " + HEADER_STRENGTH, String.valueOf(ingredient.getStrength()));
+		for (int i = 0; i < ingredients.size(); i++) {
+			DrugIngredient drugIngredient = ingredients.get(i);
+			String base = HEADER_INGREDIENT + " " + (i + 1);
+			line.put(base, drugIngredient.getIngredient().getUuid());
+			if (drugIngredient.getStrength() != null) {
+				line.put(base + " " + HEADER_STRENGTH, String.valueOf(drugIngredient.getStrength()));
 			}
-			Concept units = ingredient.getUnits();
+			Concept units = drugIngredient.getUnits();
 			if (units != null) {
 				line.put(base + " " + HEADER_UNITS, units.getUuid());
 			}
-			index++;
 		}
 	}
 }
