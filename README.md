@@ -36,10 +36,11 @@ Currently supported domains:
 * Location Tags (name, description)
 * Locations (name, description, parent location, tags, address fields) — parent locations and tags
   are pulled in via cross-domain closure
+* Order types (name, description, java class name, parent, concept classes) — parent order types and
+  concept classes are pulled in via cross-domain closure
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 2 — with reference/ordering dependencies: order types
 * Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
   concept reference ranges
 
