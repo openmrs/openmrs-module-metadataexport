@@ -35,10 +35,7 @@ public class OrderTypeLineExporter extends MetadataLineExporter<OrderType> {
 			line.put(BaseLineProcessor.PARENT, parent.getUuid());
 		}
 		
-		Collection<ConceptClass> conceptClasses = orderType.getConceptClasses();
-		if (conceptClasses != null) {
-			line.put(HEADER_CONCEPT_CLASSES, conceptClasses.stream().map(ConceptClass::getUuid)
+		line.put(HEADER_CONCEPT_CLASSES, orderType.getConceptClasses().stream().map(ConceptClass::getUuid)
 			        .collect(Collectors.joining(BaseLineProcessor.LIST_SEPARATOR)));
-		}
 	}
 }

@@ -17,6 +17,7 @@ import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.CsvDomainExporter;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +51,12 @@ public class OrderTypeDomainExporter extends CsvDomainExporter<OrderType> {
 	}
 	
 	@Override
-	public Collection<? extends OpenmrsObject> getDependencies(OrderType instance) {
-		return Collections.emptyList();
+	public Collection<? extends OpenmrsObject> getDependencies(OrderType orderType) {
+		List<OpenmrsObject> dependencies = new ArrayList<>();
+		if (orderType.getParent() != null) {
+			dependencies.add(orderType.getParent());
+		}
+		dependencies.addAll(orderType.getConceptClasses());
+		return dependencies;
 	}
 }
