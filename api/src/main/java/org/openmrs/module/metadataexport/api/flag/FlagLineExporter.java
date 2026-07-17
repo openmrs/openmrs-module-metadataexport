@@ -51,9 +51,7 @@ public class FlagLineExporter extends MetadataLineExporter<Flag> {
 			line.put(HEADER_TAGS, flag.getTags().stream().map(Tag::getName).sorted().collect(Collectors.joining(";")));
 		}
 		
-		if (flag.getDescription() != null) {
-			line.put(BaseLineProcessor.HEADER_DESC, flag.getDescription());
-		}
+		line.put(BaseLineProcessor.HEADER_DESC, flag.getDescription());
 		
 	}
 }
