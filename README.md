@@ -7,7 +7,7 @@ verified yet. Not for production use.
 
 Description
 -----------
-Initializer ([openmrs-module-initializer](https://github.com/openmrs/openmrs-module-initializer))
+Initializer ([openmrs-module-initializer](https://github.com/mekomsolutions/openmrs-module-initializer))
 can *load* a `configuration/` content package into OpenMRS, but it cannot produce one. This module
 does the reverse: it reads metadata out of a running, populated OpenMRS instance and writes it back
 out in the Initializer format, so a configuration can be captured from a server and replayed
