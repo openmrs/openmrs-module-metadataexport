@@ -9,15 +9,18 @@
  */
 package org.openmrs.module.metadataexport.api.flag;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.CsvDomainExporter;
 import org.openmrs.module.patientflags.Flag;
+import org.openmrs.module.patientflags.Tag;
 import org.openmrs.module.patientflags.api.FlagService;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +45,18 @@ public class FlagDomainExporter extends CsvDomainExporter<Flag> {
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(Flag instance) {
-		return Collections.emptyList();
+		List<OpenmrsObject> dependencies = new ArrayList<>();
+		if (instance.getPriority() != null) {
+			dependencies.add(instance.getPriority());
+		}
+		if (instance.getTags() != null) {
+			for (Tag tag : instance.getTags()) {
+				if (BooleanUtils.isNotTrue(tag.getRetired())) {
+					dependencies.add(tag);
+				}
+			}
+		}
+		return dependencies;
 	}
 	
 	@Override
