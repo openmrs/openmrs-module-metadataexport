@@ -1,0 +1,34 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+ * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
+ * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+ * graphic logo is a trademark of OpenMRS Inc.
+ */
+package org.openmrs.module.metadataexport.api.orderFrequency;
+
+import org.openmrs.Concept;
+import org.openmrs.OrderFrequency;
+import org.openmrs.module.metadataexport.api.export.ExportLine;
+import org.openmrs.module.metadataexport.api.export.MetadataLineExporter;
+
+public class OrderFrequencyLineExporter extends MetadataLineExporter<OrderFrequency> {
+	
+	public static final String HEADER_FREQ_PER_DAY = "frequency per day";
+	
+	public static final String HEADER_CONCEPT_FREQ = "concept frequency";
+	
+	@Override
+	public void export(OrderFrequency orderFrequency, ExportLine line) {
+		if (orderFrequency.getFrequencyPerDay() != null) {
+			line.put(HEADER_FREQ_PER_DAY, String.valueOf(orderFrequency.getFrequencyPerDay()));
+		}
+		
+		Concept concept = orderFrequency.getConcept();
+		if (concept != null) {
+			line.put(HEADER_CONCEPT_FREQ, concept.getUuid());
+		}
+	}
+}
