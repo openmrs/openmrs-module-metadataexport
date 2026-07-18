@@ -39,11 +39,13 @@ Currently supported domains:
 * Order types (name, description, java class name, parent, concept classes) — parent order types and
   concept classes are pulled in via cross-domain closure
 * Flags (name, criteria, evaluator, message, priority, enabled, tags, description)
+* Order frequencies (frequency per day, concept frequency) — the referenced concept is pulled in via
+  cross domain closure
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 3 — concept-dependent: drugs, order frequencies, programs/workflows/states, concept sets,
-  concept reference ranges
+* Tier 3 — concept-dependent: drugs, programs/workflows/states, concept sets, concept reference
+  ranges
 
 Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
 out of scope.
