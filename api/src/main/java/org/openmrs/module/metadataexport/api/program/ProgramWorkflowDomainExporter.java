@@ -67,6 +67,6 @@ public class ProgramWorkflowDomainExporter extends CsvDomainExporter<ProgramWork
 	
 	@Override
 	protected String fileName() {
-		return "workflows.csv";
+		return "programworkflows.csv";
 	}
 }
