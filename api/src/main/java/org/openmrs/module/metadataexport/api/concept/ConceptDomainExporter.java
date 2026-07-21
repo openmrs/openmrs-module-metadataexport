@@ -44,7 +44,7 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(Concept concept) {
-		List<Concept> dependencies = new ArrayList<>();
+		List<OpenmrsObject> dependencies = new ArrayList<>();
 		for (ConceptAnswer answer : concept.getAnswers()) {
 			if (answer.getAnswerConcept() != null) {
 				dependencies.add(answer.getAnswerConcept());
@@ -52,7 +52,7 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 		}
 		for (ConceptSet member : concept.getConceptSets()) {
 			if (member.getConcept() != null) {
-				dependencies.add(member.getConcept());
+				dependencies.add(member);
 			}
 		}
 		return dependencies;

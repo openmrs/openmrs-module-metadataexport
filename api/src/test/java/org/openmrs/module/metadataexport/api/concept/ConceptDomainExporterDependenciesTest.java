@@ -32,20 +32,26 @@ class ConceptDomainExporterDependenciesTest {
 		return c;
 	}
 	
-	private HashSet<String> dependencyUuids(Concept concept) {
-		return exporter.getDependencies(concept).stream().map(OpenmrsObject::getUuid)
+	private HashSet<String> answerConceptUuids(Concept concept) {
+		return exporter.getDependencies(concept).stream().filter(d -> d instanceof Concept).map(OpenmrsObject::getUuid)
 		        .collect(Collectors.toCollection(HashSet::new));
 	}
 	
+	private HashSet<String> membershipMemberUuids(Concept concept) {
+		return exporter.getDependencies(concept).stream().filter(d -> d instanceof ConceptSet)
+		        .map(d -> ((ConceptSet) d).getConcept().getUuid()).collect(Collectors.toCollection(HashSet::new));
+	}
+	
 	@Test
-	void getDependencies_collectsAnswerConceptsAndSetMembers() {
+	void getDependencies_collectsAnswerConceptsAndSetMembershipRows() {
 		Concept c = concept("c");
 		c.addAnswer(new ConceptAnswer(concept("answer1")));
 		c.addAnswer(new ConceptAnswer(concept("answer2")));
 		c.addSetMember(concept("member1"));
 		c.addSetMember(concept("member2"));
 		
-		assertEquals(new HashSet<>(Arrays.asList("answer1", "answer2", "member1", "member2")), dependencyUuids(c));
+		assertEquals(new HashSet<>(Arrays.asList("answer1", "answer2")), answerConceptUuids(c));
+		assertEquals(new HashSet<>(Arrays.asList("member1", "member2")), membershipMemberUuids(c));
 	}
 	
 	@Test
@@ -55,7 +61,8 @@ class ConceptDomainExporterDependenciesTest {
 		c.addAnswer(new ConceptAnswer());
 		c.setConceptSets(Arrays.asList(new ConceptSet(concept("member1"), 1.0), new ConceptSet(null, 2.0)));
 		
-		assertEquals(new HashSet<>(Arrays.asList("answer1", "member1")), dependencyUuids(c));
+		assertEquals(new HashSet<>(Arrays.asList("answer1")), answerConceptUuids(c));
+		assertEquals(new HashSet<>(Arrays.asList("member1")), membershipMemberUuids(c));
 	}
 	
 	@Test

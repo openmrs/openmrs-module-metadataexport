@@ -13,6 +13,8 @@ import com.opencsv.CSVReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.api.concept.ConceptDomainExporter;
+import org.openmrs.module.metadataexport.api.concept.ConceptSetDomainExporter;
 import org.openmrs.module.metadataexport.api.encounter.EncounterTypeDomainExporter;
 import org.openmrs.module.metadataexport.api.export.DomainExporterRegistry;
 import org.openmrs.module.metadataexport.api.impl.ExporterServiceImpl;
@@ -21,6 +23,7 @@ import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +64,23 @@ class MetadataExportIntegrationTest extends BaseModuleContextSensitiveTest {
 			String[] laboratory = byUuid.get(RETIRED_LABORATORY_UUID);
 			assertEquals("true", laboratory[col.get("void/retire")]);
 			assertEquals("", laboratory[col.get("name")]);
+		}
+	}
+	
+	@Test
+	public void export_pullsSetMembershipRowsWhenOnlyConceptsAreSelected(@TempDir File outDir) throws Exception {
+		ExporterService service = new ExporterServiceImpl(
+		        new DomainExporterRegistry(Arrays.asList(new ConceptDomainExporter(), new ConceptSetDomainExporter())));
+		
+		service.export(outDir, Collections.singletonList(Domain.CONCEPTS));
+		
+		File csv = outDir.toPath().resolve(Paths.get("configuration", Domain.CONCEPT_SETS.getName(), "conceptSet.csv"))
+		        .toFile();
+		assertTrue(csv.exists(), "membership rows should reach the export via closure from their parent concepts: " + csv);
+		
+		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
+			List<String[]> rows = reader.readAll();
+			assertEquals(9, rows.size() - 1, "the nine concept_set rows seeded by the standard test dataset");
 		}
 	}
 	
