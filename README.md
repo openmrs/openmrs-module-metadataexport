@@ -50,7 +50,28 @@ Currently supported domains:
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Tier 3 — concept-dependent: program workflows/states, concept sets
+* Concept sets
+* Program workflows
+* Program workflow states
+* Procedure types
+* Provider roles
+
+Domains contributed by other modules (supportable, but depend on the module being present;
+not yet covered):
+
+* Metadata sharing / mapping (metadatasharing, metadata sets, metadata set members, metadata
+  term mappings)
+* Identifier generation (idgen, auto-generation options)
+* Address hierarchy (address hierarchy entries, location tag maps)
+* Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)
+* Billing / cashier (billable services, payment modes, cash points, cashier item prices)
+* Appointment scheduling (specialities, service definitions, service types)
+* Queues
+* Cohorts (cohort types, cohort attribute types)
+* FHIR (FHIR concept sources, FHIR patient identifier systems)
+* Data filter mappings
+* Dispositions
+* OCL
 
 Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
 out of scope.
