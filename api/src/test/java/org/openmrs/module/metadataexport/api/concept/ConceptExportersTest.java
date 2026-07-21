@@ -139,7 +139,7 @@ class ConceptExportersTest {
 	}
 	
 	@Test
-	void nested_exportsAnswersAndMembersByUuidInOrder() {
+	void nested_exportsAnswersByUuidInOrder() {
 		Concept coded = concept("coded");
 		ConceptAnswer a1 = new ConceptAnswer(concept("a1"));
 		a1.setSortWeight(1.0);
@@ -147,18 +147,14 @@ class ConceptExportersTest {
 		a2.setSortWeight(2.0);
 		coded.addAnswer(a1);
 		coded.addAnswer(a2);
-		
-		Concept set = concept("set");
-		set.addSetMember(concept("m1"));
-		set.addSetMember(concept("m2"));
+		coded.addSetMember(concept("m1"));
 		
 		ExportLine answersLine = new ExportLine();
 		new NestedConceptExporter().export(coded, answersLine);
 		assertEquals("a1; a2", answersLine.get("answers"));
 		
-		ExportLine membersLine = new ExportLine();
-		new NestedConceptExporter().export(set, membersLine);
-		assertEquals("m1; m2", membersLine.get("members"));
+		// Set members are exported by ConceptSetDomainExporter, not here.
+		assertNull(answersLine.get("members"));
 	}
 	
 	@Test

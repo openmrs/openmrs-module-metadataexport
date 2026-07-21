@@ -17,7 +17,7 @@ It is export only. It never imports or applies metadata; loading remains Initial
 
 Currently supported domains:
 
-* Concepts (names, descriptions, class/datatype/version, numeric, complex, answers, members,
+* Concepts (names, descriptions, class/datatype/version, numeric, complex, answers,
   mappings, attributes)
 * Concept sources (name, description, HL7 code, unique ID)
 * Encounter types (name, description, view/edit privileges)
@@ -47,10 +47,11 @@ Currently supported domains:
   cross domain closure
 * Concept reference ranges (concept numeric, absolute/critical/normal low and high, criteria) — the
   referenced concept numeric is pulled in via cross domain closure
+* Concept sets (parent concept, member concept, member type, sort weight) — the referenced parent
+  and member concepts are pulled in via cross domain closure
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Concept sets
 * Program workflows
 * Program workflow states
 * Procedure types

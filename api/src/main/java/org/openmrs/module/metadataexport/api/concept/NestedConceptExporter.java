@@ -12,7 +12,6 @@ package org.openmrs.module.metadataexport.api.concept;
 import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAnswer;
-import org.openmrs.ConceptSet;
 import org.openmrs.module.metadataexport.api.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.api.export.ExportLine;
 
@@ -20,11 +19,13 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Exports a concept's q-and-a answers as the {@code answers} column. Set members are not handled
+ * here; they are exported by {@link ConceptSetDomainExporter}, which preserves their sort weight.
+ */
 public class NestedConceptExporter extends BaseLineExporter<Concept> {
 	
 	private static final String HEADER_ANSWERS = "answers";
-	
-	private static final String HEADER_MEMBERS = "members";
 	
 	private static final String LIST_SEPARATOR = "; ";
 	
@@ -39,11 +40,5 @@ public class NestedConceptExporter extends BaseLineExporter<Concept> {
 		        .map(ConceptAnswer::getAnswerConcept).filter(Objects::nonNull).map(Concept::getUuid)
 		        .collect(Collectors.joining(LIST_SEPARATOR));
 		line.put(HEADER_ANSWERS, answers);
-		
-		String members = concept.getConceptSets().stream()
-		        .sorted(Comparator.comparing(ConceptSet::getSortWeight, Comparator.nullsLast(Comparator.naturalOrder())))
-		        .map(ConceptSet::getConcept).filter(Objects::nonNull).map(Concept::getUuid)
-		        .collect(Collectors.joining(LIST_SEPARATOR));
-		line.put(HEADER_MEMBERS, members);
 	}
 }
