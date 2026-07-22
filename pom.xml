@@ -113,7 +113,9 @@
 			<version>${emrapiVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-        
+
+		<!-- Context-sensitive tests load every moduleApplicationContext.xml on the classpath,
+		     including emrapi's, whose beans reference metadatamapping classes -->
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>metadatamapping-api</artifactId>
