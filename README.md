@@ -51,10 +51,11 @@ Currently supported domains:
   referenced concept numeric is pulled in via cross domain closure
 * Concept sets (parent concept, member concept, member type, sort weight) — the referenced parent
   and member concepts are pulled in via cross domain closure
+* Program workflow states (workflow, state concept, initial, terminal) — the referenced workflow and
+  state concept are pulled in via cross domain closure
 
 Planned domains (openmrs-core metadata, not yet supported):
 
-* Program workflow states
 * Procedure types
 * Provider roles
 
