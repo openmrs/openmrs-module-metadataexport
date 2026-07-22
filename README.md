@@ -54,10 +54,6 @@ Currently supported domains:
 * Program workflow states (workflow, state concept, initial, terminal) — the referenced workflow and
   state concept are pulled in via cross domain closure
 
-Planned domains (openmrs-core metadata, not yet supported):
-
-* Provider roles
-
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
