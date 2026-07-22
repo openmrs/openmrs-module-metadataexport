@@ -53,11 +53,11 @@ Currently supported domains:
   and member concepts are pulled in via cross domain closure
 * Program workflow states (workflow, state concept, initial, terminal) — the referenced workflow and
   state concept are pulled in via cross domain closure
+* Procedure types (name, description) — requires the emrapi module (3.4+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
-* Procedure types (emrapi 3.4+)
 * Metadata sharing / mapping (metadatasharing, metadata sets, metadata set members, metadata
   term mappings)
 * Identifier generation (idgen, auto-generation options)

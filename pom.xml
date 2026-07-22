@@ -57,6 +57,8 @@
         <initializerVersion>2.12.0</initializerVersion>
         <patientflagsVersion>3.0.10</patientflagsVersion>
         <jacocoVersion>0.8.12</jacocoVersion>
+        <emrapiVersion>3.4.0</emrapiVersion>
+        <metadatamappingVersion>1.6.0</metadatamappingVersion>
     </properties>
 
 	<build>
@@ -105,5 +107,18 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>emrapi-api</artifactId>
+			<version>${emrapiVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+        
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>metadatamapping-api</artifactId>
+			<version>${metadatamappingVersion}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
