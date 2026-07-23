@@ -12,11 +12,11 @@ package org.openmrs.module.metadataexport.api.impl;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.api.ExporterService;
-import org.openmrs.module.metadataexport.api.export.DomainExporter;
-import org.openmrs.module.metadataexport.api.export.DomainExporterRegistry;
-import org.openmrs.module.metadataexport.api.export.ExportContext;
-import org.openmrs.module.metadataexport.api.select.ExportManifest;
-import org.openmrs.module.metadataexport.api.select.Selector;
+import org.openmrs.module.metadataexport.export.DomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
+import org.openmrs.module.metadataexport.export.ExportContext;
+import org.openmrs.module.metadataexport.select.ExportManifest;
+import org.openmrs.module.metadataexport.select.Selector;
 
 import java.io.File;
 import java.io.IOException;

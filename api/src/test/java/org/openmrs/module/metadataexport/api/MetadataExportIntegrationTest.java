@@ -13,10 +13,10 @@ import com.opencsv.CSVReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.module.initializer.Domain;
-import org.openmrs.module.metadataexport.api.concept.ConceptDomainExporter;
-import org.openmrs.module.metadataexport.api.concept.ConceptSetDomainExporter;
-import org.openmrs.module.metadataexport.api.encounter.EncounterTypeDomainExporter;
-import org.openmrs.module.metadataexport.api.export.DomainExporterRegistry;
+import org.openmrs.module.metadataexport.domain.concept.ConceptDomainExporter;
+import org.openmrs.module.metadataexport.domain.concept.ConceptSetDomainExporter;
+import org.openmrs.module.metadataexport.domain.encounter.EncounterTypeDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
 import org.openmrs.module.metadataexport.api.impl.ExporterServiceImpl;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 

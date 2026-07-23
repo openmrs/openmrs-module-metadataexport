@@ -1,0 +1,40 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+ * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
+ * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+ * graphic logo is a trademark of OpenMRS Inc.
+ */
+package org.openmrs.module.metadataexport.domain.concept;
+
+import org.apache.commons.lang3.BooleanUtils;
+import org.openmrs.Concept;
+import org.openmrs.ConceptAttribute;
+import org.openmrs.module.initializer.api.BaseAttributeLineProcessor;
+import org.openmrs.module.metadataexport.export.BaseLineExporter;
+import org.openmrs.module.metadataexport.export.ExportLine;
+
+/**
+ * Inverse of the concept side of {@link BaseAttributeLineProcessor}. Emits one
+ * {@code attribute|<attributeTypeName>} column per active attribute, value = the attribute's
+ * reference-string serialization (what the loader's {@code datatype.fromReferenceString} parses).
+ */
+public class ConceptAttributeExporter extends BaseLineExporter<Concept> {
+	
+	@Override
+	public void export(Concept concept, ExportLine line) {
+		if (BooleanUtils.isTrue(concept.getRetired())) {
+			return;
+		}
+		
+		for (ConceptAttribute attribute : concept.getActiveAttributes()) {
+			if (attribute.getAttributeType() == null) {
+				continue;
+			}
+			String header = BaseAttributeLineProcessor.HEADER_ATTRIBUTE_PREFIX + attribute.getAttributeType().getName();
+			line.put(header, attribute.getValueReference());
+		}
+	}
+}
