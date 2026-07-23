@@ -20,8 +20,8 @@ public interface ExporterService {
 	/**
 	 * Export the given domains under {@code outDir} (writing a {@code configuration/} tree). A null or
 	 * empty {@code domains} exports every registered domain. The service holds a registry of
-	 * {@link org.openmrs.module.metadataexport.api.export.DomainExporter}s and contains no per-domain
-	 * logic itself.
+	 * {@link org.openmrs.module.metadataexport.export.DomainExporter}s and contains no per-domain logic
+	 * itself.
 	 */
 	void export(File outDir, Collection<Domain> domains) throws IOException;
 }
