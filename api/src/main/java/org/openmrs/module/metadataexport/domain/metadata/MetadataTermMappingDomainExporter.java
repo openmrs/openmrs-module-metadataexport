@@ -11,6 +11,7 @@ package org.openmrs.module.metadataexport.domain.metadata;
 
 import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
+@OpenmrsProfile(modules = { "metadatamapping:*" })
 public class MetadataTermMappingDomainExporter extends CsvDomainExporter<MetadataTermMapping> {
 	
 	@Override

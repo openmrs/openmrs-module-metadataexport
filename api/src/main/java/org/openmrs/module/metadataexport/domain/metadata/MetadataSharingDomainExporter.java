@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.metadata;
 
 import org.openmrs.OpenmrsObject;
+import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.DomainExporter;
@@ -34,6 +35,7 @@ import java.util.Collections;
  * {@link org.openmrs.module.metadataexport.export.XmlDomainExporter}.
  */
 @Component
+@OpenmrsProfile(modules = { "metadatasharing:*" })
 public class MetadataSharingDomainExporter implements DomainExporter<ExportedPackage> {
 	
 	@Override
