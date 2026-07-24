@@ -59,6 +59,7 @@
         <jacocoVersion>0.8.12</jacocoVersion>
         <emrapiVersion>3.4.0</emrapiVersion>
         <metadatamappingVersion>1.6.0</metadatamappingVersion>
+        <metadatasharingVersion>1.2.2</metadatasharingVersion>
     </properties>
 
 	<build>
@@ -114,12 +115,26 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Context-sensitive tests load every moduleApplicationContext.xml on the classpath,
-		     including emrapi's, whose beans reference metadatamapping classes -->
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>metadatamapping-api</artifactId>
 			<version>${metadatamappingVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>metadatasharing-api-common</artifactId>
+			<version>${metadatasharingVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Context-sensitive tests load every moduleApplicationContext.xml on the classpath;
+		     metadatasharing's wires beans that only this platform-compatibility jar satisfies -->
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>metadatasharing-api-2.0</artifactId>
+			<version>${metadatasharingVersion}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
