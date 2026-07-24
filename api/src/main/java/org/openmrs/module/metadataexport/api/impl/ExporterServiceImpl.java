@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.api.impl;
 
+import lombok.AllArgsConstructor;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.api.ExporterService;
@@ -24,13 +25,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@AllArgsConstructor
 public class ExporterServiceImpl implements ExporterService {
 	
 	private final DomainExporterRegistry registry;
-	
-	public ExporterServiceImpl(DomainExporterRegistry registry) {
-		this.registry = registry;
-	}
 	
 	@Override
 	public void export(File outDir, Collection<Domain> domains) throws IOException {
@@ -40,13 +38,18 @@ public class ExporterServiceImpl implements ExporterService {
 				seeds.addAll(exporter.getAllInstances());
 			}
 		}
-		
+		exportSeeds(outDir, seeds);
+	}
+	
+	@Override
+	public ExportManifest exportSeeds(File outDir, Collection<? extends OpenmrsObject> seeds) throws IOException {
 		ExportManifest manifest = new Selector(registry).select(seeds);
 		
 		ExportContext context = new ExportContext(outDir);
 		for (Domain domain : manifest.getDomains()) {
 			writeDomain(registry.forDomain(domain), manifest.get(domain), context);
 		}
+		return manifest;
 	}
 	
 	private static boolean isSelected(Collection<Domain> domains, Domain domain) {

@@ -11,10 +11,16 @@ package org.openmrs.module.metadataexport.export;
 
 import org.hibernate.Hibernate;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.APIException;
 import org.openmrs.module.initializer.Domain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A self-describing, format-neutral exporter for one Iniz {@link Domain}. The ExporterService holds
@@ -59,5 +65,19 @@ public interface DomainExporter<T extends OpenmrsObject> {
 			return null;
 		}
 		return Hibernate.getClass(instance).getName() + ' ' + instance.getUuid();
+	}
+	
+	default Collection<T> getInstancesByUuids(Collection<String> uuids) {
+		Set<String> wanted = new HashSet<>(uuids);
+		List<T> found = new ArrayList<>();
+		for (T instance : getAllInstances()) {
+			if (wanted.remove(instance.getUuid())) {
+				found.add(instance);
+			}
+		}
+		if (!wanted.isEmpty()) {
+			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
+		}
+		return found;
 	}
 }

@@ -16,6 +16,7 @@ import org.openmrs.module.BaseModuleActivator;
 import org.openmrs.module.DaemonToken;
 import org.openmrs.module.DaemonTokenAware;
 import org.openmrs.module.metadataexport.api.ExporterService;
+import org.openmrs.module.metadataexport.api.MetadataExportService;
 import org.openmrs.util.OpenmrsUtil;
 
 import java.io.File;
@@ -28,11 +29,28 @@ public class MetadataExportActivator extends BaseModuleActivator implements Daem
 	@Override
 	public void setDaemonToken(DaemonToken token) {
 		this.daemonToken = token;
+		MetadataExportDaemonToken.set(token);
 	}
 	
 	@Override
 	public void started() {
-		Daemon.runInDaemonThreadWithoutResult(this::exportAllMetadata, daemonToken);
+		Daemon.runInDaemonThreadWithoutResult(() -> {
+			recoverStrandedBuilds();
+			exportAllMetadata();
+		}, daemonToken);
+	}
+	
+	private void recoverStrandedBuilds() {
+		try {
+			int recovered = Context.getService(MetadataExportService.class)
+			        .failStrandedBuilds("Interrupted by a server restart");
+			if (recovered > 0) {
+				log.warn("Metadata Export: marked {} stranded QUEUED/RUNNING build(s) as FAILED", recovered);
+			}
+		}
+		catch (Exception e) {
+			log.error("Metadata Export: failed to recover stranded builds on startup", e);
+		}
 	}
 	
 	private void exportAllMetadata() {

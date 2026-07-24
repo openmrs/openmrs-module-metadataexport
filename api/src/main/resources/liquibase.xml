@@ -10,41 +10,153 @@
     graphic logo is a trademark of OpenMRS Inc.
 
 -->
- 
+
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
- 
-    <!--
-    	See http://wiki.openmrs.org/display/docs/Module+liquibase+File for 
-    	documentation on this file.
-    
-        See http://www.liquibase.org/manual/home#available_database_refactorings
-        for a list of supported elements and attributes
-    -->
- 
- 	<!-- Uncomment the changeset below if you want to make the Item class persistable, see also Item and MetadataExportDaoTest -->
- 	<!--
-	<changeSet id="metadataexport-2016-08-02-12-21" author="raff">
-		<preConditions onFail="MARK_RAN">
-			<not><tableExists tableName="metadataexport_item"/></not>
-		</preConditions>
-		<comment>
-			Creating the metadataexport_item table
-		</comment>
-		<createTable tableName="metadataexport_item">
-			<column name="metadataexport_item_id" type="int" autoIncrement="true">
-				<constraints primaryKey="true" nullable="false"/>
-			</column>
-			<column name="uuid" type="char(38)">
-				<constraints nullable="false" unique="true"></constraints>
-			</column>
-			<column name="owner" type="int" />
-			<column name="description" type="varchar(255)" />
-		</createTable>
-        <addForeignKeyConstraint constraintName="metadataexport_item_owner_fk" baseTableName="metadataexport_item" baseColumnNames="owner"  referencedTableName="users"
-                                 referencedColumnNames="user_id" />
-    </changeSet> -->
- 
+
+    <changeSet id="metadataexport-2026-07-24-1000-1" author="wikum">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="metadataexport_package"/></not>
+        </preConditions>
+        <comment>Create the metadataexport_package table (export package definitions)</comment>
+        <createTable tableName="metadataexport_package">
+            <column name="package_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="retired" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="retired_by" type="int"/>
+            <column name="date_retired" type="datetime"/>
+            <column name="retire_reason" type="varchar(255)"/>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="metadataexport_package_creator_fk"
+            baseTableName="metadataexport_package" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="metadataexport_package_changed_by_fk"
+            baseTableName="metadataexport_package" baseColumnNames="changed_by"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="metadataexport_package_retired_by_fk"
+            baseTableName="metadataexport_package" baseColumnNames="retired_by"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="metadataexport-2026-07-24-1000-2" author="wikum">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="metadataexport_package_entry"/></not>
+        </preConditions>
+        <comment>Create the metadataexport_package_entry table (one row per domain in a package)</comment>
+        <createTable tableName="metadataexport_package_entry">
+            <column name="entry_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="domain" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="metadataexport_package_entry_package_fk"
+            baseTableName="metadataexport_package_entry" baseColumnNames="package_id"
+            referencedTableName="metadataexport_package" referencedColumnNames="package_id"/>
+    </changeSet>
+
+    <changeSet id="metadataexport-2026-07-24-1000-3" author="wikum">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="metadataexport_package_entry_item"/></not>
+        </preConditions>
+        <comment>Create the metadataexport_package_entry_item table (item uuids scoping an entry; no rows = whole domain)</comment>
+        <createTable tableName="metadataexport_package_entry_item">
+            <column name="entry_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_uuid" type="char(38)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="metadataexport_package_entry_item_entry_fk"
+            baseTableName="metadataexport_package_entry_item" baseColumnNames="entry_id"
+            referencedTableName="metadataexport_package_entry" referencedColumnNames="entry_id"/>
+        <addUniqueConstraint constraintName="metadataexport_package_entry_item_uq"
+            tableName="metadataexport_package_entry_item" columnNames="entry_id, item_uuid"/>
+    </changeSet>
+
+    <changeSet id="metadataexport-2026-07-24-1000-4" author="wikum">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="metadataexport_build"/></not>
+        </preConditions>
+        <comment>Create the metadataexport_build table (one row per export run of a package)</comment>
+        <createTable tableName="metadataexport_build">
+            <column name="build_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="export_status" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_started" type="datetime"/>
+            <column name="date_completed" type="datetime"/>
+            <column name="zip_path" type="varchar(512)"/>
+            <column name="error_message" type="clob"/>
+            <column name="manifest_json" type="clob"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="voided" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="metadataexport_build_package_fk"
+            baseTableName="metadataexport_build" baseColumnNames="package_id"
+            referencedTableName="metadataexport_package" referencedColumnNames="package_id"/>
+        <addForeignKeyConstraint constraintName="metadataexport_build_creator_fk"
+            baseTableName="metadataexport_build" baseColumnNames="creator"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="metadataexport_build_changed_by_fk"
+            baseTableName="metadataexport_build" baseColumnNames="changed_by"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="metadataexport_build_voided_by_fk"
+            baseTableName="metadataexport_build" baseColumnNames="voided_by"
+            referencedTableName="users" referencedColumnNames="user_id"/>
+        <addUniqueConstraint constraintName="metadataexport_build_package_version_uq"
+            tableName="metadataexport_build" columnNames="package_id, version"/>
+    </changeSet>
+
 </databaseChangeLog>

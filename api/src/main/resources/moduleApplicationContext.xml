@@ -28,6 +28,11 @@
         <context:exclude-filter type="custom" expression="org.openmrs.annotation.OpenmrsProfileExcludeFilter" />
     </context:component-scan>
 
+    <bean id="metadataexport.MetadataExportDao"
+            class="org.openmrs.module.metadataexport.api.db.hibernate.HibernateMetadataExportDao">
+        <constructor-arg ref="sessionFactory" />
+    </bean>
+
     <bean id="metadataexport.ExporterService"
             class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="transactionManager" ref="transactionManager" />
@@ -49,6 +54,33 @@
             <list>
                 <value>org.openmrs.module.metadataexport.api.ExporterService</value>
                 <ref bean="metadataexport.ExporterService" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="metadataexport.MetadataExportService"
+            class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="target">
+            <bean class="org.openmrs.module.metadataexport.api.impl.MetadataExportServiceImpl">
+                <constructor-arg ref="metadataexport.MetadataExportDao" />
+                <constructor-arg ref="domainExporterRegistry" />
+                <constructor-arg ref="metadataexport.ExporterService" />
+            </bean>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors" />
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource" />
+        </property>
+    </bean>
+
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.openmrs.module.metadataexport.api.MetadataExportService</value>
+                <ref bean="metadataexport.MetadataExportService" />
             </list>
         </property>
     </bean>
