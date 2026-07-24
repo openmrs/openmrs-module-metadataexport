@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.metadata;
 
+import lombok.extern.slf4j.Slf4j;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
@@ -34,6 +35,7 @@ import java.util.Collections;
  * {@link org.openmrs.module.metadataexport.export.CsvDomainExporter} or
  * {@link org.openmrs.module.metadataexport.export.XmlDomainExporter}.
  */
+@Slf4j
 @Component
 @OpenmrsProfile(modules = { "metadatasharing:*" })
 public class MetadataSharingDomainExporter implements DomainExporter<ExportedPackage> {
@@ -63,8 +65,12 @@ public class MetadataSharingDomainExporter implements DomainExporter<ExportedPac
 		File domainDir = new File(new File(context.getOutputDir(), "configuration"), getDomain().getName());
 		domainDir.mkdirs();
 		for (ExportedPackage pkg : instances) {
-			File target = new File(domainDir, pkg.getUuid() + ".zip");
 			try (InputStream in = pkg.getSerializedPackageStream()) {
+				if (in == null) {
+					log.warn("Metadata Sharing: skipping package {} with no serialized content", pkg.getUuid());
+					continue;
+				}
+				File target = new File(domainDir, pkg.getUuid() + ".zip");
 				Files.copy(in, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			}
 		}
