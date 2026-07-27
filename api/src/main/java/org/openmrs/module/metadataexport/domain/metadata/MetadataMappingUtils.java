@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.metadata;
 
 import org.openmrs.OpenmrsMetadata;
+import org.openmrs.util.OpenmrsClassLoader;
 
 final class MetadataMappingUtils {
 	
@@ -21,7 +22,7 @@ final class MetadataMappingUtils {
 			return null;
 		}
 		try {
-			return Class.forName(className).asSubclass(OpenmrsMetadata.class);
+			return OpenmrsClassLoader.getInstance().loadClass(className).asSubclass(OpenmrsMetadata.class);
 		}
 		catch (ClassNotFoundException | ClassCastException e) {
 			return null;
