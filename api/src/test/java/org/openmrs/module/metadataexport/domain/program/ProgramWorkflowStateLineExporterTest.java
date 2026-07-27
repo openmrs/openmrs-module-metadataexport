@@ -69,7 +69,7 @@ class ProgramWorkflowStateLineExporterTest {
 	}
 	
 	@Test
-	void retiredStateEmitsUuidAndFlagOnly() {
+	void retiredStateEmitsUuidFlagAndDiscriminators() {
 		ProgramWorkflowState state = new ProgramWorkflowState();
 		state.setUuid("cfa24690-2700-102b-80cb-0017a47871b2");
 		state.setProgramWorkflow(workflow("extended-discharge-workflow-uuid"));
@@ -82,9 +82,11 @@ class ProgramWorkflowStateLineExporterTest {
 		
 		assertEquals("cfa24690-2700-102b-80cb-0017a47871b2", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("Workflow"), "retired rows carry only uuid + flag");
-		assertNull(line.get("State concept"), "retired rows carry only uuid + flag");
-		assertNull(line.get("Initial"), "retired rows carry only uuid + flag");
+		assertEquals("extended-discharge-workflow-uuid", line.get("Workflow"),
+		    "workflow is not-null on import and must survive the retired short-circuit");
+		assertEquals("moribund-concept-uuid", line.get("State concept"),
+		    "state concept is not-null on import and must survive the retired short-circuit");
+		assertNull(line.get("Initial"), "not a required discriminator; retired rows still omit it");
 	}
 	
 	@Test

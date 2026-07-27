@@ -46,7 +46,7 @@ class MetadataTermMappingLineExporterTest {
 	}
 	
 	@Test
-	void retiredMappingEmitsUuidAndFlagOnly() {
+	void retiredMappingEmitsUuidFlagAndDiscriminators() {
 		MetadataTermMapping mapping = new MetadataTermMapping();
 		mapping.setUuid("5f84b986-232d-475b-aad2-2094306bd655");
 		mapping.setMetadataSource(source("org.openmrs.module.emrapi"));
@@ -60,8 +60,12 @@ class MetadataTermMappingLineExporterTest {
 		
 		assertEquals("5f84b986-232d-475b-aad2-2094306bd655", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("mapping code"), "retired rows carry only uuid + flag");
-		assertNull(line.get("mapping source"), "retired rows carry only uuid + flag");
+		assertEquals("emr.extraPatientIdentifierTypes", line.get("mapping code"),
+		    "mapping code is not-null on import and must survive the retired short-circuit");
+		assertEquals("org.openmrs.module.emrapi", line.get("mapping source"),
+		    "mapping source is not-null on import and must survive the retired short-circuit");
+		assertNull(line.get("metadata class name"), "not a required discriminator; retired rows still omit it");
+		assertNull(line.get("metadata uuid"), "not a required discriminator; retired rows still omit it");
 	}
 	
 	@Test

@@ -50,7 +50,7 @@ class MetadataSetMemberLineExporterTest {
 	}
 	
 	@Test
-	void retiredMemberEmitsUuidAndFlagOnly() {
+	void retiredMemberEmitsUuidFlagAndDiscriminators() {
 		MetadataSetMember member = new MetadataSetMember();
 		member.setUuid("f0ebcb99-272d-41b7-4c67-078de9342492");
 		member.setName("Old OpenMRS Id");
@@ -64,8 +64,13 @@ class MetadataSetMemberLineExporterTest {
 		
 		assertEquals("f0ebcb99-272d-41b7-4c67-078de9342492", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("metadata set uuid"), "retired rows carry only uuid + flag");
+		assertNull(line.get("name"), "not a required discriminator; retired rows still omit it");
+		assertEquals("f0ebcb99-7618-41b7-b0bf-8ff93de67b9e", line.get("metadata set uuid"),
+		    "metadata set is not-null on import and must survive the retired short-circuit");
+		assertEquals("org.openmrs.PatientIdentifierType", line.get("metadata class"),
+		    "metadata class is not-null on import and must survive the retired short-circuit");
+		assertEquals("8f6ed8bb-0cbe-4c67-bc45-c5c0320e1324", line.get("metadata uuid"),
+		    "metadata uuid is not-null on import and must survive the retired short-circuit");
 	}
 	
 	@Test

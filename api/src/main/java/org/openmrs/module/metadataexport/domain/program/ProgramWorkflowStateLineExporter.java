@@ -27,6 +27,19 @@ public class ProgramWorkflowStateLineExporter extends MetadataLineExporter<Progr
 	public static final String HEADER_TERMINAL = "Terminal";
 	
 	@Override
+	protected void writeRetiredDiscriminators(ProgramWorkflowState state, ExportLine line) {
+		ProgramWorkflow workflow = state.getProgramWorkflow();
+		if (workflow != null) {
+			line.put(HEADER_WORKFLOW, workflow.getUuid());
+		}
+		
+		Concept concept = state.getConcept();
+		if (concept != null) {
+			line.put(HEADER_STATE_CONCEPT, concept.getUuid());
+		}
+	}
+	
+	@Override
 	public void export(ProgramWorkflowState state, ExportLine line) {
 		ProgramWorkflow workflow = state.getProgramWorkflow();
 		if (workflow != null) {

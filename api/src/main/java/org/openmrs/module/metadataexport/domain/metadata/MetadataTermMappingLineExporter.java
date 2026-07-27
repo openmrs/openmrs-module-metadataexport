@@ -18,6 +18,16 @@ import org.openmrs.module.metadatamapping.MetadataTermMapping;
 public class MetadataTermMappingLineExporter extends MetadataLineExporter<MetadataTermMapping> {
 	
 	@Override
+	protected void writeRetiredDiscriminators(MetadataTermMapping mapping, ExportLine line) {
+		line.put(MetadataTermMappingsLineProcessor.MAPPING_CODE, mapping.getCode());
+		
+		MetadataSource source = mapping.getMetadataSource();
+		if (source != null) {
+			line.put(MetadataTermMappingsLineProcessor.MAPPING_SOURCE, source.getName());
+		}
+	}
+	
+	@Override
 	public void export(MetadataTermMapping mapping, ExportLine line) {
 		line.put(MetadataTermMappingsLineProcessor.MAPPING_CODE, mapping.getCode());
 		
