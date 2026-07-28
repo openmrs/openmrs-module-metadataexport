@@ -143,6 +143,64 @@ class ExportPackageControllerTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
+	void updatePackage_rejectsABodyWithoutEntriesInsteadOfWideningTheExport() throws Exception {
+		ExportPackage saved = saveExportPackage("Scoped");
+		
+		MockHttpServletResponse response = mockMvc.perform(
+		    put(PACKAGES + "/" + saved.getUuid()).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Renamed\"}"))
+		        .andReturn().getResponse();
+		
+		assertEquals(400, response.getStatus());
+		ExportPackage reloaded = service().getPackageByUuid(saved.getUuid());
+		assertEquals("Scoped", reloaded.getName());
+		assertEquals(1, reloaded.getEntries().size());
+	}
+	
+	@Test
+	void createPackage_acceptsAnExplicitlyEmptyEntriesList() throws Exception {
+		MockHttpServletResponse response = mockMvc.perform(
+		    post(PACKAGES).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Everything\",\"entries\":[]}"))
+		        .andReturn().getResponse();
+		
+		assertEquals(201, response.getStatus());
+		JsonNode body = mapper.readTree(response.getContentAsString());
+		assertEquals(0, body.get("entries").size());
+	}
+	
+	@Test
+	void createPackage_dedupesItemUuids() throws Exception {
+		MockHttpServletResponse response = mockMvc
+		        .perform(post(PACKAGES).contentType(MediaType.APPLICATION_JSON).content(
+		            "{\"name\":\"Dedup uuids\",\"entries\":[{\"domain\":\"locations\",\"itemUuids\":[\"x\",\"x\"]}]}"))
+		        .andReturn().getResponse();
+		
+		assertEquals(201, response.getStatus());
+		JsonNode body = mapper.readTree(response.getContentAsString());
+		assertEquals(1, body.get("entries").get(0).get("itemUuids").size());
+		ExportPackage persisted = service().getPackageByUuid(body.get("uuid").asText());
+		assertEquals(Collections.singletonList("x"), persisted.getEntries().get(0).getItemUuids());
+	}
+	
+	@Test
+	void createPackage_returns400ForMalformedJson() throws Exception {
+		assertEquals(400,
+		    mockMvc.perform(post(PACKAGES).contentType(MediaType.APPLICATION_JSON).content("{ this is not json")).andReturn()
+		            .getResponse().getStatus());
+	}
+	
+	@Test
+	void createPackage_returns400ForAnEmptyBody() throws Exception {
+		assertEquals(400,
+		    mockMvc.perform(post(PACKAGES).contentType(MediaType.APPLICATION_JSON)).andReturn().getResponse().getStatus());
+	}
+	
+	@Test
+	void createPackage_returns415ForAnUnsupportedContentType() throws Exception {
+		assertEquals(415, mockMvc.perform(post(PACKAGES).contentType(MediaType.TEXT_PLAIN).content("name=x")).andReturn()
+		        .getResponse().getStatus());
+	}
+	
+	@Test
 	void retirePackage_returns204AndRetires() throws Exception {
 		ExportPackage saved = saveExportPackage("Old");
 		

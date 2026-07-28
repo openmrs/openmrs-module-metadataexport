@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -137,18 +138,19 @@ public class ExportPackageController {
 	}
 	
 	private static void apply(ExportPackageRequest request, ExportPackage exportPackage) {
+		if (request.getEntries() == null) {
+			throw new IllegalArgumentException("entries is required; send an empty list to export every registered domain");
+		}
 		exportPackage.setName(request.getName());
 		exportPackage.setDescription(request.getDescription());
 		exportPackage.getEntries().clear();
-		if (request.getEntries() != null) {
-			for (ExportPackageEntryDto entryDto : request.getEntries()) {
-				ExportPackageEntry entry = new ExportPackageEntry();
-				entry.setDomain(entryDto.getDomain() == null ? null : entryDto.getDomain().trim().toUpperCase(Locale.ROOT));
-				if (entryDto.getItemUuids() != null) {
-					entry.getItemUuids().addAll(entryDto.getItemUuids());
-				}
-				exportPackage.getEntries().add(entry);
+		for (ExportPackageEntryDto entryDto : request.getEntries()) {
+			ExportPackageEntry entry = new ExportPackageEntry();
+			entry.setDomain(entryDto.getDomain() == null ? null : entryDto.getDomain().trim().toUpperCase(Locale.ROOT));
+			if (entryDto.getItemUuids() != null) {
+				entry.getItemUuids().addAll(new LinkedHashSet<>(entryDto.getItemUuids()));
 			}
+			exportPackage.getEntries().add(entry);
 		}
 	}
 	

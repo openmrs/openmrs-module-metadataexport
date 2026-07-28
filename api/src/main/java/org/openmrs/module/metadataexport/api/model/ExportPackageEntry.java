@@ -24,6 +24,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,8 @@ public class ExportPackageEntry extends BaseOpenmrsObject {
 	private String domain;
 	
 	@ElementCollection
-	@CollectionTable(name = "metadataexport_package_entry_item", joinColumns = @JoinColumn(name = "entry_id"))
+	@CollectionTable(name = "metadataexport_package_entry_item", joinColumns = @JoinColumn(name = "entry_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
+	        "entry_id", "item_uuid" }))
 	@Column(name = "item_uuid")
 	private List<String> itemUuids = new ArrayList<>(); // Empty = whole domain
 	

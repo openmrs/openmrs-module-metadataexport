@@ -75,12 +75,17 @@ class ExportBuildControllerTest extends BaseModuleWebContextSensitiveTest {
 		build.setManifestJson("{\"version\":1}");
 		service().saveExportBuild(build);
 		
-		MockHttpServletResponse response = mockMvc.perform(get(BUILDS + "/" + build.getUuid())).andReturn().getResponse();
+		MockHttpServletResponse response = mockMvc
+		        .perform(get("/openmrs" + BUILDS + "/" + build.getUuid()).contextPath("/openmrs")).andReturn().getResponse();
 		
 		assertEquals(200, response.getStatus());
 		JsonNode body = mapper.readTree(response.getContentAsString());
 		assertEquals(1, body.get("manifest").get("version").asInt());
-		assertTrue(body.get("downloadUrl").asText().endsWith("/builds/" + build.getUuid() + "/download"));
+		String downloadUrl = body.get("downloadUrl").asText();
+		assertTrue(
+		    downloadUrl
+		            .contains("/openmrs/ws" + MetadataExportRestConstants.BASE + "/builds/" + build.getUuid() + "/download"),
+		    "downloadUrl must include the servlet context path: " + downloadUrl);
 	}
 	
 	@Test

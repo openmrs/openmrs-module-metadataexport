@@ -12,7 +12,6 @@ package org.openmrs.module.metadataexport.web.controller.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -23,5 +22,6 @@ public class ExportPackageRequest {
 	
 	private String description;
 	
-	private List<ExportPackageEntryDto> entries = new ArrayList<>();
+	// null (field absent) is rejected on write; an explicit [] means every registered domain
+	private List<ExportPackageEntryDto> entries;
 }

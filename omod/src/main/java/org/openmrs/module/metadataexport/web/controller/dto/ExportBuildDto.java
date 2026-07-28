@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmrs.module.metadataexport.api.model.ExportBuild;
 import org.openmrs.module.metadataexport.api.model.ExportStatus;
 import org.openmrs.module.metadataexport.web.controller.MetadataExportRestConstants;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Date;
 
@@ -56,7 +57,8 @@ public class ExportBuildDto {
 		dto.setDateCompleted(build.getDateCompleted());
 		dto.setErrorMessage(build.getErrorMessage());
 		if (build.getExportStatus() == ExportStatus.COMPLETED) {
-			dto.setDownloadUrl("/ws" + MetadataExportRestConstants.BASE + "/builds/" + build.getUuid() + "/download");
+			dto.setDownloadUrl(ServletUriComponentsBuilder.fromCurrentContextPath().path("/ws")
+			        .path(MetadataExportRestConstants.BASE).path("/builds/" + build.getUuid() + "/download").toUriString());
 		}
 		return dto;
 	}
