@@ -25,6 +25,9 @@ public class MetadataTermMappingLineExporter extends MetadataLineExporter<Metada
 		if (source != null) {
 			line.put(MetadataTermMappingsLineProcessor.MAPPING_SOURCE, source.getName());
 		}
+		
+		line.put(MetadataTermMappingsLineProcessor.METADATA_CLASS_NAME, mapping.getMetadataClass());
+		line.put(MetadataTermMappingsLineProcessor.METADATA_UUID, mapping.getMetadataUuid());
 	}
 	
 	@Override

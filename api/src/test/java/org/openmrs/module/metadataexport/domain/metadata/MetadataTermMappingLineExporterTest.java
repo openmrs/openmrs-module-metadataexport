@@ -60,12 +60,12 @@ class MetadataTermMappingLineExporterTest {
 		
 		assertEquals("5f84b986-232d-475b-aad2-2094306bd655", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertEquals("emr.extraPatientIdentifierTypes", line.get("mapping code"),
-		    "mapping code is not-null on import and must survive the retired short-circuit");
-		assertEquals("org.openmrs.module.emrapi", line.get("mapping source"),
-		    "mapping source is not-null on import and must survive the retired short-circuit");
-		assertNull(line.get("metadata class name"), "not a required discriminator; retired rows still omit it");
-		assertNull(line.get("metadata uuid"), "not a required discriminator; retired rows still omit it");
+		// MetadataTermMappingsLineProcessor.fill reads all four with get(header, true), so every one
+		// must survive the retired short-circuit or the row fails (or bootstraps blank) on import.
+		assertEquals("emr.extraPatientIdentifierTypes", line.get("mapping code"));
+		assertEquals("org.openmrs.module.emrapi", line.get("mapping source"));
+		assertEquals("org.openmrs.module.metadatamapping.MetadataSet", line.get("metadata class name"));
+		assertEquals("05a29f94-c0ed-11e2-94be-8c13b969e334", line.get("metadata uuid"));
 	}
 	
 	@Test
