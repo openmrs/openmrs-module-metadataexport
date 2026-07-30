@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-@OpenmrsProfile(modules = { "metadatamapping:*" })
+@OpenmrsProfile(modules = { "metadatamapping:1.6.0" })
 public class MetadataTermMappingDomainExporter extends CsvDomainExporter<MetadataTermMapping> {
 	
 	@Override

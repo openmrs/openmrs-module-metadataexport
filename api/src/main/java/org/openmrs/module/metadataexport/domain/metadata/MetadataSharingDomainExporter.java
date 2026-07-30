@@ -37,7 +37,7 @@ import java.util.Collections;
  */
 @Slf4j
 @Component
-@OpenmrsProfile(modules = { "metadatasharing:*" })
+@OpenmrsProfile(modules = { "metadatasharing:1.2.2" })
 public class MetadataSharingDomainExporter implements DomainExporter<ExportedPackage> {
 	
 	@Override
