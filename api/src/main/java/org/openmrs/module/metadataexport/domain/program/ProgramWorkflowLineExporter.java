@@ -22,6 +22,16 @@ public class ProgramWorkflowLineExporter extends MetadataLineExporter<ProgramWor
 	public static final String HEADER_WORKFLOW_CONCEPT = "workflow concept";
 	
 	@Override
+	protected void writeRetiredDiscriminators(ProgramWorkflow workflow, ExportLine line) {
+		// ProgramWorkflowLineProcessor.fill reads "program" with get(header, true) and then throws
+		// if it can't be resolved, so a retired workflow must still carry its program uuid to import.
+		Program program = workflow.getProgram();
+		if (program != null) {
+			line.put(HEADER_PROGRAM, program.getUuid());
+		}
+	}
+	
+	@Override
 	public void export(ProgramWorkflow workflow, ExportLine line) {
 		Program program = workflow.getProgram();
 		if (program != null) {
