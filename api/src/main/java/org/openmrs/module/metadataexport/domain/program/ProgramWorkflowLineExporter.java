@@ -23,11 +23,17 @@ public class ProgramWorkflowLineExporter extends MetadataLineExporter<ProgramWor
 	
 	@Override
 	protected void writeRetiredDiscriminators(ProgramWorkflow workflow, ExportLine line) {
-		// ProgramWorkflowLineProcessor.fill reads "program" with get(header, true) and then throws
-		// if it can't be resolved, so a retired workflow must still carry its program uuid to import.
+		// A retired workflow must still carry the columns its import needs to bootstrap-and-save a new
+		// row: "program" is read with get(header, true) and throws if unresolved, and "workflow concept"
+		// backs the not-null program_workflow.concept_id, so both must survive the retired short-circuit.
 		Program program = workflow.getProgram();
 		if (program != null) {
 			line.put(HEADER_PROGRAM, program.getUuid());
+		}
+		
+		Concept concept = workflow.getConcept();
+		if (concept != null) {
+			line.put(HEADER_WORKFLOW_CONCEPT, concept.getUuid());
 		}
 	}
 	
