@@ -70,6 +70,11 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 	}
 	
 	@Test
+	void savePackage_rejectsADomainWithoutARegisteredExporter() {
+		assertThrows(ValidationException.class, () -> service.saveExportPackage(packageWith("Forms pkg", "HTML_FORMS")));
+	}
+	
+	@Test
 	void savePackage_allowsResavingUnderItsOwnName() {
 		ExportPackage saved = service.saveExportPackage(packageWith("Same", Domain.LOCATIONS.name()));
 		saved.setDescription("updated");

@@ -24,10 +24,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import java.util.Date;
 
 @Entity
-@Table(name = "metadataexport_build")
+@Table(name = "metadataexport_build", uniqueConstraints = @UniqueConstraint(columnNames = { "package_id", "version" }))
 @Getter
 @Setter
 public class ExportBuild extends BaseOpenmrsData {

@@ -9,6 +9,8 @@
  */
 package org.openmrs.module.metadataexport.api;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -96,6 +98,39 @@ class ExportJobRunnerTest extends BaseModuleContextSensitiveTest {
 		assertEquals(2, second.getVersion());
 		assertEquals(ExportStatus.FAILED, second.getExportStatus());
 		assertTrue(second.getErrorMessage().contains("daemon"), second.getErrorMessage());
+	}
+	
+	@Test
+	void getLatestBuild_returnsTheNewestVersionOnly() {
+		ExportPackage exportPackage = savePackage("History", Domain.LOCATIONS.name());
+		ExportBuild first = queuedBuild(exportPackage);
+		first.setExportStatus(ExportStatus.COMPLETED);
+		service.saveExportBuild(first);
+		ExportBuild second = new ExportBuild();
+		second.setExportPackage(exportPackage);
+		second.setVersion(2);
+		second.setExportStatus(ExportStatus.FAILED);
+		service.saveExportBuild(second);
+		
+		ExportBuild latest = service.getLatestBuild(exportPackage);
+		
+		assertEquals(2, latest.getVersion());
+		assertEquals(ExportStatus.FAILED, latest.getExportStatus());
+	}
+	
+	@Test
+	void saveExportBuild_enforcesOneRowPerPackageAndVersion() {
+		ExportPackage exportPackage = savePackage("Constrained", Domain.LOCATIONS.name());
+		queuedBuild(exportPackage);
+		
+		ExportBuild duplicate = new ExportBuild();
+		duplicate.setExportPackage(exportPackage);
+		duplicate.setVersion(1);
+		duplicate.setExportStatus(ExportStatus.QUEUED);
+		
+		RuntimeException e = assertThrows(RuntimeException.class, () -> service.saveExportBuild(duplicate));
+		assertTrue(ExceptionUtils.indexOfType(e, ConstraintViolationException.class) != -1,
+		    "the duplicate must surface as the violation trigger() translates to a 409: " + e);
 	}
 	
 	private ExportPackage savePackage(String name, String domain, String... itemUuids) {

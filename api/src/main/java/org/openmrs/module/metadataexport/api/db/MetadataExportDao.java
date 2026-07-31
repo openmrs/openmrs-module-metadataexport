@@ -30,6 +30,8 @@ public interface MetadataExportDao {
 	
 	List<ExportBuild> getBuilds(ExportPackage exportPackage);
 	
+	ExportBuild getLatestBuild(ExportPackage exportPackage);
+	
 	List<ExportBuild> getActiveBuilds();
 	
 }

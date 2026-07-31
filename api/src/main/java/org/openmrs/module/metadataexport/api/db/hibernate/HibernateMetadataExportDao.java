@@ -98,6 +98,16 @@ public class HibernateMetadataExportDao implements MetadataExportDao {
 	}
 	
 	@Override
+	public ExportBuild getLatestBuild(ExportPackage exportPackage) {
+		TypedQuery<ExportBuild> query = sessionFactory.getCurrentSession().createQuery(
+		    "from ExportBuild build where build.exportPackage = :exportPackage order by build.version desc",
+		    ExportBuild.class);
+		query.setParameter("exportPackage", exportPackage);
+		query.setMaxResults(1);
+		return query.getResultStream().findFirst().orElse(null);
+	}
+	
+	@Override
 	public List<ExportBuild> getActiveBuilds() {
 		TypedQuery<ExportBuild> query = sessionFactory.getCurrentSession()
 		        .createQuery("from ExportBuild build where build.exportStatus in (:statuses)", ExportBuild.class);

@@ -94,6 +94,12 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
+	public ExportBuild getLatestBuild(ExportPackage exportPackage) {
+		return metadataExportDao.getLatestBuild(exportPackage);
+	}
+	
+	@Override
 	public ExportBuild runBuild(String buildUuid) {
 		ExportBuild build = metadataExportDao.getBuildByUuid(buildUuid);
 		if (build == null) {

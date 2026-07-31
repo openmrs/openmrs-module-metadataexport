@@ -155,8 +155,7 @@ public class ExportPackageController {
 	}
 	
 	private ExportBuild latestBuild(ExportPackage exportPackage) {
-		List<ExportBuild> builds = service().getBuilds(exportPackage.getUuid());
-		return builds.isEmpty() ? null : builds.get(0);
+		return service().getLatestBuild(exportPackage);
 	}
 	
 	private static MetadataExportService service() {

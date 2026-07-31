@@ -32,6 +32,8 @@ public interface MetadataExportService extends OpenmrsService {
 	
 	List<ExportBuild> getBuilds(String packageUuid);
 	
+	ExportBuild getLatestBuild(ExportPackage exportPackage);
+	
 	ExportBuild runBuild(String buildUuid);
 	
 	int failStrandedBuilds(String reason);

@@ -12,9 +12,11 @@ package org.openmrs.module.metadataexport.api.validator;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.annotation.Handler;
+import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.api.db.MetadataExportDao;
 import org.openmrs.module.metadataexport.api.model.ExportPackage;
 import org.openmrs.module.metadataexport.api.model.ExportPackageEntry;
+import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -25,6 +27,8 @@ import org.springframework.validation.Validator;
 public class ExportPackageValidator implements Validator {
 	
 	private final MetadataExportDao metadataExportDao;
+	
+	private final DomainExporterRegistry domainExporterRegistry;
 	
 	@Override
 	public boolean supports(Class<?> clazz) {
@@ -48,7 +52,11 @@ public class ExportPackageValidator implements Validator {
 		for (int i = 0; i < exportPackage.getEntries().size(); i++) {
 			ExportPackageEntry entry = exportPackage.getEntries().get(i);
 			try {
-				entry.getDomainEnum();
+				Domain domain = entry.getDomainEnum();
+				if (domainExporterRegistry.forDomain(domain) == null) {
+					errors.rejectValue("entries[" + i + "].domain", "metadataexport.package.entry.domain.unsupported",
+					    "No exporter supports domain '" + entry.getDomain() + "'");
+				}
 			}
 			catch (IllegalArgumentException | NullPointerException e) {
 				errors.rejectValue("entries[" + i + "].domain", "metadataexport.package.entry.domain.unknown",
