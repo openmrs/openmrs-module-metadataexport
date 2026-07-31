@@ -37,6 +37,16 @@ public class ProgramWorkflowStateLineExporter extends MetadataLineExporter<Progr
 		if (concept != null) {
 			line.put(HEADER_STATE_CONCEPT, concept.getUuid());
 		}
+		
+		// Initial and Terminal are read with get(header, true), so the columns must exist in the file
+		// or import throws for every row; carry them (emit when true, blank = false) on retired rows too.
+		if (BooleanUtils.isTrue(state.getInitial())) {
+			line.put(HEADER_INITIAL, "true");
+		}
+		
+		if (BooleanUtils.isTrue(state.getTerminal())) {
+			line.put(HEADER_TERMINAL, "true");
+		}
 	}
 	
 	@Override

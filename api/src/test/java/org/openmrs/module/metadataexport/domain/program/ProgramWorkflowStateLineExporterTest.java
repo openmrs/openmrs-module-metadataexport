@@ -82,11 +82,12 @@ class ProgramWorkflowStateLineExporterTest {
 		
 		assertEquals("cfa24690-2700-102b-80cb-0017a47871b2", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertEquals("extended-discharge-workflow-uuid", line.get("Workflow"),
-		    "workflow is not-null on import and must survive the retired short-circuit");
-		assertEquals("moribund-concept-uuid", line.get("State concept"),
-		    "state concept is not-null on import and must survive the retired short-circuit");
-		assertNull(line.get("Initial"), "not a required discriminator; retired rows still omit it");
+		// workflow/state concept back not-null columns; Initial/Terminal are get(header, true) required
+		// columns — all must survive the retired short-circuit.
+		assertEquals("extended-discharge-workflow-uuid", line.get("Workflow"));
+		assertEquals("moribund-concept-uuid", line.get("State concept"));
+		assertEquals("true", line.get("Initial"));
+		assertNull(line.get("Terminal"), "emit-when-true: this state is not terminal, so the cell stays blank");
 	}
 	
 	@Test
