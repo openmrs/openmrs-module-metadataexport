@@ -43,7 +43,8 @@ public class ExportPackageValidator implements Validator {
 			errors.rejectValue("name", "metadataexport.package.name.required", "An export package requires a name");
 		} else {
 			ExportPackage sameName = metadataExportDao.getPackageByName(exportPackage.getName());
-			if (sameName != null && !sameName.getUuid().equals(exportPackage.getUuid())) {
+			if (sameName != null && !Boolean.TRUE.equals(sameName.getRetired())
+			        && !sameName.getUuid().equals(exportPackage.getUuid())) {
 				errors.rejectValue("name", "metadataexport.package.name.duplicate",
 				    "An export package with this name already exists");
 			}

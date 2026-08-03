@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,6 +75,19 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 		assertThrows(ValidationException.class, () -> service.saveExportPackage(packageWith("Forms pkg", "HTML_FORMS")));
 	}
 	
+	@Test
+	void savePackage_allowsReusingTheNameOfARetiredPackage() {
+		ExportPackage old = service.saveExportPackage(packageWith("Reused name", Domain.LOCATIONS.name()));
+		service.retireExportPackage(old, "obsolete");
+		// two separate requests in reality; in one test transaction the retire must be flushed
+		// before the name lookup can see it
+		Context.flushSession();
+
+		ExportPackage recreated = service.saveExportPackage(packageWith("Reused name", Domain.LOCATIONS.name()));
+
+		assertNotEquals(old.getUuid(), recreated.getUuid());
+	}
+
 	@Test
 	void savePackage_allowsResavingUnderItsOwnName() {
 		ExportPackage saved = service.saveExportPackage(packageWith("Same", Domain.LOCATIONS.name()));
