@@ -53,7 +53,7 @@ class ProgramWorkflowStateLineExporterTest {
 	}
 	
 	@Test
-	void omitsInitialAndTerminalColumnsWhenFalse() {
+	void emitsFalseForNonInitialNonTerminalState() {
 		ProgramWorkflowState state = new ProgramWorkflowState();
 		state.setUuid("cfa244b0-2700-102b-80cb-0017a47871b2");
 		state.setProgramWorkflow(workflow("extended-discharge-workflow-uuid"));
@@ -64,8 +64,9 @@ class ProgramWorkflowStateLineExporterTest {
 		ExportLine line = new ExportLine();
 		new ProgramWorkflowStateLineExporter().writeLine(state, line);
 		
-		assertNull(line.get("Initial"));
-		assertNull(line.get("Terminal"));
+		// Initial/Terminal are emitted unconditionally so their required columns always exist in the file.
+		assertEquals("false", line.get("Initial"));
+		assertEquals("false", line.get("Terminal"));
 	}
 	
 	@Test
@@ -87,7 +88,7 @@ class ProgramWorkflowStateLineExporterTest {
 		assertEquals("extended-discharge-workflow-uuid", line.get("Workflow"));
 		assertEquals("moribund-concept-uuid", line.get("State concept"));
 		assertEquals("true", line.get("Initial"));
-		assertNull(line.get("Terminal"), "emit-when-true: this state is not terminal, so the cell stays blank");
+		assertEquals("false", line.get("Terminal"), "not terminal, but the column is still emitted as false");
 	}
 	
 	@Test

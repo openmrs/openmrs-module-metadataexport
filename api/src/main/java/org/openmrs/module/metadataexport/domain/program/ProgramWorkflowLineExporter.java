@@ -39,14 +39,8 @@ public class ProgramWorkflowLineExporter extends MetadataLineExporter<ProgramWor
 	
 	@Override
 	public void export(ProgramWorkflow workflow, ExportLine line) {
-		Program program = workflow.getProgram();
-		if (program != null) {
-			line.put(HEADER_PROGRAM, program.getUuid());
-		}
-		
-		Concept concept = workflow.getConcept();
-		if (concept != null) {
-			line.put(HEADER_WORKFLOW_CONCEPT, concept.getUuid());
-		}
+		// Every column this domain exports is required on import, so a live row carries exactly the same
+		// columns as a retired one.
+		writeRetiredDiscriminators(workflow, line);
 	}
 }
