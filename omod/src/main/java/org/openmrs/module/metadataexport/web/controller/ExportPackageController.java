@@ -111,8 +111,13 @@ public class ExportPackageController {
 	@ResponseBody
 	public ResponseEntity<?> triggerBuild(@PathVariable String uuid) {
 		Context.requirePrivilege(MetadataExportRestConstants.MANAGE_PRIVILEGE);
-		if (service().getPackageByUuid(uuid) == null) {
+		ExportPackage exportPackage = service().getPackageByUuid(uuid);
+		if (exportPackage == null) {
 			return ResponseEntity.notFound().build();
+		}
+		if (Boolean.TRUE.equals(exportPackage.getRetired())) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+			        .body(Collections.singletonMap("error", "Package is retired: " + exportPackage.getRetireReason()));
 		}
 		try {
 			ExportBuild queued = exportJobRunner.trigger(uuid);

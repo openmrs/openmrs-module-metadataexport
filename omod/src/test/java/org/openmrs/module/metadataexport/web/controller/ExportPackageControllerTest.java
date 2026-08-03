@@ -240,6 +240,18 @@ class ExportPackageControllerTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	@Test
+	void triggerBuild_returns409ForARetiredPackage() throws Exception {
+		ExportPackage saved = saveExportPackage("Shelved");
+		service().retireExportPackage(saved, "obsolete");
+		
+		MockHttpServletResponse response = mockMvc.perform(post(PACKAGES + "/" + saved.getUuid() + "/builds")).andReturn()
+		        .getResponse();
+		
+		assertEquals(409, response.getStatus());
+		assertTrue(response.getContentAsString().contains("obsolete"), response.getContentAsString());
+	}
+	
+	@Test
 	void triggerBuild_returns404ForUnknownPackage() throws Exception {
 		assertEquals(404, mockMvc.perform(post(PACKAGES + "/no-such-uuid/builds")).andReturn().getResponse().getStatus());
 	}
