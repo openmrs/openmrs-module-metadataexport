@@ -53,7 +53,7 @@ class ProgramWorkflowStateLineExporterTest {
 	}
 	
 	@Test
-	void omitsInitialAndTerminalColumnsWhenFalse() {
+	void emitsFalseForNonInitialNonTerminalState() {
 		ProgramWorkflowState state = new ProgramWorkflowState();
 		state.setUuid("cfa244b0-2700-102b-80cb-0017a47871b2");
 		state.setProgramWorkflow(workflow("extended-discharge-workflow-uuid"));
@@ -64,12 +64,13 @@ class ProgramWorkflowStateLineExporterTest {
 		ExportLine line = new ExportLine();
 		new ProgramWorkflowStateLineExporter().writeLine(state, line);
 		
-		assertNull(line.get("Initial"));
-		assertNull(line.get("Terminal"));
+		// Initial/Terminal are emitted unconditionally so their required columns always exist in the file.
+		assertEquals("false", line.get("Initial"));
+		assertEquals("false", line.get("Terminal"));
 	}
 	
 	@Test
-	void retiredStateEmitsUuidAndFlagOnly() {
+	void retiredStateEmitsUuidFlagAndDiscriminators() {
 		ProgramWorkflowState state = new ProgramWorkflowState();
 		state.setUuid("cfa24690-2700-102b-80cb-0017a47871b2");
 		state.setProgramWorkflow(workflow("extended-discharge-workflow-uuid"));
@@ -82,9 +83,12 @@ class ProgramWorkflowStateLineExporterTest {
 		
 		assertEquals("cfa24690-2700-102b-80cb-0017a47871b2", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("Workflow"), "retired rows carry only uuid + flag");
-		assertNull(line.get("State concept"), "retired rows carry only uuid + flag");
-		assertNull(line.get("Initial"), "retired rows carry only uuid + flag");
+		// workflow/state concept back not-null columns; Initial/Terminal are get(header, true) required
+		// columns — all must survive the retired short-circuit.
+		assertEquals("extended-discharge-workflow-uuid", line.get("Workflow"));
+		assertEquals("moribund-concept-uuid", line.get("State concept"));
+		assertEquals("true", line.get("Initial"));
+		assertEquals("false", line.get("Terminal"), "not terminal, but the column is still emitted as false");
 	}
 	
 	@Test

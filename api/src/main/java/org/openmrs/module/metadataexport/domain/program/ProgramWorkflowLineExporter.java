@@ -22,7 +22,10 @@ public class ProgramWorkflowLineExporter extends MetadataLineExporter<ProgramWor
 	public static final String HEADER_WORKFLOW_CONCEPT = "workflow concept";
 	
 	@Override
-	public void export(ProgramWorkflow workflow, ExportLine line) {
+	protected void writeRetiredDiscriminators(ProgramWorkflow workflow, ExportLine line) {
+		// A retired workflow must still carry the columns its import needs to bootstrap-and-save a new
+		// row: "program" is read with get(header, true) and throws if unresolved, and "workflow concept"
+		// backs the not-null program_workflow.concept_id, so both must survive the retired short-circuit.
 		Program program = workflow.getProgram();
 		if (program != null) {
 			line.put(HEADER_PROGRAM, program.getUuid());
@@ -32,5 +35,12 @@ public class ProgramWorkflowLineExporter extends MetadataLineExporter<ProgramWor
 		if (concept != null) {
 			line.put(HEADER_WORKFLOW_CONCEPT, concept.getUuid());
 		}
+	}
+	
+	@Override
+	public void export(ProgramWorkflow workflow, ExportLine line) {
+		// Every column this domain exports is required on import, so a live row carries exactly the same
+		// columns as a retired one.
+		writeRetiredDiscriminators(workflow, line);
 	}
 }

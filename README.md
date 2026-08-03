@@ -54,12 +54,20 @@ Currently supported domains:
 * Program workflow states (workflow, state concept, initial, terminal) — the referenced workflow and
   state concept are pulled in via cross domain closure
 * Procedure types (name, description) — requires the emrapi module (3.4+)
+* Metadata sets (name, description) — requires the metadatamapping module
+* Metadata set members (name, description, sort weight, metadata class, metadata uuid, metadata
+  set uuid) — the owning metadata set and the referenced metadata item are pulled in via
+  cross-domain closure; requires the metadatamapping module
+* Metadata term mappings (mapping code, mapping source, metadata class name, metadata uuid) — the
+  referenced metadata item is pulled in via cross-domain closure; requires the metadatamapping
+  module
+* Metadata sharing (raw zip packages already built and published through the metadatasharing
+  module's own UI, copied out as-is; not CSV/XML — one file per package) — requires the
+  metadatasharing module
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
-* Metadata sharing / mapping (metadatasharing, metadata sets, metadata set members, metadata
-  term mappings)
 * Identifier generation (idgen, auto-generation options)
 * Address hierarchy (address hierarchy entries, location tag maps)
 * Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)

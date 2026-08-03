@@ -27,7 +27,7 @@ public class ProgramWorkflowStateLineExporter extends MetadataLineExporter<Progr
 	public static final String HEADER_TERMINAL = "Terminal";
 	
 	@Override
-	public void export(ProgramWorkflowState state, ExportLine line) {
+	protected void writeRetiredDiscriminators(ProgramWorkflowState state, ExportLine line) {
 		ProgramWorkflow workflow = state.getProgramWorkflow();
 		if (workflow != null) {
 			line.put(HEADER_WORKFLOW, workflow.getUuid());
@@ -38,12 +38,16 @@ public class ProgramWorkflowStateLineExporter extends MetadataLineExporter<Progr
 			line.put(HEADER_STATE_CONCEPT, concept.getUuid());
 		}
 		
-		if (BooleanUtils.isTrue(state.getInitial())) {
-			line.put(HEADER_INITIAL, "true");
-		}
-		
-		if (BooleanUtils.isTrue(state.getTerminal())) {
-			line.put(HEADER_TERMINAL, "true");
-		}
+		// Initial and Terminal are read with get(header, true), so the columns must always be present or
+		// import throws for every row; emit them unconditionally as true/false rather than blank-for-false.
+		line.put(HEADER_INITIAL, Boolean.toString(BooleanUtils.isTrue(state.getInitial())));
+		line.put(HEADER_TERMINAL, Boolean.toString(BooleanUtils.isTrue(state.getTerminal())));
+	}
+	
+	@Override
+	public void export(ProgramWorkflowState state, ExportLine line) {
+		// Every column this domain exports is required on import, so a live row carries exactly the same
+		// columns as a retired one.
+		writeRetiredDiscriminators(state, line);
 	}
 }
