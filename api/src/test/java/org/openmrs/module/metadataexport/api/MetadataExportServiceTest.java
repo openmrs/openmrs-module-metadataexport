@@ -82,12 +82,12 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 		// two separate requests in reality; in one test transaction the retire must be flushed
 		// before the name lookup can see it
 		Context.flushSession();
-
+		
 		ExportPackage recreated = service.saveExportPackage(packageWith("Reused name", Domain.LOCATIONS.name()));
-
+		
 		assertNotEquals(old.getUuid(), recreated.getUuid());
 	}
-
+	
 	@Test
 	void savePackage_allowsResavingUnderItsOwnName() {
 		ExportPackage saved = service.saveExportPackage(packageWith("Same", Domain.LOCATIONS.name()));

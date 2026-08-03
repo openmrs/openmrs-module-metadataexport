@@ -47,8 +47,8 @@ public class HibernateMetadataExportDao implements MetadataExportDao {
 	
 	@Override
 	public ExportPackage getPackageByName(String name) {
-		TypedQuery<ExportPackage> query = sessionFactory.getCurrentSession().createQuery(
-		    "from ExportPackage pkg where pkg.name = :name and pkg.retired = false", ExportPackage.class);
+		TypedQuery<ExportPackage> query = sessionFactory.getCurrentSession()
+		        .createQuery("from ExportPackage pkg where pkg.name = :name and pkg.retired = false", ExportPackage.class);
 		query.setParameter("name", name);
 		return query.getResultStream().findFirst().orElse(null);
 	}
