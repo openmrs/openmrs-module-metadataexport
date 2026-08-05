@@ -49,7 +49,7 @@ public class ExportPackageEntry extends BaseOpenmrsObject {
 	@ElementCollection
 	@CollectionTable(name = "metadataexport_package_entry_item", joinColumns = @JoinColumn(name = "entry_id"), uniqueConstraints = @UniqueConstraint(columnNames = {
 	        "entry_id", "item_uuid" }))
-	@Column(name = "item_uuid")
+	@Column(name = "item_uuid", length = 38, nullable = false)
 	private List<String> itemUuids = new ArrayList<>(); // Empty = whole domain
 	
 	public Domain getDomainEnum() {

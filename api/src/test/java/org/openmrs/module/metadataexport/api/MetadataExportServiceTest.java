@@ -76,6 +76,20 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 	}
 	
 	@Test
+	void savePackage_rejectsAnOverlongItemUuid() {
+		String overlong = String.join("", java.util.Collections.nCopies(61, "x"));
+		
+		assertThrows(ValidationException.class,
+		    () -> service.saveExportPackage(packageWith("Overlong", Domain.LOCATIONS.name(), overlong)));
+	}
+	
+	@Test
+	void savePackage_rejectsANullItemUuid() {
+		assertThrows(ValidationException.class,
+		    () -> service.saveExportPackage(packageWith("Null uuid", Domain.LOCATIONS.name(), (String) null)));
+	}
+	
+	@Test
 	void savePackage_allowsReusingTheNameOfARetiredPackage() {
 		ExportPackage old = service.saveExportPackage(packageWith("Reused name", Domain.LOCATIONS.name()));
 		service.retireExportPackage(old, "obsolete");

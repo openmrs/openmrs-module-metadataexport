@@ -63,6 +63,13 @@ public class ExportPackageValidator implements Validator {
 				errors.rejectValue("entries[" + i + "].domain", "metadataexport.package.entry.domain.unknown",
 				    "Unknown domain '" + entry.getDomain() + "'");
 			}
+			for (String itemUuid : entry.getItemUuids()) {
+				if (StringUtils.isBlank(itemUuid) || itemUuid.length() > 38) {
+					errors.rejectValue("entries[" + i + "].itemUuids", "metadataexport.package.entry.itemUuid.invalid",
+					    "Item uuids must be non-blank and at most 38 characters");
+					break;
+				}
+			}
 		}
 	}
 }
