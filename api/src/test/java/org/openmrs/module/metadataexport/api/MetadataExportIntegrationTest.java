@@ -12,18 +12,13 @@ package org.openmrs.module.metadataexport.api;
 import com.opencsv.CSVReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
-import org.openmrs.module.metadataexport.domain.concept.ConceptDomainExporter;
-import org.openmrs.module.metadataexport.domain.concept.ConceptSetDomainExporter;
-import org.openmrs.module.metadataexport.domain.encounter.EncounterTypeDomainExporter;
-import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
-import org.openmrs.module.metadataexport.api.impl.ExporterServiceImpl;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,8 +35,7 @@ class MetadataExportIntegrationTest extends BaseModuleContextSensitiveTest {
 	
 	@Test
 	public void export_writesEncounterTypesFromTheRealDatabase(@TempDir File outDir) throws Exception {
-		ExporterService service = new ExporterServiceImpl(
-		        new DomainExporterRegistry(Collections.singletonList(new EncounterTypeDomainExporter())));
+		ExporterService service = Context.getService(ExporterService.class);
 		
 		service.export(outDir, Collections.singletonList(Domain.ENCOUNTER_TYPES));
 		
@@ -69,8 +63,7 @@ class MetadataExportIntegrationTest extends BaseModuleContextSensitiveTest {
 	
 	@Test
 	public void export_pullsSetMembershipRowsWhenOnlyConceptsAreSelected(@TempDir File outDir) throws Exception {
-		ExporterService service = new ExporterServiceImpl(
-		        new DomainExporterRegistry(Arrays.asList(new ConceptDomainExporter(), new ConceptSetDomainExporter())));
+		ExporterService service = Context.getService(ExporterService.class);
 		
 		service.export(outDir, Collections.singletonList(Domain.CONCEPTS));
 		

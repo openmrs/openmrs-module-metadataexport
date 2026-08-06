@@ -9,7 +9,9 @@
  */
 package org.openmrs.module.metadataexport.api;
 
+import org.openmrs.OpenmrsObject;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.select.ExportManifest;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,4 +26,7 @@ public interface ExporterService {
 	 * itself.
 	 */
 	void export(File outDir, Collection<Domain> domains) throws IOException;
+	
+	ExportManifest exportSeeds(File outDir, Collection<? extends OpenmrsObject> seeds) throws IOException;
+	
 }

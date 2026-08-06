@@ -99,6 +99,65 @@ The export is built in two separated stages:
 2. Export. Each `DomainExporter` writes its bucket in its own format. The service holds a registry
    of these and contains no per-domain logic.
 
+Export packages (REST)
+----------------------
+Besides the export-everything-on-startup behaviour, named *export packages* can be defined and
+built over REST. A package describes what to export — a list of entries, each an Initializer
+domain optionally narrowed to specific item uuids (empty list = the whole domain) — so e.g. a
+"Site A locations" package exports just one site's locations (plus dependency closure). A
+package with *no entries at all* exports every registered domain; `GET /domains` lists which
+domains are registered on the server. Package
+definitions are stored in the database; every build of a package gets an incrementing version, a
+status (`QUEUED` → `RUNNING` → `COMPLETED`/`FAILED`), and a downloadable zip containing the
+`configuration/` tree plus a `package.json` manifest recording exactly what was exported.
+
+Builds run asynchronously on a daemon thread; trigger, then poll. Endpoints (all under
+`/openmrs/ws/rest/v1/metadataexport`, plain Spring controllers — the webservices.rest module is
+not required, but its authentication filter covers these URLs when it is installed):
+
+| Method | Path                         | Action                                     |
+|--------|------------------------------|--------------------------------------------|
+| GET    | `/domains`                   | list the registered, exportable domains    |
+| GET    | `/packages?includeRetired=`  | list packages                              |
+| POST   | `/packages`                  | create a package (201)                     |
+| GET    | `/packages/{uuid}`           | fetch one, incl. its latest build          |
+| PUT    | `/packages/{uuid}`           | update name/description/entries            |
+| DELETE | `/packages/{uuid}?reason=`   | retire (204)                               |
+| POST   | `/packages/{uuid}/builds`    | trigger a build (202; 409 if one is active)|
+| GET    | `/packages/{uuid}/builds`    | build history, newest first                |
+| GET    | `/builds/{uuid}`             | poll status, incl. manifest when done      |
+| GET    | `/builds/{uuid}/download`    | the zip (409 unless COMPLETED, 410 if gone)|
+
+Example flow:
+
+```bash
+# define a package scoped to two locations
+curl -u admin:pw -H 'Content-Type: application/json' -d '{
+  "name": "Site A locations",
+  "description": "Everything Site A needs",
+  "entries": [ { "domain": "LOCATIONS", "itemUuids": ["<uuid-1>", "<uuid-2>"] } ]
+}' http://localhost:8080/openmrs/ws/rest/v1/metadataexport/packages
+
+# trigger a build, poll until COMPLETED, then download
+curl -u admin:pw -X POST .../packages/<pkg-uuid>/builds
+curl -u admin:pw .../builds/<build-uuid>
+curl -u admin:pw -OJ .../builds/<build-uuid>/download
+```
+
+Reads require the `Get Metadata Export Packages` privilege; creating, updating, retiring,
+triggering and downloading require `Manage Metadata Export Packages`. The curl examples use
+basic auth, which is provided by webservices.rest's filter — without that module, authenticate
+with a session instead.
+
+If the server restarts mid-build, the activator marks any stranded QUEUED/RUNNING builds as
+FAILED on startup so they never block future builds of their package.
+
+Zips and their unzipped working copies accumulate under
+`<app data dir>/metadataexport/packages/<package-uuid>/<version>/` — there is no retention policy
+yet, so clean up old builds manually if disk space matters. Note also that these endpoints are
+session-authenticated but not CSRF-protected (nothing under `/ws/*` is); treat them as an
+admin-only API.
+
 Requirements
 ------------
 The Initializer module must be installed (declared in `config.xml` `require_modules`); this module
@@ -201,8 +260,8 @@ Known limitations
 -----------------
 * Concept description UUIDs and index-term names are not round-trip-able (Initializer
   format/loader limitations), so they are not preserved or re-loadable.
-* Selection currently exports all instances of the registered domains; instance-level seed
-  selection is not yet exposed.
+* The startup export always exports all instances of the registered domains; instance-level
+  selection is available through export packages (see "Export packages (REST)").
 * Cross-domain closure only pulls in objects whose domain has a registered exporter.
 
 Building from source
