@@ -60,6 +60,7 @@
         <emrapiVersion>3.4.0</emrapiVersion>
         <metadatamappingVersion>1.6.0</metadatamappingVersion>
         <metadatasharingVersion>1.2.2</metadatasharingVersion>
+        <addresshierarchyVersion>2.17.0</addresshierarchyVersion>
     </properties>
 
 	<build>
@@ -136,6 +137,13 @@
 			<artifactId>metadatasharing-api-2.0</artifactId>
 			<version>${metadatasharingVersion}</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>addresshierarchy-api</artifactId>
+			<version>${addresshierarchyVersion}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>
