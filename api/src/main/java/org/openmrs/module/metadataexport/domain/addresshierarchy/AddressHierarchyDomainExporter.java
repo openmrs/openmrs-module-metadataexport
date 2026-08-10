@@ -43,29 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Exports the address hierarchy, which Initializer does not load through its own line-processor
- * framework: {@code AddressHierarchyLoader} hands the whole directory to the addresshierarchy
- * module's own {@code AddressConfigurationLoader}. So this is a directory-of-files domain, not a
- * row-per-object CSV, and it implements {@link DomainExporter} directly (like the metadatasharing
- * exporter) rather than extending the CSV/XML line framework.
- * <p>
- * It reproduces the two files a fresh import needs:
- * <ul>
- * <li>{@code addressConfiguration.xml} &mdash; rebuilt from the ordered hierarchy levels and the
- * live address template global property, then serialized with the module's own
- * {@link AddressConfigurationLoader#writeToString(AddressConfiguration)} so the XML matches the
- * import format. Each ordered level maps 1:1 to an {@code addressComponent}: the level's name is
- * the component's {@code nameMapping} and the level's {@code required} flag is
- * {@code requiredInHierarchy}; only {@code sizeMapping}/{@code elementDefault} and the
- * {@code lineByLineFormat} come from the address template.</li>
- * <li>{@code addresshierarchy.csv} &mdash; one headerless row per leaf entry, the root-to-leaf
- * entry names joined by the entry delimiter, each cell optionally carrying
- * {@code name^userGeneratedId}.</li>
- * </ul>
- * The entry/identifier delimiters are not persisted anywhere (they are used only at import time),
- * so canonical defaults are emitted and the CSV is written to match them.
- */
 @Slf4j
 @Component
 @OpenmrsProfile(modules = { "addresshierarchy:2.17.0" })
