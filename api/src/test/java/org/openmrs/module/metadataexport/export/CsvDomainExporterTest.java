@@ -20,10 +20,12 @@ import org.openmrs.module.initializer.Domain;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +91,23 @@ class CsvDomainExporterTest {
 		}
 	}
 	
+	private static class PartitionedDomainExporter extends TestDomainExporter {
+		
+		@Override
+		protected Map<String, Collection<Concept>> partition(Collection<Concept> instances) {
+			Map<String, Collection<Concept>> files = new LinkedHashMap<>();
+			for (Concept concept : instances) {
+				files.computeIfAbsent(concept.getUuid() + ".csv", f -> new ArrayList<>()).add(concept);
+			}
+			return files;
+		}
+		
+		@Override
+		protected Integer order(String fileName) {
+			return "c2.csv".equals(fileName) ? 2000 : null;
+		}
+	}
+	
 	private static Concept concept(String uuid) {
 		Concept c = new Concept();
 		c.setUuid(uuid);
@@ -125,6 +144,20 @@ class CsvDomainExporterTest {
 			assertEquals("true", row3[col.get("void/retire")]);
 			assertEquals("", row3[col.get("name")]);
 			assertEquals("", row3[col.get("flavor")]);
+		}
+	}
+	
+	@Test
+	void export_threadsPerFileOrderIntoEachCsvHeader(@TempDir File outDir) throws Exception {
+		new PartitionedDomainExporter().export(Arrays.asList(concept("c1"), concept("c2")), new ExportContext(outDir));
+		
+		try (CSVReader reader = new CSVReader(
+		        new FileReader(outDir.toPath().resolve(Paths.get("configuration", DOMAIN_DIR, "c1.csv")).toFile()))) {
+			assertArrayEquals(new String[] { "uuid", "name", "_version:1" }, reader.readNext());
+		}
+		try (CSVReader reader = new CSVReader(
+		        new FileReader(outDir.toPath().resolve(Paths.get("configuration", DOMAIN_DIR, "c2.csv")).toFile()))) {
+			assertArrayEquals(new String[] { "uuid", "name", "flavor", "_version:1", "_order:2000" }, reader.readNext());
 		}
 	}
 	

@@ -13,8 +13,6 @@ import org.openmrs.OpenmrsObject;
 
 public abstract class BaseLineExporter<T extends OpenmrsObject> {
 	
-	public static final String VERSION_LHS = "_version:";
-	
 	/** Domain-specific columns for one instance. Subclasses implement this. */
 	public abstract void export(T instance, ExportLine line);
 	

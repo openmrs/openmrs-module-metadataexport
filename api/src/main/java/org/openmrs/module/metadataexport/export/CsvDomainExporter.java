@@ -25,7 +25,8 @@ import java.util.Map;
  * instances that belong in it, and each entry becomes its own CSV. The default is one file
  * ({@link #fileName}), but a domain may split into several (e.g. to keep the union-header width
  * manageable, since one unusually verbose row otherwise widens the table for every row in the
- * file).
+ * file). When the files must load in a set sequence, {@link #order} stamps each with an Iniz
+ * {@code _order:} header.
  */
 public abstract class CsvDomainExporter<T extends OpenmrsObject> implements DomainExporter<T> {
 	
@@ -37,11 +38,19 @@ public abstract class CsvDomainExporter<T extends OpenmrsObject> implements Doma
 		return Collections.singletonMap(fileName(), instances);
 	}
 	
+	/**
+	 * Iniz within-domain load order for the given file, or null for no {@code _order:} header (Iniz
+	 * then loads the file last).
+	 */
+	protected Integer order(String fileName) {
+		return null;
+	}
+	
 	@Override
 	public void export(Collection<T> instances, ExportContext context) throws IOException {
 		CsvExporter<T> exporter = new CsvExporter<>(chain(), getDomain());
 		for (Map.Entry<String, Collection<T>> file : partition(instances).entrySet()) {
-			exporter.writeCsv(file.getValue(), context.getOutputDir(), file.getKey());
+			exporter.writeCsv(file.getValue(), context.getOutputDir(), file.getKey(), order(file.getKey()));
 		}
 	}
 }
