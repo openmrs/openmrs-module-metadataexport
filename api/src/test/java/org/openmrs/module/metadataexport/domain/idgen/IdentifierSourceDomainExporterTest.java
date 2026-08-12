@@ -45,6 +45,7 @@ class IdentifierSourceDomainExporterTest {
 		retiredSequential.setRetired(true);
 		RemoteIdentifierSource remote = new RemoteIdentifierSource();
 		IdentifierPool pool = new IdentifierPool();
+		pool.setSource(sequential);
 		
 		Map<String, Collection<IdentifierSource>> files = exporter
 		        .partition(Arrays.asList(sequential, remote, pool, retiredSequential));
@@ -70,11 +71,28 @@ class IdentifierSourceDomainExporterTest {
 	void partitionSkipsUnknownSourceSubclasses() {
 		IdentifierSource custom = new BaseIdentifierSource() {};
 		IdentifierPool pool = new IdentifierPool();
+		pool.setSource(new SequentialIdentifierGenerator());
 		
 		Map<String, Collection<IdentifierSource>> files = exporter.partition(Arrays.asList(custom, pool));
 		
 		assertEquals(1, files.size(), "custom subclasses have no Iniz representation and land in no file");
 		assertTrue(files.get(IdentifierSourceDomainExporter.FILE_POOL).contains(pool));
+	}
+	
+	@Test
+	void partitionSkipsPoolsWithoutAnImportableBackingSource() {
+		IdentifierPool sourceless = new IdentifierPool();
+		IdentifierPool customBacked = new IdentifierPool();
+		customBacked.setSource(new BaseIdentifierSource() {});
+		IdentifierPool good = new IdentifierPool();
+		good.setSource(new SequentialIdentifierGenerator());
+		
+		Map<String, Collection<IdentifierSource>> files = exporter.partition(Arrays.asList(sourceless, customBacked, good));
+		
+		assertEquals(1, files.size());
+		assertEquals(1, files.get(IdentifierSourceDomainExporter.FILE_POOL).size(),
+		    "a pool row without a resolvable backing source uuid can never import");
+		assertTrue(files.get(IdentifierSourceDomainExporter.FILE_POOL).contains(good));
 	}
 	
 	@Test

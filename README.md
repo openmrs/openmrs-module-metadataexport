@@ -73,8 +73,9 @@ Currently supported domains:
   must define the `idgen.remote.password.<identifier source uuid>` system or OpenMRS runtime
   property (retired remote sources included — Initializer still requires the password when it
   bootstraps them); custom identifier source types from other modules have no Initializer
-  representation and are skipped with a warning, as are auto generation options pointing at them;
-  requires the idgen module (4.6+)
+  representation and are skipped with a warning, as are pools backed by them, pools with no
+  backing source at all, and auto generation options pointing at them; requires the idgen
+  module (4.6+)
 * Auto generation options (identifier type, location, identifier source, manual entry enabled,
   auto generation enabled) — the referenced identifier type, source and location are pulled in via
   cross-domain closure; requires the idgen module (4.6+)

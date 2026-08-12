@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.idgen;
 
-import lombok.extern.slf4j.Slf4j;
 import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.idgen.IdentifierPool;
 import org.openmrs.module.idgen.IdentifierSource;
@@ -21,7 +20,6 @@ import org.openmrs.module.metadataexport.export.ExportLine;
  * data and are not exported. The boolean columns are always emitted — an absent cell becomes a null
  * that NPEs when Iniz assigns it into idgen's primitive-backed fields.
  */
-@Slf4j
 public class IdentifierPoolLineExporter extends BaseLineExporter<IdentifierSource> {
 	
 	@Override
@@ -32,9 +30,7 @@ public class IdentifierPoolLineExporter extends BaseLineExporter<IdentifierSourc
 		}
 		
 		IdentifierPool pool = (IdentifierPool) source;
-		if (pool.getSource() == null) {
-			log.warn("Idgen: identifier pool {} has no backing source; Iniz requires one on import", pool.getUuid());
-		} else {
+		if (pool.getSource() != null) {
 			line.put(IdentifierSourceLineExporter.HEADER_POOL_IDENTIFIER_SOURCE, pool.getSource().getUuid());
 		}
 		line.put(IdentifierSourceLineExporter.HEADER_POOL_BATCH_SIZE, String.valueOf(pool.getBatchSize()));

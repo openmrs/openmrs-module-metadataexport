@@ -64,18 +64,45 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 		Map<String, Collection<IdentifierSource>> files = new LinkedHashMap<>();
 		for (IdentifierSource instance : instances) {
 			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(instance);
+			if (!exportable(real)) {
+				continue;
+			}
 			if (real instanceof IdentifierPool) {
 				files.computeIfAbsent(FILE_POOL, f -> new ArrayList<>()).add(instance);
 			} else if (real instanceof SequentialIdentifierGenerator) {
 				files.computeIfAbsent(FILE_SEQUENTIAL, f -> new ArrayList<>()).add(instance);
-			} else if (real instanceof RemoteIdentifierSource) {
-				files.computeIfAbsent(FILE_REMOTE, f -> new ArrayList<>()).add(instance);
 			} else {
-				log.warn("Idgen: skipping identifier source {} of unsupported type {}", real.getUuid(),
-				    real.getClass().getName());
+				files.computeIfAbsent(FILE_REMOTE, f -> new ArrayList<>()).add(instance);
 			}
 		}
 		return files;
+	}
+	
+	/**
+	 * A source Iniz can import. Pools need a backing source that is itself exported: Iniz reads
+	 * {@code pool identifier source} as required and resolves it by uuid, so a pool without one (legal
+	 * in idgen's schema) or backed by a skipped custom type fails on import.
+	 */
+	private boolean exportable(IdentifierSource real) {
+		if (!handles(real)) {
+			log.warn("Idgen: skipping identifier source {} of unsupported type {} — no Iniz representation", real.getUuid(),
+			    real.getClass().getName());
+			return false;
+		}
+		if (real instanceof IdentifierPool) {
+			IdentifierSource backing = HibernateUtil.getRealObjectFromProxy(((IdentifierPool) real).getSource());
+			if (backing == null) {
+				log.warn("Idgen: skipping identifier pool {} with no backing source; Iniz requires one on import",
+				    real.getUuid());
+				return false;
+			}
+			if (!handles(backing)) {
+				log.warn("Idgen: skipping identifier pool {} — its backing source {} has unsupported type {}",
+				    real.getUuid(), backing.getUuid(), backing.getClass().getName());
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	@Override
@@ -108,12 +135,8 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 	public Collection<IdentifierSource> getAllInstances() {
 		List<IdentifierSource> sources = new ArrayList<>();
 		for (IdentifierSource source : Context.getService(IdentifierSourceService.class).getAllIdentifierSources(true)) {
-			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
-			if (handles(real)) {
+			if (exportable(HibernateUtil.getRealObjectFromProxy(source))) {
 				sources.add(source);
-			} else {
-				log.warn("Idgen: skipping identifier source {} of unsupported type {} — no Iniz representation",
-				    real.getUuid(), real.getClass().getName());
 			}
 		}
 		return sources;
