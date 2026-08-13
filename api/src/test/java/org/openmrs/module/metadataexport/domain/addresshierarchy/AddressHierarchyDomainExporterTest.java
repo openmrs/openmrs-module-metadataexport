@@ -64,7 +64,7 @@ class AddressHierarchyDomainExporterTest {
 		
 		String csv = exporter.buildEntriesCsv(Arrays.asList(country, province));
 		
-		assertEquals("Cambodia,Banteay Meanchey^BM\n", csv);
+		assertEquals("Cambodia,Banteay Meanchey%BM\n", csv);
 	}
 	
 	@Test
@@ -93,7 +93,7 @@ class AddressHierarchyDomainExporterTest {
 		assertTrue(xml.contains("<string>country</string>"), xml);
 		assertTrue(xml.contains("<filename>addresshierarchy.csv</filename>"), xml);
 		assertTrue(xml.contains("<entryDelimiter>,</entryDelimiter>"), xml);
-		assertTrue(xml.contains("<identifierDelimiter>^</identifierDelimiter>"), xml);
+		assertTrue(xml.contains("<identifierDelimiter>%</identifierDelimiter>"), xml);
 	}
 	
 	@Test

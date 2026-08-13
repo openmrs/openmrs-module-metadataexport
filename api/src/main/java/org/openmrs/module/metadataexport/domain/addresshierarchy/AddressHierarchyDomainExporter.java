@@ -54,7 +54,7 @@ public class AddressHierarchyDomainExporter implements DomainExporter<AddressHie
 	
 	public static final String ENTRY_DELIMITER = ",";
 	
-	public static final String IDENTIFIER_DELIMITER = "^";
+	public static final String IDENTIFIER_DELIMITER = "%";
 	
 	private static final int DEFAULT_SIZE_MAPPING = 40;
 	
