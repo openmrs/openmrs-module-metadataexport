@@ -104,4 +104,18 @@ class AddressHierarchyDomainExporterTest {
 		assertTrue(xml.contains("<sizeMapping>40</sizeMapping>"), xml);
 		assertTrue(xml.contains("<requiredInHierarchy>false</requiredInHierarchy>"), xml);
 	}
+	
+	@Test
+	void buildAddressConfigurationXml_toleratesTemplateWithNullMappings() {
+		// A non-null template whose size/default maps are null must not NPE; it falls back to defaults.
+		AddressTemplate template = new AddressTemplate("addressTemplate");
+		template.setSizeMappings(null);
+		template.setElementDefaults(null);
+		
+		String xml = exporter.buildAddressConfigurationXml(
+		    Arrays.asList(level(AddressField.COUNTRY, "Location.country", true)), template);
+		
+		assertTrue(xml.contains("<field>COUNTRY</field>"), xml);
+		assertTrue(xml.contains("<sizeMapping>40</sizeMapping>"), xml);
+	}
 }

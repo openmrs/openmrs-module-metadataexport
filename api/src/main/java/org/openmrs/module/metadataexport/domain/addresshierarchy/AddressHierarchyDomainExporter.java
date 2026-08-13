@@ -109,8 +109,14 @@ public class AddressHierarchyDomainExporter implements DomainExporter<AddressHie
 	 * output stays in lockstep with what it parses on import.
 	 */
 	String buildAddressConfigurationXml(List<AddressHierarchyLevel> levels, AddressTemplate template) {
-		Map<String, String> sizeMappings = template == null ? Collections.emptyMap() : template.getSizeMappings();
-		Map<String, String> elementDefaults = template == null ? Collections.emptyMap() : template.getElementDefaults();
+		Map<String, String> sizeMappings = template == null ? null : template.getSizeMappings();
+		if (sizeMappings == null) {
+			sizeMappings = Collections.emptyMap();
+		}
+		Map<String, String> elementDefaults = template == null ? null : template.getElementDefaults();
+		if (elementDefaults == null) {
+			elementDefaults = Collections.emptyMap();
+		}
 		
 		AddressConfiguration configuration = new AddressConfiguration();
 		for (AddressHierarchyLevel level : levels) {
