@@ -10,17 +10,11 @@
 package org.openmrs.module.metadataexport.domain.idgen;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
-import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.idgen.AutoGenerationOption;
-import org.openmrs.module.idgen.IdentifierPool;
-import org.openmrs.module.idgen.IdentifierSource;
-import org.openmrs.module.idgen.RemoteIdentifierSource;
-import org.openmrs.module.idgen.SequentialIdentifierGenerator;
 import org.openmrs.module.idgen.service.IdentifierSourceService;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -75,14 +69,10 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 	static List<AutoGenerationOption> exportable(List<AutoGenerationOption> options) {
 		List<AutoGenerationOption> result = new ArrayList<>();
 		for (AutoGenerationOption option : options) {
-			if (BooleanUtils.isTrue(option.getRetired())) {
-				continue;
-			}
-			IdentifierSource source = HibernateUtil.getRealObjectFromProxy(option.getSource());
-			if (source != null && !(source instanceof SequentialIdentifierGenerator)
-			        && !(source instanceof RemoteIdentifierSource) && !(source instanceof IdentifierPool)) {
-				log.warn("Idgen: skipping auto generation option {} whose source {} has unsupported type {}",
-				    option.getUuid(), source.getUuid(), source.getClass().getName());
+			// a source the idgen exporter drops would leave this row's source uuid dangling
+			if (option.getSource() != null && !IdentifierSourceDomainExporter.exports(option.getSource())) {
+				log.warn("Idgen: skipping auto generation option {} — its source {} is not exported", option.getUuid(),
+				    option.getSource().getUuid());
 				continue;
 			}
 			result.add(option);

@@ -16,9 +16,9 @@ import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.ExportLine;
 
 /**
- * Iniz ignores {@code void/retire} for this domain, so a full row is always written (retired
- * options are filtered out by the domain exporter instead). The boolean columns are always emitted
- * — an absent cell becomes a null that NPEs unboxing into idgen's primitive-boolean setters.
+ * Iniz ignores {@code void/retire} for this domain (idgen never persists option retirement), so a
+ * full row is always written. The boolean columns are always emitted — an absent cell becomes a
+ * null that NPEs unboxing into idgen's primitive-boolean setters.
  */
 public class AutoGenerationOptionLineExporter extends BaseLineExporter<AutoGenerationOption> {
 	

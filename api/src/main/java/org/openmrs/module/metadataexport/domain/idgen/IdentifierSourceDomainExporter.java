@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.idgen;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
@@ -27,15 +28,19 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Identifier sources are written as one file per source type, mirroring Iniz's own fixture layout,
  * so each file carries an {@code _order:} header — pools reference their backing source by uuid, so
- * the pool file must load last. Custom {@link IdentifierSource} subclasses have no Iniz
- * representation and are skipped with a warning.
+ * the pool file must load last. Sources Iniz cannot import — custom {@link IdentifierSource}
+ * subclasses, remotes without a user, pools without an importable backing source — are skipped with
+ * a warning.
  */
 @Slf4j
 @Component
@@ -64,7 +69,7 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 		Map<String, Collection<IdentifierSource>> files = new LinkedHashMap<>();
 		for (IdentifierSource instance : instances) {
 			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(instance);
-			if (!exportable(real)) {
+			if (!handles(real)) {
 				continue;
 			}
 			if (real instanceof IdentifierPool) {
@@ -76,33 +81,6 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 			}
 		}
 		return files;
-	}
-	
-	/**
-	 * A source Iniz can import. Pools need a backing source that is itself exported: Iniz reads
-	 * {@code pool identifier source} as required and resolves it by uuid, so a pool without one (legal
-	 * in idgen's schema) or backed by a skipped custom type fails on import.
-	 */
-	private boolean exportable(IdentifierSource real) {
-		if (!handles(real)) {
-			log.warn("Idgen: skipping identifier source {} of unsupported type {} — no Iniz representation", real.getUuid(),
-			    real.getClass().getName());
-			return false;
-		}
-		if (real instanceof IdentifierPool) {
-			IdentifierSource backing = HibernateUtil.getRealObjectFromProxy(((IdentifierPool) real).getSource());
-			if (backing == null) {
-				log.warn("Idgen: skipping identifier pool {} with no backing source; Iniz requires one on import",
-				    real.getUuid());
-				return false;
-			}
-			if (!handles(backing)) {
-				log.warn("Idgen: skipping identifier pool {} — its backing source {} has unsupported type {}",
-				    real.getUuid(), backing.getUuid(), backing.getClass().getName());
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	@Override
@@ -127,16 +105,42 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 	
 	@Override
 	public boolean handles(OpenmrsObject instance) {
-		return instance instanceof SequentialIdentifierGenerator || instance instanceof RemoteIdentifierSource
-		        || instance instanceof IdentifierPool;
+		return instance instanceof IdentifierSource && exports((IdentifierSource) instance);
+	}
+	
+	/**
+	 * Whether this domain writes an importable row for the source: a supported type, a non-blank user
+	 * for remotes (nullable in idgen, required by Iniz), and for pools a backing chain ending in an
+	 * importable source. Also consulted by the auto generation option exporter so an exported option
+	 * can never reference a source this domain drops.
+	 */
+	static boolean exports(IdentifierSource source) {
+		IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
+		Set<IdentifierSource> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+		while (real instanceof IdentifierPool) {
+			if (!seen.add(real)) {
+				return false;
+			}
+			real = HibernateUtil.getRealObjectFromProxy(((IdentifierPool) real).getSource());
+		}
+		if (real instanceof RemoteIdentifierSource) {
+			return StringUtils.isNotBlank(((RemoteIdentifierSource) real).getUser());
+		}
+		return real instanceof SequentialIdentifierGenerator;
 	}
 	
 	@Override
 	public Collection<IdentifierSource> getAllInstances() {
 		List<IdentifierSource> sources = new ArrayList<>();
 		for (IdentifierSource source : Context.getService(IdentifierSourceService.class).getAllIdentifierSources(true)) {
-			if (exportable(HibernateUtil.getRealObjectFromProxy(source))) {
+			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
+			if (handles(real)) {
 				sources.add(source);
+			} else {
+				log.warn(
+				    "Idgen: skipping identifier source {} of type {}; Iniz cannot import it"
+				            + " (unsupported type, blank remote user, or no importable backing source)",
+				    real.getUuid(), real.getClass().getName());
 			}
 		}
 		return sources;

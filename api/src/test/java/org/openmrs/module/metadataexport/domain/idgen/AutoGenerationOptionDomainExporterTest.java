@@ -15,6 +15,7 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.module.idgen.AutoGenerationOption;
 import org.openmrs.module.idgen.BaseIdentifierSource;
+import org.openmrs.module.idgen.IdentifierPool;
 import org.openmrs.module.idgen.SequentialIdentifierGenerator;
 
 import java.util.Arrays;
@@ -77,24 +78,16 @@ class AutoGenerationOptionDomainExporterTest {
 	}
 	
 	@Test
-	void exportableFiltersRetiredOptions() {
-		AutoGenerationOption live = new AutoGenerationOption();
-		AutoGenerationOption retired = new AutoGenerationOption();
-		retired.setRetired(true);
-		
-		List<AutoGenerationOption> result = AutoGenerationOptionDomainExporter.exportable(Arrays.asList(live, retired));
-		
-		assertEquals(Collections.singletonList(live), result);
-	}
-	
-	@Test
-	void exportableSkipsOptionsWithUnsupportedSourceType() {
-		AutoGenerationOption dangling = new AutoGenerationOption();
-		dangling.setSource(new BaseIdentifierSource() {});
+	void exportableSkipsOptionsWhoseSourceIsNotExported() {
+		AutoGenerationOption customBacked = new AutoGenerationOption();
+		customBacked.setSource(new BaseIdentifierSource() {});
+		AutoGenerationOption sourcelessPoolBacked = new AutoGenerationOption();
+		sourcelessPoolBacked.setSource(new IdentifierPool());
 		AutoGenerationOption kept = new AutoGenerationOption();
 		kept.setSource(new SequentialIdentifierGenerator());
 		
-		List<AutoGenerationOption> result = AutoGenerationOptionDomainExporter.exportable(Arrays.asList(dangling, kept));
+		List<AutoGenerationOption> result = AutoGenerationOptionDomainExporter
+		        .exportable(Arrays.asList(customBacked, sourcelessPoolBacked, kept));
 		
 		assertEquals(Collections.singletonList(kept), result,
 		    "an option pointing at a source the idgen exporter skips would be a dangling reference");

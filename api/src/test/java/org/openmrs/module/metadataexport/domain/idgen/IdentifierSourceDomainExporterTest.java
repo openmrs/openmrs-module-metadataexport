@@ -44,6 +44,7 @@ class IdentifierSourceDomainExporterTest {
 		SequentialIdentifierGenerator retiredSequential = new SequentialIdentifierGenerator();
 		retiredSequential.setRetired(true);
 		RemoteIdentifierSource remote = new RemoteIdentifierSource();
+		remote.setUser("idgen-user");
 		IdentifierPool pool = new IdentifierPool();
 		pool.setSource(sequential);
 		
@@ -182,12 +183,25 @@ class IdentifierSourceDomainExporterTest {
 	}
 	
 	@Test
-	void handlesOnlyTheSourceTypesInizCanRepresent() {
+	void handlesOnlySourcesItWillActuallyExport() {
 		assertTrue(exporter.handles(new SequentialIdentifierGenerator()));
-		assertTrue(exporter.handles(new RemoteIdentifierSource()));
-		assertTrue(exporter.handles(new IdentifierPool()));
+		
+		RemoteIdentifierSource remote = new RemoteIdentifierSource();
+		remote.setUser("idgen-user");
+		assertTrue(exporter.handles(remote));
+		assertFalse(exporter.handles(new RemoteIdentifierSource()),
+		    "a remote source without a user cannot be imported by Iniz");
+		
+		IdentifierPool pool = new IdentifierPool();
+		pool.setSource(new SequentialIdentifierGenerator());
+		assertTrue(exporter.handles(pool));
+		assertFalse(exporter.handles(new IdentifierPool()), "a pool without a backing source cannot be imported by Iniz");
+		IdentifierPool customBacked = new IdentifierPool();
+		customBacked.setSource(new BaseIdentifierSource() {});
+		assertFalse(exporter.handles(customBacked),
+		    "handles() must agree with what export writes, or the manifest lists sources missing from the package");
+		
 		assertFalse(exporter.handles(new PatientIdentifierType()));
-		assertFalse(exporter.handles(new BaseIdentifierSource() {}),
-		    "handles() must agree with partition(), or selection puts sources in the manifest that export drops");
+		assertFalse(exporter.handles(new BaseIdentifierSource() {}));
 	}
 }
