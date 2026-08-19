@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.idgen.IdentifierPool;
@@ -29,11 +30,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Identifier sources are written as one file per source type, mirroring Iniz's own fixture layout,
@@ -71,6 +74,13 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(instance);
 			if (!handles(real)) {
 				continue;
+			}
+			if (real.getReservedIdentifiers() != null && !real.getReservedIdentifiers().isEmpty()) {
+				// Iniz has no column for reserved identifiers, so a bootstrapped copy of this
+				// source would hand out exactly the identifiers this server was told to skip;
+				// warned here, on the write path, so dependency-closure sources are covered too
+				log.warn("Idgen: identifier source {} has {} reserved identifier(s), which are not exported", real.getUuid(),
+				    real.getReservedIdentifiers().size());
 			}
 			if (real instanceof IdentifierPool) {
 				files.computeIfAbsent(FILE_POOL, f -> new ArrayList<>()).add(instance);
@@ -135,21 +145,39 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 		for (IdentifierSource source : Context.getService(IdentifierSourceService.class).getAllIdentifierSources(true)) {
 			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
 			if (handles(real)) {
-				if (real.getReservedIdentifiers() != null && !real.getReservedIdentifiers().isEmpty()) {
-					// Iniz has no column for reserved identifiers, so a bootstrapped copy of this
-					// source would hand out exactly the identifiers this server was told to skip
-					log.warn("Idgen: identifier source {} has {} reserved identifier(s), which are not exported",
-					    real.getUuid(), real.getReservedIdentifiers().size());
-				}
 				sources.add(source);
 			} else {
 				log.warn(
-				    "Idgen: skipping identifier source {} of type {}; Iniz cannot import it"
-				            + " (unsupported type, blank remote user, or no importable backing source)",
+				    "Idgen: skipping identifier source {} of type {}; Iniz cannot import it (unsupported type,"
+				            + " blank remote user, missing/unimportable backing source, or a pool cycle)",
 				    real.getUuid(), real.getClass().getName());
 			}
 		}
 		return sources;
+	}
+	
+	@Override
+	public Collection<IdentifierSource> getInstancesByUuids(Collection<String> uuids) {
+		Set<String> wanted = new HashSet<>(uuids);
+		List<IdentifierSource> found = new ArrayList<>();
+		for (IdentifierSource source : getAllInstances()) {
+			if (wanted.remove(source.getUuid())) {
+				found.add(source);
+			}
+		}
+		if (!wanted.isEmpty()) {
+			// getAllInstances() filters out unimportable sources, so a leftover uuid may name a
+			// source that exists — say so instead of misreporting it as unknown
+			IdentifierSourceService service = Context.getService(IdentifierSourceService.class);
+			List<String> skipped = wanted.stream().filter(uuid -> service.getIdentifierSourceByUuid(uuid) != null)
+			        .collect(Collectors.toList());
+			if (!skipped.isEmpty()) {
+				throw new APIException("Identifier sources exist but cannot be imported by Initializer (unsupported"
+				        + " type, blank remote user, missing/unimportable backing source, or a pool cycle): " + skipped);
+			}
+			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
+		}
+		return found;
 	}
 	
 	@Override

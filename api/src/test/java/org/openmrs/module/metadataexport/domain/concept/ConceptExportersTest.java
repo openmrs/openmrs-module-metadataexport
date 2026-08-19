@@ -114,6 +114,8 @@ class ConceptExportersTest {
 		
 		assertEquals("100.0", line.get("absolute high"));
 		assertEquals("0.0", line.get("absolute low"));
+		assertNull(line.get("critical high"), "unset boxed bound is not written as a column");
+		assertNull(line.get("normal low"), "unset boxed bound is not written as a column");
 		assertEquals("mg", line.get("units"));
 		assertEquals("true", line.get("allow decimals"));
 		assertEquals("2", line.get("display precision"));

@@ -173,11 +173,11 @@ class IdentifierSourceDomainExporterTest {
 		
 		exporter.export(Arrays.asList(minimal, retired, remote, pool, poolOfPool), new ExportContext(outDir));
 		
-		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_SEQUENTIAL, 1000, IdentifierSourceType.SEQUENTIAL,
+		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_SEQUENTIAL, 2, 1000, IdentifierSourceType.SEQUENTIAL,
 		    "base character set", "first identifier base");
-		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_REMOTE, 2000, IdentifierSourceType.REMOTE, "url", "user",
-		    "password");
-		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_POOL, 3000, IdentifierSourceType.POOL,
+		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_REMOTE, 1, 2000, IdentifierSourceType.REMOTE, "url",
+		    "user", "password");
+		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_POOL, 2, 3000, IdentifierSourceType.POOL,
 		    "pool identifier source", "pool refill with task", "pool sequential allocation");
 	}
 	
@@ -186,11 +186,12 @@ class IdentifierSourceDomainExporterTest {
 	 * source type is inferred by Iniz's own public getIdentifierSourceType, and every column the import
 	 * requires must hold a value.
 	 */
-	private static void assertInizReads(File outDir, String fileName, int order, IdentifierSourceType type,
+	private static void assertInizReads(File outDir, String fileName, int dataRows, int order, IdentifierSourceType type,
 	        String... requiredHeaders) throws Exception {
 		File csv = outDir.toPath().resolve(Paths.get("configuration", Domain.IDGEN.getName(), fileName)).toFile();
 		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
 			List<String[]> rows = reader.readAll();
+			assertEquals(dataRows + 1, rows.size(), fileName + " must hold every fixture source of its type");
 			String[] header = rows.get(0);
 			assertEquals(Integer.valueOf(order), BaseLineProcessor.getOrder(header));
 			assertEquals("1", BaseLineProcessor.getVersion(header));
@@ -277,5 +278,29 @@ class IdentifierSourceDomainExporterTest {
 		
 		assertFalse(exporter.handles(new PatientIdentifierType()));
 		assertFalse(exporter.handles(new BaseIdentifierSource() {}));
+	}
+	
+	@Test
+	void handlesFollowsThePoolBackingChain() {
+		RemoteIdentifierSource remoteWithUser = new RemoteIdentifierSource();
+		remoteWithUser.setUser("idgen-user");
+		IdentifierPool remoteBacked = new IdentifierPool();
+		remoteBacked.setSource(remoteWithUser);
+		assertTrue(exporter.handles(remoteBacked));
+		
+		IdentifierPool userlessRemoteBacked = new IdentifierPool();
+		userlessRemoteBacked.setSource(new RemoteIdentifierSource());
+		assertFalse(exporter.handles(userlessRemoteBacked),
+		    "a chain ending in an unimportable remote is unimportable itself");
+		
+		IdentifierPool selfBacked = new IdentifierPool();
+		selfBacked.setSource(selfBacked);
+		assertFalse(exporter.handles(selfBacked), "a pool cycle must terminate as unexportable, not hang");
+		
+		IdentifierPool a = new IdentifierPool();
+		IdentifierPool b = new IdentifierPool();
+		a.setSource(b);
+		b.setSource(a);
+		assertFalse(exporter.handles(a), "a two-pool cycle must terminate as unexportable, not hang");
 	}
 }

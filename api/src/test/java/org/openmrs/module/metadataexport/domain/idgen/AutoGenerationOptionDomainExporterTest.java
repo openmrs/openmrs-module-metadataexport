@@ -72,9 +72,18 @@ class AutoGenerationOptionDomainExporterTest {
 	}
 	
 	@Test
-	void handlesAutoGenerationOptionsOnly() {
+	void handlesOnlyOptionsWhoseSourceIsExported() {
 		assertTrue(exporter.handles(new AutoGenerationOption()));
 		assertFalse(exporter.handles(new PatientIdentifierType()));
+		
+		AutoGenerationOption goodSource = new AutoGenerationOption();
+		goodSource.setSource(new SequentialIdentifierGenerator());
+		assertTrue(exporter.handles(goodSource));
+		
+		AutoGenerationOption danglingSource = new AutoGenerationOption();
+		danglingSource.setSource(new BaseIdentifierSource() {});
+		assertFalse(exporter.handles(danglingSource),
+		    "an option whose source the idgen exporter drops would export a dangling source uuid");
 	}
 	
 	@Test
