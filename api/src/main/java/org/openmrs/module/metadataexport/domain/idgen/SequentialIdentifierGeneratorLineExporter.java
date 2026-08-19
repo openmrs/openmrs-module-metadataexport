@@ -32,14 +32,8 @@ public class SequentialIdentifierGeneratorLineExporter extends BaseLineExporter<
 		line.put(IdentifierSourceLineExporter.HEADER_PREFIX, generator.getPrefix());
 		line.put(IdentifierSourceLineExporter.HEADER_SUFFIX, generator.getSuffix());
 		line.put(IdentifierSourceLineExporter.HEADER_FIRST_ID_BASE, generator.getFirstIdentifierBase());
-		put(line, IdentifierSourceLineExporter.HEADER_MIN_LENGTH, generator.getMinLength());
-		put(line, IdentifierSourceLineExporter.HEADER_MAX_LENGTH, generator.getMaxLength());
+		line.put(IdentifierSourceLineExporter.HEADER_MIN_LENGTH, generator.getMinLength());
+		line.put(IdentifierSourceLineExporter.HEADER_MAX_LENGTH, generator.getMaxLength());
 		line.put(IdentifierSourceLineExporter.HEADER_BASE_CHAR_SET, generator.getBaseCharacterSet());
-	}
-	
-	private void put(ExportLine line, String header, Object value) {
-		if (value != null) {
-			line.put(header, value.toString());
-		}
 	}
 }

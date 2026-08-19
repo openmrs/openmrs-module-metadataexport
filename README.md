@@ -75,7 +75,8 @@ Currently supported domains:
   bootstraps them); sources Initializer cannot import are skipped with a warning — custom
   identifier source types from other modules, remote sources with no user (Initializer requires
   one), pools whose backing source is missing or itself skipped — as are auto generation options
-  pointing at any skipped source; requires the idgen module (4.6+)
+  pointing at any skipped source; reserved identifiers on a source are not exported (Initializer
+  has no column for them) and are flagged with a warning; requires the idgen module (4.6+)
 * Auto generation options (identifier type, location, identifier source, manual entry enabled,
   auto generation enabled) — the referenced identifier type, source and location are pulled in via
   cross-domain closure; requires the idgen module (4.6+)

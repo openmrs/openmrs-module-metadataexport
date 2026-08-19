@@ -36,18 +36,12 @@ public class ConceptReferenceRangeLineExporter extends BaseLineExporter<ConceptR
 	public void export(ConceptReferenceRange conceptReferenceRange, ExportLine line) {
 		line.put(BaseLineProcessor.HEADER_UUID, conceptReferenceRange.getUuid());
 		line.put(HEADER_CONCEPT_NUMERIC_UUID, conceptReferenceRange.getConceptNumeric().getUuid());
-		put(line, HEADER_ABSOLUTE_LOW, conceptReferenceRange.getLowAbsolute());
-		put(line, HEADER_ABSOLUTE_HIGH, conceptReferenceRange.getHiAbsolute());
-		put(line, HEADER_CRITICAL_LOW, conceptReferenceRange.getLowCritical());
-		put(line, HEADER_CRITICAL_HIGH, conceptReferenceRange.getHiCritical());
-		put(line, HEADER_NORMAL_LOW, conceptReferenceRange.getLowNormal());
-		put(line, HEADER_NORMAL_HIGH, conceptReferenceRange.getHiNormal());
-		put(line, HEADER_CRITERIA, conceptReferenceRange.getCriteria());
-	}
-	
-	private void put(ExportLine line, String header, Object value) {
-		if (value != null) {
-			line.put(header, value.toString());
-		}
+		line.put(HEADER_ABSOLUTE_LOW, conceptReferenceRange.getLowAbsolute());
+		line.put(HEADER_ABSOLUTE_HIGH, conceptReferenceRange.getHiAbsolute());
+		line.put(HEADER_CRITICAL_LOW, conceptReferenceRange.getLowCritical());
+		line.put(HEADER_CRITICAL_HIGH, conceptReferenceRange.getHiCritical());
+		line.put(HEADER_NORMAL_LOW, conceptReferenceRange.getLowNormal());
+		line.put(HEADER_NORMAL_HIGH, conceptReferenceRange.getHiNormal());
+		line.put(HEADER_CRITERIA, conceptReferenceRange.getCriteria());
 	}
 }

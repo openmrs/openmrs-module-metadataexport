@@ -135,6 +135,12 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 		for (IdentifierSource source : Context.getService(IdentifierSourceService.class).getAllIdentifierSources(true)) {
 			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
 			if (handles(real)) {
+				if (real.getReservedIdentifiers() != null && !real.getReservedIdentifiers().isEmpty()) {
+					// Iniz has no column for reserved identifiers, so a bootstrapped copy of this
+					// source would hand out exactly the identifiers this server was told to skip
+					log.warn("Idgen: identifier source {} has {} reserved identifier(s), which are not exported",
+					    real.getUuid(), real.getReservedIdentifiers().size());
+				}
 				sources.add(source);
 			} else {
 				log.warn(

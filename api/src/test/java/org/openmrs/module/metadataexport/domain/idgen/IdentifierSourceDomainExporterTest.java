@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.idgen;
 
 import com.opencsv.CSVReader;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.OpenmrsObject;
@@ -20,6 +21,10 @@ import org.openmrs.module.idgen.IdentifierSource;
 import org.openmrs.module.idgen.RemoteIdentifierSource;
 import org.openmrs.module.idgen.SequentialIdentifierGenerator;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.initializer.api.BaseLineProcessor;
+import org.openmrs.module.initializer.api.CsvLine;
+import org.openmrs.module.initializer.api.idgen.IdentifierSourceLineProcessor;
+import org.openmrs.module.initializer.api.idgen.IdentifierSourceType;
 import org.openmrs.module.metadataexport.export.ExportContext;
 
 import java.io.File;
@@ -32,6 +37,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdentifierSourceDomainExporterTest {
@@ -135,6 +141,74 @@ class IdentifierSourceDomainExporterTest {
 		    "the pool secondary exporter must be in the chain");
 		assertEquals("", cell(outDir, IdentifierSourceDomainExporter.FILE_POOL, "_order:3000"),
 		    "each file carries its load-order header");
+	}
+	
+	@Test
+	void export_producesFilesInizCanClassifyAndRead(@TempDir File outDir) throws Exception {
+		// CsvLine.getUuid() soft-validates the uuid format, so the fixtures need real ones
+		SequentialIdentifierGenerator minimal = new SequentialIdentifierGenerator();
+		minimal.setUuid("c1d8a345-3f10-11e4-adec-0800271c1b75");
+		minimal.setName("Sequential");
+		minimal.setFirstIdentifierBase("1000");
+		minimal.setBaseCharacterSet("0123456789");
+		SequentialIdentifierGenerator retired = new SequentialIdentifierGenerator();
+		retired.setUuid("439559c2-a3a4-4a25-b4b2-1a0299e287ee");
+		retired.setName("Retired");
+		retired.setFirstIdentifierBase("1");
+		retired.setBaseCharacterSet("0123456789");
+		retired.setRetired(true);
+		RemoteIdentifierSource remote = new RemoteIdentifierSource();
+		remote.setUuid("9e1a2b3c-3f10-11e4-adec-0800271c1b75");
+		remote.setName("Remote");
+		remote.setUrl("https://idgen.example.org/generate");
+		remote.setUser("idgen-user");
+		IdentifierPool pool = new IdentifierPool();
+		pool.setUuid("7e3f4d5a-3f10-11e4-adec-0800271c1b75");
+		pool.setName("Pool");
+		pool.setSource(minimal);
+		IdentifierPool poolOfPool = new IdentifierPool();
+		poolOfPool.setUuid("8f4a5b6c-3f10-11e4-adec-0800271c1b75");
+		poolOfPool.setName("Pool of pool");
+		poolOfPool.setSource(pool);
+		
+		exporter.export(Arrays.asList(minimal, retired, remote, pool, poolOfPool), new ExportContext(outDir));
+		
+		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_SEQUENTIAL, 1000, IdentifierSourceType.SEQUENTIAL,
+		    "base character set", "first identifier base");
+		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_REMOTE, 2000, IdentifierSourceType.REMOTE, "url", "user",
+		    "password");
+		assertInizReads(outDir, IdentifierSourceDomainExporter.FILE_POOL, 3000, IdentifierSourceType.POOL,
+		    "pool identifier source", "pool refill with task", "pool sequential allocation");
+	}
+	
+	/**
+	 * Reads an exported file back the way Iniz's parser does: blank cells become nulls, each row's
+	 * source type is inferred by Iniz's own public getIdentifierSourceType, and every column the import
+	 * requires must hold a value.
+	 */
+	private static void assertInizReads(File outDir, String fileName, int order, IdentifierSourceType type,
+	        String... requiredHeaders) throws Exception {
+		File csv = outDir.toPath().resolve(Paths.get("configuration", Domain.IDGEN.getName(), fileName)).toFile();
+		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
+			List<String[]> rows = reader.readAll();
+			String[] header = rows.get(0);
+			assertEquals(Integer.valueOf(order), BaseLineProcessor.getOrder(header));
+			assertEquals("1", BaseLineProcessor.getVersion(header));
+			for (String[] cells : rows.subList(1, rows.size())) {
+				for (int i = 0; i < cells.length; i++) {
+					if (StringUtils.isBlank(cells[i])) {
+						cells[i] = null;
+					}
+				}
+				CsvLine line = new CsvLine(header, cells);
+				assertEquals(type, IdentifierSourceLineProcessor.getIdentifierSourceType(line),
+				    fileName + " row " + line.getUuid() + " must be classifiable as its file's type");
+				for (String required : requiredHeaders) {
+					assertNotNull(line.get(required, true),
+					    fileName + " row " + line.getUuid() + " must fill '" + required + "'");
+				}
+			}
+		}
 	}
 	
 	/** The single data row's value under the given header of an exported idgen CSV. */
