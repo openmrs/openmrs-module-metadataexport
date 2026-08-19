@@ -13,6 +13,7 @@ import com.opencsv.CSVWriter;
 import lombok.AllArgsConstructor;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.initializer.api.BaseLineProcessor;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,13 +45,24 @@ public class CsvExporter<T extends OpenmrsObject> {
 	}
 	
 	public void writeCsv(Collection<T> instances, File outDir, String fileName) throws IOException {
+		writeCsv(instances, outDir, fileName, null);
+	}
+	
+	/**
+	 * @param order Iniz within-domain load order, emitted as an {@code _order:} header column; null for
+	 *            no order annotation (Iniz then loads the file last).
+	 */
+	public void writeCsv(Collection<T> instances, File outDir, String fileName, Integer order) throws IOException {
 		List<ExportLine> lines = toLines(instances);
 		LinkedHashSet<String> headers = new LinkedHashSet<>();
 		for (ExportLine line : lines) {
 			headers.addAll(line.getHeaders());
 		}
 		
-		headers.add(BaseLineExporter.VERSION_LHS + "1");
+		headers.add(BaseLineProcessor.VERSION_LHS + "1");
+		if (order != null) {
+			headers.add(BaseLineProcessor.ORDER_LHS + order);
+		}
 		String[] headerRow = headers.toArray(new String[0]);
 		
 		File domainDir = new File(new File(outDir, "configuration"), domain.getName());

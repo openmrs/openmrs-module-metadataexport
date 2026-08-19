@@ -46,20 +46,14 @@ public class ConceptNumericExporter extends BaseLineExporter<Concept> {
 		}
 		
 		ConceptNumeric cn = (ConceptNumeric) concept;
-		put(line, HEADER_AH, cn.getHiAbsolute());
-		put(line, HEADER_CH, cn.getHiCritical());
-		put(line, HEADER_NH, cn.getHiNormal());
-		put(line, HEADER_AL, cn.getLowAbsolute());
-		put(line, HEADER_CL, cn.getLowCritical());
-		put(line, HEADER_NL, cn.getLowNormal());
-		put(line, HEADER_ALLOWDECIMALS, cn.getAllowDecimal());
-		put(line, HEADER_UNITS, cn.getUnits());
-		put(line, HEADER_PRECISION, cn.getDisplayPrecision());
-	}
-	
-	private void put(ExportLine line, String header, Object value) {
-		if (value != null) {
-			line.put(header, value.toString());
-		}
+		line.put(HEADER_AH, cn.getHiAbsolute());
+		line.put(HEADER_CH, cn.getHiCritical());
+		line.put(HEADER_NH, cn.getHiNormal());
+		line.put(HEADER_AL, cn.getLowAbsolute());
+		line.put(HEADER_CL, cn.getLowCritical());
+		line.put(HEADER_NL, cn.getLowNormal());
+		line.put(HEADER_ALLOWDECIMALS, cn.getAllowDecimal());
+		line.put(HEADER_UNITS, cn.getUnits());
+		line.put(HEADER_PRECISION, cn.getDisplayPrecision());
 	}
 }

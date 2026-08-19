@@ -25,11 +25,21 @@ class ExportLineTest {
 		ExportLine line = new ExportLine();
 		line.put("a", "1");
 		line.put("b", "");
-		line.put("c", null);
+		line.put("c", (String) null);
 		
 		assertTrue(line.containsHeader("a"));
 		assertFalse(line.containsHeader("b"), "empty value should not create a column");
 		assertFalse(line.containsHeader("c"), "null value should not create a column");
+	}
+	
+	@Test
+	void put_stringifiesObjectsAndSkipsNulls() {
+		ExportLine line = new ExportLine();
+		line.put("count", 42);
+		line.put("missing", (Object) null);
+		
+		assertEquals("42", line.get("count"));
+		assertFalse(line.containsHeader("missing"), "null value should not create a column");
 	}
 	
 	@Test

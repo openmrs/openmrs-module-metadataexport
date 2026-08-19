@@ -64,11 +64,26 @@ Currently supported domains:
 * Metadata sharing (raw zip packages already built and published through the metadatasharing
   module's own UI, copied out as-is; not CSV/XML — one file per package) — requires the
   metadatasharing module
+* Identifier sources (identifier type, name, description; sequential: prefix, suffix, first
+  identifier base, min/max length, base character set; remote: url, user, password; pool: backing
+  source, batch size, minimum size, refill with task, sequential allocation) — written as
+  idgen_sequential/idgen_remote/idgen_pool CSVs with pools ordered last so backing sources load
+  first; remote-source passwords are never exported in plaintext — each row carries a
+  `property:idgen.remote.password.<identifier source uuid>` placeholder, and the importing server
+  must define the `idgen.remote.password.<identifier source uuid>` system or OpenMRS runtime
+  property (retired remote sources included — Initializer still requires the password when it
+  bootstraps them); sources Initializer cannot import are skipped with a warning — custom
+  identifier source types from other modules, remote sources with no user (Initializer requires
+  one), pools whose backing source is missing or itself skipped — as are auto generation options
+  pointing at any skipped source; reserved identifiers on a source are not exported (Initializer
+  has no column for them) and are flagged with a warning; requires the idgen module (4.6+)
+* Auto generation options (identifier type, location, identifier source, manual entry enabled,
+  auto generation enabled) — the referenced identifier type, source and location are pulled in via
+  cross-domain closure; requires the idgen module (4.6+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
-* Identifier generation (idgen, auto-generation options)
 * Address hierarchy (address hierarchy entries, location tag maps)
 * Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
@@ -215,7 +230,9 @@ Exporters that only contribute extra columns to an existing row (not the primary
 `BaseLineExporter<T>` directly instead.
 
 A CSV domain may emit more than one file by overriding `partition(instances)` (the default is one
-file).
+file). When the files must load in a set sequence — e.g. idgen pools after the sources they
+reference — also override `order(fileName)` to stamp each file with an Initializer `_order:`
+header.
 
 For an XML domain (Initializer loads some domains, such as global properties, from XML rather than
 CSV), extend `XmlDomainExporter<T>` instead of `CsvDomainExporter<T>`. Build the DOM in

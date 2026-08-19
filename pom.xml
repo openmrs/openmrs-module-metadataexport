@@ -58,6 +58,7 @@
         <patientflagsVersion>3.0.10</patientflagsVersion>
         <jacocoVersion>0.8.12</jacocoVersion>
         <emrapiVersion>3.4.0</emrapiVersion>
+        <idgenVersion>4.6.0</idgenVersion>
         <metadatamappingVersion>1.6.0</metadatamappingVersion>
         <metadatasharingVersion>1.2.2</metadatasharingVersion>
     </properties>
@@ -113,6 +114,19 @@
 			<artifactId>emrapi-api</artifactId>
 			<version>${emrapiVersion}</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>idgen-api</artifactId>
+			<version>${idgenVersion}</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpclient</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
