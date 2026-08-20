@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -103,22 +104,18 @@ public class FhirPatientIdentifierSystemDomainExporter extends CsvDomainExporter
 	public Collection<FhirPatientIdentifierSystem> getInstancesByUuids(Collection<String> uuids) {
 		Set<String> wanted = new HashSet<>(uuids);
 		List<FhirPatientIdentifierSystem> found = new ArrayList<>();
-		List<String> skipped = new ArrayList<>();
-		for (FhirPatientIdentifierSystem row : allRows()) {
+		for (FhirPatientIdentifierSystem row : getAllInstances()) {
 			if (wanted.remove(row.getUuid())) {
-				if (exports(row)) {
-					found.add(row);
-				} else {
-					skipped.add(row.getUuid());
-				}
+				found.add(row);
 			}
 		}
-		if (!skipped.isEmpty()) {
-			throw new APIException(
-			        "FHIR patient identifier systems exist but have no patient identifier type, which Initializer requires: "
-			                + skipped);
-		}
 		if (!wanted.isEmpty()) {
+			List<String> skipped = allRows().stream().map(FhirPatientIdentifierSystem::getUuid).filter(wanted::contains)
+			        .collect(Collectors.toList());
+			if (!skipped.isEmpty()) {
+				throw new APIException("FHIR patient identifier systems exist but Initializer cannot import them"
+				        + " (no patient identifier type, or an exported row shares their identifier type): " + skipped);
+			}
 			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
 		}
 		return found;

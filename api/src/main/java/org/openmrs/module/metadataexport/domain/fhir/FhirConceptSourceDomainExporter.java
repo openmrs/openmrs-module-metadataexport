@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -102,21 +103,18 @@ public class FhirConceptSourceDomainExporter extends CsvDomainExporter<FhirConce
 	public Collection<FhirConceptSource> getInstancesByUuids(Collection<String> uuids) {
 		Set<String> wanted = new HashSet<>(uuids);
 		List<FhirConceptSource> found = new ArrayList<>();
-		List<String> skipped = new ArrayList<>();
-		for (FhirConceptSource row : allRows()) {
+		for (FhirConceptSource row : getAllInstances()) {
 			if (wanted.remove(row.getUuid())) {
-				if (exports(row)) {
-					found.add(row);
-				} else {
-					skipped.add(row.getUuid());
-				}
+				found.add(row);
 			}
 		}
-		if (!skipped.isEmpty()) {
-			throw new APIException(
-			        "FHIR concept sources exist but have no concept source, which Initializer requires: " + skipped);
-		}
 		if (!wanted.isEmpty()) {
+			List<String> skipped = allRows().stream().map(FhirConceptSource::getUuid).filter(wanted::contains)
+			        .collect(Collectors.toList());
+			if (!skipped.isEmpty()) {
+				throw new APIException("FHIR concept sources exist but Initializer cannot import them"
+				        + " (no concept source, or an exported row shares their concept source): " + skipped);
+			}
 			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
 		}
 		return found;

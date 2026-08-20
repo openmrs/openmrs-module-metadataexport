@@ -83,13 +83,17 @@ Currently supported domains:
 * FHIR concept sources (concept source, url) — the referenced concept source is pulled in via
   cross-domain closure; name and description are not exported (Initializer has no columns for
   them — it sets the name from the concept source when it creates the row); rows without a
-  concept source are skipped with a warning (Initializer requires that column); requires the
-  fhir2 module (1.6+)
+  concept source are skipped with a warning (Initializer requires that column), and when several
+  rows share one concept source only one is exported, preferring the unretired row, with a
+  warning for the rest (Initializer matches rows by concept source, so duplicates would collapse
+  unpredictably on import); requires the fhir2 module (1.6+)
 * FHIR patient identifier systems (patient identifier type, url) — the referenced patient
   identifier type is pulled in via cross-domain closure; name and description are not exported
   (Initializer has no columns for them — it overwrites the name with the identifier type's name
   on import); rows without an identifier type are skipped with a warning (Initializer requires
-  that column); requires the fhir2 module (1.6+)
+  that column), and when several rows share one identifier type only one is exported, preferring
+  the unretired row, with a warning for the rest (Initializer matches rows by identifier type,
+  so duplicates would collapse unpredictably on import); requires the fhir2 module (1.6+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
