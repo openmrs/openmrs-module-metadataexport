@@ -1,0 +1,119 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at http://mozilla.org/MPL/2.0/. OpenMRS is also distributed under
+ * the terms of the Healthcare Disclaimer located at http://openmrs.org/license.
+ *
+ * Copyright (C) OpenMRS Inc. OpenMRS is a registered trademark and the OpenMRS
+ * graphic logo is a trademark of OpenMRS Inc.
+ */
+package org.openmrs.module.metadataexport.domain.fhir;
+
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.SessionFactory;
+import org.openmrs.OpenmrsObject;
+import org.openmrs.annotation.OpenmrsProfile;
+import org.openmrs.api.APIException;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.fhir2.model.FhirPatientIdentifierSystem;
+import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.export.BaseLineExporter;
+import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Slf4j
+@Component
+@OpenmrsProfile(modules = { "fhir2:1.6.* - 9.*" })
+public class FhirPatientIdentifierSystemDomainExporter extends CsvDomainExporter<FhirPatientIdentifierSystem> {
+	
+	@Override
+	protected List<BaseLineExporter<FhirPatientIdentifierSystem>> chain() {
+		return Collections.singletonList(new FhirPatientIdentifierSystemLineExporter());
+	}
+	
+	@Override
+	protected String fileName() {
+		return "fhirPatientIdentifierSystems.csv";
+	}
+	
+	@Override
+	public Domain getDomain() {
+		return Domain.FHIR_PATIENT_IDENTIFIER_SYSTEMS;
+	}
+	
+	@Override
+	public boolean handles(OpenmrsObject instance) {
+		return instance instanceof FhirPatientIdentifierSystem && exports((FhirPatientIdentifierSystem) instance);
+	}
+	
+	/** Iniz resolves rows by their patient identifier type, so a row without one can never import. */
+	static boolean exports(FhirPatientIdentifierSystem system) {
+		return system.getPatientIdentifierType() != null;
+	}
+	
+	@Override
+	public Collection<FhirPatientIdentifierSystem> getAllInstances() {
+		return exportable(allRows());
+	}
+	
+	/** The subset of rows that can round-trip through Iniz. */
+	static List<FhirPatientIdentifierSystem> exportable(Collection<FhirPatientIdentifierSystem> rows) {
+		List<FhirPatientIdentifierSystem> result = new ArrayList<>();
+		for (FhirPatientIdentifierSystem row : rows) {
+			if (!exports(row)) {
+				log.warn(
+				    "Fhir: skipping FHIR patient identifier system {} — it has no patient identifier type, and Iniz requires that column",
+				    row.getUuid());
+				continue;
+			}
+			result.add(row);
+		}
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static List<FhirPatientIdentifierSystem> allRows() {
+		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
+		return sessionFactory.getCurrentSession().createQuery("from FhirPatientIdentifierSystem").list();
+	}
+	
+	@Override
+	public Collection<FhirPatientIdentifierSystem> getInstancesByUuids(Collection<String> uuids) {
+		Set<String> wanted = new HashSet<>(uuids);
+		List<FhirPatientIdentifierSystem> found = new ArrayList<>();
+		List<String> skipped = new ArrayList<>();
+		for (FhirPatientIdentifierSystem row : allRows()) {
+			if (wanted.remove(row.getUuid())) {
+				if (exports(row)) {
+					found.add(row);
+				} else {
+					skipped.add(row.getUuid());
+				}
+			}
+		}
+		if (!skipped.isEmpty()) {
+			throw new APIException(
+			        "FHIR patient identifier systems exist but have no patient identifier type, which Initializer requires: "
+			                + skipped);
+		}
+		if (!wanted.isEmpty()) {
+			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
+		}
+		return found;
+	}
+	
+	@Override
+	public Collection<? extends OpenmrsObject> getDependencies(FhirPatientIdentifierSystem instance) {
+		if (instance.getPatientIdentifierType() == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(instance.getPatientIdentifierType());
+	}
+}

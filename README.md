@@ -80,6 +80,16 @@ Currently supported domains:
 * Auto generation options (identifier type, location, identifier source, manual entry enabled,
   auto generation enabled) — the referenced identifier type, source and location are pulled in via
   cross-domain closure; requires the idgen module (4.6+)
+* FHIR concept sources (concept source, url) — the referenced concept source is pulled in via
+  cross-domain closure; name and description are not exported (Initializer has no columns for
+  them — it sets the name from the concept source when it creates the row); rows without a
+  concept source are skipped with a warning (Initializer requires that column); requires the
+  fhir2 module (1.6+)
+* FHIR patient identifier systems (patient identifier type, url) — the referenced patient
+  identifier type is pulled in via cross-domain closure; name and description are not exported
+  (Initializer has no columns for them — it overwrites the name with the identifier type's name
+  on import); rows without an identifier type are skipped with a warning (Initializer requires
+  that column); requires the fhir2 module (1.6+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
@@ -90,7 +100,6 @@ not yet covered):
 * Appointment scheduling (specialities, service definitions, service types)
 * Queues
 * Cohorts (cohort types, cohort attribute types)
-* FHIR (FHIR concept sources, FHIR patient identifier systems)
 * Data filter mappings
 * Dispositions
 * OCL
