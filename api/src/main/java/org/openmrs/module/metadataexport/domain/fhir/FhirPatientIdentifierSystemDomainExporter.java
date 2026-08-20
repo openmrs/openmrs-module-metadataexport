@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.fhir;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.hibernate.SessionFactory;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
@@ -25,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -65,7 +68,7 @@ public class FhirPatientIdentifierSystemDomainExporter extends CsvDomainExporter
 	
 	/** The subset of rows that can round-trip through Iniz. */
 	static List<FhirPatientIdentifierSystem> exportable(Collection<FhirPatientIdentifierSystem> rows) {
-		List<FhirPatientIdentifierSystem> result = new ArrayList<>();
+		Map<String, FhirPatientIdentifierSystem> byIdentifierType = new LinkedHashMap<>();
 		for (FhirPatientIdentifierSystem row : rows) {
 			if (!exports(row)) {
 				log.warn(
@@ -73,9 +76,21 @@ public class FhirPatientIdentifierSystemDomainExporter extends CsvDomainExporter
 				    row.getUuid());
 				continue;
 			}
-			result.add(row);
+			FhirPatientIdentifierSystem kept = byIdentifierType.get(row.getPatientIdentifierType().getUuid());
+			if (kept == null) {
+				byIdentifierType.put(row.getPatientIdentifierType().getUuid(), row);
+			} else if (BooleanUtils.isTrue(kept.getRetired()) && !BooleanUtils.isTrue(row.getRetired())) {
+				byIdentifierType.put(row.getPatientIdentifierType().getUuid(), row);
+				log.warn("Fhir: skipping FHIR patient identifier system {} — unretired row {} shares its identifier type,"
+				        + " and Iniz keeps one row per identifier type",
+				    kept.getUuid(), row.getUuid());
+			} else {
+				log.warn("Fhir: skipping FHIR patient identifier system {} — row {} shares its identifier type,"
+				        + " and Iniz keeps one row per identifier type",
+				    row.getUuid(), kept.getUuid());
+			}
 		}
-		return result;
+		return new ArrayList<>(byIdentifierType.values());
 	}
 	
 	@SuppressWarnings("unchecked")

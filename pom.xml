@@ -122,6 +122,12 @@
 			<artifactId>fhir2-api</artifactId>
 			<version>${fhir2Version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

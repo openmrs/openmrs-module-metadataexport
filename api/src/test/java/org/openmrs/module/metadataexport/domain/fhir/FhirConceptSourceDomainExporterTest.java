@@ -65,7 +65,24 @@ class FhirConceptSourceDomainExporterTest {
 		List<FhirConceptSource> result = FhirConceptSourceDomainExporter.exportable(Arrays.asList(good, orphan));
 		
 		assertEquals(1, result.size(), "a row missing its required reference column can never import");
-		assertTrue(result.contains(good));
+		assertEquals(good.getUuid(), result.get(0).getUuid());
+	}
+	
+	@Test
+	void exportableKeepsOneRowPerConceptSourcePreferringTheUnretiredOne() {
+		FhirConceptSource retired = fhirConceptSource("439559c2-a3a4-4a25-b4b2-1a0299e287ee",
+		    "a5d38e09-efcb-4d91-a526-50ce1ba5011a", "http://snomed.info/old");
+		retired.setRetired(true);
+		FhirConceptSource live = fhirConceptSource("c1d8a345-3f10-11e4-adec-0800271c1b75",
+		    "a5d38e09-efcb-4d91-a526-50ce1ba5011a", "http://snomed.info/sct");
+		FhirConceptSource other = fhirConceptSource("9e1a2b3c-3f10-11e4-adec-0800271c1b75",
+		    "7e3f4d5a-3f10-11e4-adec-0800271c1b75", "http://loinc.org");
+		
+		List<FhirConceptSource> result = FhirConceptSourceDomainExporter.exportable(Arrays.asList(retired, live, other));
+		
+		assertEquals(2, result.size(), "duplicate rows for one concept source collapse nondeterministically on import");
+		assertEquals(live.getUuid(), result.get(0).getUuid(), "the unretired duplicate wins");
+		assertEquals(other.getUuid(), result.get(1).getUuid());
 	}
 	
 	@Test

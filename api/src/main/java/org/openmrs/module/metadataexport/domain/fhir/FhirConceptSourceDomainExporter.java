@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.fhir;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.hibernate.SessionFactory;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
@@ -25,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -65,16 +68,28 @@ public class FhirConceptSourceDomainExporter extends CsvDomainExporter<FhirConce
 	
 	/** The subset of rows that can round-trip through Iniz. */
 	static List<FhirConceptSource> exportable(Collection<FhirConceptSource> rows) {
-		List<FhirConceptSource> result = new ArrayList<>();
+		Map<String, FhirConceptSource> byConceptSource = new LinkedHashMap<>();
 		for (FhirConceptSource row : rows) {
 			if (!exports(row)) {
 				log.warn("Fhir: skipping FHIR concept source {} — it has no concept source, and Iniz requires that column",
 				    row.getUuid());
 				continue;
 			}
-			result.add(row);
+			FhirConceptSource kept = byConceptSource.get(row.getConceptSource().getUuid());
+			if (kept == null) {
+				byConceptSource.put(row.getConceptSource().getUuid(), row);
+			} else if (BooleanUtils.isTrue(kept.getRetired()) && !BooleanUtils.isTrue(row.getRetired())) {
+				byConceptSource.put(row.getConceptSource().getUuid(), row);
+				log.warn("Fhir: skipping FHIR concept source {} — unretired row {} shares its concept source,"
+				        + " and Iniz keeps one row per concept source",
+				    kept.getUuid(), row.getUuid());
+			} else {
+				log.warn("Fhir: skipping FHIR concept source {} — row {} shares its concept source,"
+				        + " and Iniz keeps one row per concept source",
+				    row.getUuid(), kept.getUuid());
+			}
 		}
-		return result;
+		return new ArrayList<>(byConceptSource.values());
 	}
 	
 	@SuppressWarnings("unchecked")
