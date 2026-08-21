@@ -68,4 +68,31 @@ class CsvExporterTest {
 			assertEquals(3, rows.size());
 		}
 	}
+	
+	@Test
+	void writeCsv_withOrderAppendsOrderHeaderAfterVersion() throws Exception {
+		CsvExporter<Concept> exporter = new CsvExporter<>(Collections.singletonList(VARYING_COLUMNS), Domain.CONCEPTS);
+		
+		exporter.writeCsv(Collections.singletonList(concept("c1")), outDir, "ordered.csv", 3000);
+		
+		File csv = new File(new File(outDir, "configuration"), Domain.CONCEPTS.getName() + "/ordered.csv");
+		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
+			List<String[]> rows = reader.readAll();
+			assertArrayEquals(new String[] { "colA", "_version:1", "_order:3000" }, rows.get(0));
+			assertArrayEquals(new String[] { "A-c1", "", "" }, rows.get(1));
+		}
+	}
+	
+	@Test
+	void writeCsv_withNullOrderLeavesHeaderUnchanged() throws Exception {
+		CsvExporter<Concept> exporter = new CsvExporter<>(Collections.singletonList(VARYING_COLUMNS), Domain.CONCEPTS);
+		
+		exporter.writeCsv(Collections.singletonList(concept("c1")), outDir, "unordered.csv", null);
+		
+		File csv = new File(new File(outDir, "configuration"), Domain.CONCEPTS.getName() + "/unordered.csv");
+		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
+			List<String[]> rows = reader.readAll();
+			assertArrayEquals(new String[] { "colA", "_version:1" }, rows.get(0));
+		}
+	}
 }

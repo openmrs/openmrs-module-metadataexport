@@ -36,6 +36,8 @@
 	<aware_of_modules>
 		<aware_of_module>org.openmrs.module.legacyui</aware_of_module>
 		<aware_of_module>org.openmrs.module.emrapi</aware_of_module>
+		<aware_of_module>org.openmrs.module.fhir2</aware_of_module>
+		<aware_of_module>org.openmrs.module.idgen</aware_of_module>
 		<aware_of_module>org.openmrs.module.metadatamapping</aware_of_module>
 		<aware_of_module>org.openmrs.module.metadatasharing</aware_of_module>
 		<aware_of_module>org.openmrs.module.addresshierarchy</aware_of_module>

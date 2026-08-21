@@ -24,6 +24,13 @@ public class ExportLine {
 		}
 	}
 	
+	/** Writes {@code value.toString()}; a null writes nothing, like an empty string. */
+	public void put(String header, Object value) {
+		if (value != null) {
+			put(header, value.toString());
+		}
+	}
+	
 	public String get(String header) {
 		return values.get(header);
 	}

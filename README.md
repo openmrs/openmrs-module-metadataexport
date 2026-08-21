@@ -66,6 +66,36 @@ Currently supported domains:
 * Metadata sharing (raw zip packages already built and published through the metadatasharing
   module's own UI, copied out as-is; not CSV/XML — one file per package) — requires the
   metadatasharing module
+* Identifier sources (identifier type, name, description; sequential: prefix, suffix, first
+  identifier base, min/max length, base character set; remote: url, user, password; pool: backing
+  source, batch size, minimum size, refill with task, sequential allocation) — written as
+  idgen_sequential/idgen_remote/idgen_pool CSVs with pools ordered last so backing sources load
+  first; remote-source passwords are never exported in plaintext — each row carries a
+  `property:idgen.remote.password.<identifier source uuid>` placeholder, and the importing server
+  must define the `idgen.remote.password.<identifier source uuid>` system or OpenMRS runtime
+  property (retired remote sources included — Initializer still requires the password when it
+  bootstraps them); sources Initializer cannot import are skipped with a warning — custom
+  identifier source types from other modules, remote sources with no user (Initializer requires
+  one), pools whose backing source is missing or itself skipped — as are auto generation options
+  pointing at any skipped source; reserved identifiers on a source are not exported (Initializer
+  has no column for them) and are flagged with a warning; requires the idgen module (4.6+)
+* Auto generation options (identifier type, location, identifier source, manual entry enabled,
+  auto generation enabled) — the referenced identifier type, source and location are pulled in via
+  cross-domain closure; requires the idgen module (4.6+)
+* FHIR concept sources (concept source, url) — the referenced concept source is pulled in via
+  cross-domain closure; name and description are not exported (Initializer has no columns for
+  them — it sets the name from the concept source when it creates the row); rows without a
+  concept source are skipped with a warning (Initializer requires that column), and when several
+  rows share one concept source only one is exported, preferring the unretired row, with a
+  warning for the rest (Initializer matches rows by concept source, so duplicates would collapse
+  unpredictably on import); requires the fhir2 module (1.6+)
+* FHIR patient identifier systems (patient identifier type, url) — the referenced patient
+  identifier type is pulled in via cross-domain closure; name and description are not exported
+  (Initializer has no columns for them — it overwrites the name with the identifier type's name
+  on import); rows without an identifier type are skipped with a warning (Initializer requires
+  that column), and when several rows share one identifier type only one is exported, preferring
+  the unretired row, with a warning for the rest (Initializer matches rows by identifier type,
+  so duplicates would collapse unpredictably on import); requires the fhir2 module (1.6+)
 * Address hierarchy (the `addressConfiguration.xml`, rebuilt from the ordered hierarchy levels and
   the live address template, plus a headerless `addresshierarchy.csv` of one root-to-leaf path per
   leaf entry; not CSV/XML rows — a whole-config directory) — requires the addresshierarchy module
@@ -74,12 +104,12 @@ Domains contributed by other modules (supportable, but depend on the module bein
 not yet covered):
 
 * Identifier generation (idgen, auto-generation options)
+* Address hierarchy (address hierarchy entries, location tag maps)
 * Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
 * Queues
 * Cohorts (cohort types, cohort attribute types)
-* FHIR (FHIR concept sources, FHIR patient identifier systems)
 * Data filter mappings
 * Dispositions
 * OCL
@@ -219,7 +249,9 @@ Exporters that only contribute extra columns to an existing row (not the primary
 `BaseLineExporter<T>` directly instead.
 
 A CSV domain may emit more than one file by overriding `partition(instances)` (the default is one
-file).
+file). When the files must load in a set sequence — e.g. idgen pools after the sources they
+reference — also override `order(fileName)` to stamp each file with an Initializer `_order:`
+header.
 
 For an XML domain (Initializer loads some domains, such as global properties, from XML rather than
 CSV), extend `XmlDomainExporter<T>` instead of `CsvDomainExporter<T>`. Build the DOM in
