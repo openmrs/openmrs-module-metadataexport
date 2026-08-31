@@ -9,7 +9,12 @@
  */
 package org.openmrs.module.metadataexport.domain.attributetype;
 
+import org.openmrs.ConceptAttributeType;
+import org.openmrs.LocationAttributeType;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.ProgramAttributeType;
+import org.openmrs.ProviderAttributeType;
+import org.openmrs.VisitAttributeType;
 import org.openmrs.api.context.Context;
 import org.openmrs.attribute.BaseAttributeType;
 import org.openmrs.module.initializer.Domain;
@@ -37,7 +42,9 @@ public class AttributeTypeDomainExporter extends CsvDomainExporter<BaseAttribute
 	
 	@Override
 	public boolean handles(OpenmrsObject instance) {
-		return instance instanceof BaseAttributeType;
+		return instance instanceof LocationAttributeType || instance instanceof VisitAttributeType
+		        || instance instanceof ProviderAttributeType || instance instanceof ConceptAttributeType
+		        || instance instanceof ProgramAttributeType;
 	}
 	
 	@Override
