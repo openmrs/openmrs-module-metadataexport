@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.cohort;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.module.cohort.CohortType;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -17,24 +16,9 @@ import org.openmrs.module.metadataexport.export.ExportLine;
 
 public class CohortTypeLineExporter extends BaseLineExporter<CohortType> {
 	
-	/**
-	 * CohortType is Voidable, not Retireable, so this can't extend MetadataLineExporter; a voided row
-	 * keeps its full columns because Iniz's CohortTypeCsvParser bootstraps and fills a voided row whose
-	 * uuid is unknown on the target before voiding it.
-	 */
-	@Override
-	public void writeLine(CohortType instance, ExportLine line) {
-		line.put(BaseLineProcessor.HEADER_UUID, instance.getUuid());
-		
-		if (BooleanUtils.isTrue(instance.getVoided())) {
-			line.put(BaseLineProcessor.HEADER_VOID_RETIRE, "true");
-		}
-		
-		export(instance, line);
-	}
-	
 	@Override
 	public void export(CohortType instance, ExportLine line) {
+		line.put(BaseLineProcessor.HEADER_UUID, instance.getUuid());
 		line.put(BaseLineProcessor.HEADER_NAME, instance.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, instance.getDescription());
 	}

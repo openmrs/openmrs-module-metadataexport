@@ -48,21 +48,15 @@ class CohortTypeLineExporterTest {
 	}
 	
 	@Test
-	void voidedTypeEmitsFlagAndFullColumns() {
-		// Iniz's CohortTypeCsvParser bootstraps and fills a voided row whose uuid is unknown on the
-		// target, so the exporter must re-dispatch the full columns, not stop at uuid + flag.
+	void neverWritesTheVoidRetireFlag() {
 		CohortType cohortType = new CohortType();
 		cohortType.setUuid("439559c2-a3a4-4a25-b4b2-1a0299e287ee");
 		cohortType.setName("Old Group");
-		cohortType.setDescription("No longer used");
 		cohortType.setVoided(true);
 		
 		ExportLine line = new ExportLine();
 		new CohortTypeLineExporter().writeLine(cohortType, line);
 		
-		assertEquals("439559c2-a3a4-4a25-b4b2-1a0299e287ee", line.get("uuid"));
-		assertEquals("true", line.get("void/retire"));
-		assertEquals("Old Group", line.get("name"));
-		assertEquals("No longer used", line.get("description"));
+		assertNull(line.get("void/retire"));
 	}
 }

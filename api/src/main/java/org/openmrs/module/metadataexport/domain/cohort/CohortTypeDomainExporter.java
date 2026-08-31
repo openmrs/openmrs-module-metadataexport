@@ -51,7 +51,8 @@ public class CohortTypeDomainExporter extends CsvDomainExporter<CohortType> {
 	@SuppressWarnings("unchecked")
 	public Collection<CohortType> getAllInstances() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		return sessionFactory.getCurrentSession().createQuery("from CohortType").list();
+		// Voided rows are dropped in Iniz
+		return sessionFactory.getCurrentSession().createQuery("from CohortType where voided = false").list();
 	}
 	
 	@Override
