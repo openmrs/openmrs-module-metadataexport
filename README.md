@@ -103,8 +103,6 @@ Currently supported domains:
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
-* Identifier generation (idgen, auto-generation options)
-* Address hierarchy (address hierarchy entries, location tag maps)
 * Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
