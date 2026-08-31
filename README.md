@@ -35,7 +35,9 @@ Currently supported domains:
 * Person Attribute Types (name, description, searchable, format, foreign uuid, edit privilege)
 * Location Tags (name, description)
 * Locations (name, description, parent location, tags, address fields) — parent locations and tags
-  are pulled in via cross-domain closure
+  are pulled in via cross-domain closure. Tag membership is emitted inline as `Tag|<name>` columns,
+  which is Initializer's own equivalent of the standalone `locationtagmaps` domain, so that data
+  needs no separate file
 * Drugs (name, description, strength, concept drug, concept dosage form, ingredients, mappings) —
   drug/dosage-form/ingredient concepts are pulled in via cross-domain closure
 * Order types (name, description, java class name, parent, concept classes) — parent order types and
@@ -94,10 +96,14 @@ Currently supported domains:
   that column), and when several rows share one identifier type only one is exported, preferring
   the unretired row, with a warning for the rest (Initializer matches rows by identifier type,
   so duplicates would collapse unpredictably on import); requires the fhir2 module (1.6+)
+* Address hierarchy (the `addressConfiguration.xml`, rebuilt from the ordered hierarchy levels and
+  the live address template, plus a headerless `addresshierarchy.csv` of one root-to-leaf path per
+  leaf entry; not CSV/XML rows — a whole-config directory) — requires the addresshierarchy module
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
+* Identifier generation (idgen, auto-generation options)
 * Address hierarchy (address hierarchy entries, location tag maps)
 * Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
