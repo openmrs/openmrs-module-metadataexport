@@ -110,9 +110,8 @@ not yet covered):
 * Cohorts (cohort types, cohort attribute types)
 * Data filter mappings
 * Dispositions
-* OCL
 
-Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks) are
+Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks, OCL) are
 out of scope.
 
 How it works
