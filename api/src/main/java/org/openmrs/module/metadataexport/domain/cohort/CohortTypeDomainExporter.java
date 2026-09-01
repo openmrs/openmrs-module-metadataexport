@@ -56,7 +56,9 @@ public class CohortTypeDomainExporter extends CsvDomainExporter<CohortType> {
 	@SuppressWarnings("unchecked")
 	public Collection<CohortType> getAllInstances() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		// Voided rows are dropped in Iniz
+		// Dropped because CohortType.getId() unboxes a primitive int, so Iniz's shouldFill is never
+		// true on a void/retire line: it bootstraps the row, skips the fill and saves it with no
+		// name or description. Iniz itself does not drop voided rows.
 		return sessionFactory.getCurrentSession().createQuery("from CohortType where voided = false").list();
 	}
 	
