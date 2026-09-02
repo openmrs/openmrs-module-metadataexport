@@ -99,6 +99,12 @@ Currently supported domains:
 * Address hierarchy (the `addressConfiguration.xml`, rebuilt from the ordered hierarchy levels and
   the live address template, plus a headerless `addresshierarchy.csv` of one root-to-leaf path per
   leaf entry; not CSV/XML rows — a whole-config directory) — requires the addresshierarchy module
+* Cohort types (name, description) — requires the cohort module (3.5+)
+* Cohort attribute types (name, description, datatype classname, preferred handler classname,
+  handler config, min/max occurs) — retired attribute types are not exported (Initializer's parser
+  cannot resolve them: its lookups exclude retired rows, so re-importing one fails on the name/uuid
+  constraints), and datatype config is not exported (Initializer has no column for it); requires
+  the cohort module (3.5+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
@@ -107,7 +113,6 @@ not yet covered):
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
 * Queues
-* Cohorts (cohort types, cohort attribute types)
 * Data filter mappings
 * Dispositions
 
