@@ -114,8 +114,9 @@ not yet covered):
 * Appointment scheduling (specialities, service definitions, service types)
 * Queues
 * Data filter mappings
+* System Tasks
 
-Non-exportable Initializer domains (Liquibase, JSON key-values, system tasks, OCL, Dispositions) are
+Non-exportable Initializer domains (Liquibase, JSON key-values, OCL, Dispositions) are
 out of scope.
 
 How it works
