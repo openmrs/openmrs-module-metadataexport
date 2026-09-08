@@ -76,7 +76,7 @@ class SystemTaskLineExporterTest {
 	}
 	
 	@Test
-	void retiredTaskEmitsUuidAndFlagOnly() {
+	void retiredTaskEmitsFullRowPlusFlag() {
 		SystemTask task = new SystemTask();
 		task.setUuid("439559c2-a3a4-4a25-b4b2-1a0299e287ee");
 		task.setName("discontinued");
@@ -89,8 +89,9 @@ class SystemTaskLineExporterTest {
 		
 		assertEquals("439559c2-a3a4-4a25-b4b2-1a0299e287ee", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("title"), "retired rows carry only uuid + flag");
-		assertNull(line.get("priority"), "retired rows carry only uuid + flag");
+		assertEquals("discontinued", line.get("name"),
+		    "Iniz bootstraps retired rows with unknown uuids and name is NOT NULL, so they carry the full row");
+		assertEquals("Discontinued Task", line.get("title"), "title is NOT NULL on the target too");
+		assertEquals("MEDIUM", line.get("priority"));
 	}
 }

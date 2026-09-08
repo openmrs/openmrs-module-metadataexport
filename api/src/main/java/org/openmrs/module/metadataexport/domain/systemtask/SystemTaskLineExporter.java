@@ -36,6 +36,11 @@ public class SystemTaskLineExporter extends MetadataLineExporter<SystemTask> {
 		}
 	}
 	
+	@Override
+	protected void writeRetiredDiscriminators(SystemTask instance, ExportLine line) {
+		export(instance, line);
+	}
+	
 	static ProviderRole resolveAssignee(SystemTask task) {
 		Integer providerRoleId = task.getDefaultAssigneeProviderRoleId();
 		if (providerRoleId == null) {
