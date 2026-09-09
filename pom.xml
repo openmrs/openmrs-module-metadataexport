@@ -68,7 +68,9 @@
 		<queueVersion>3.0.0</queueVersion>
 		<webservicesRestVersion>3.1.0</webservicesRestVersion>
 		<appointmentsVersion>1.2.1</appointmentsVersion>
-	</properties>
+		<billingVersion>2.4.0</billingVersion>
+		<stockmanagementVersion>1.4.0</stockmanagementVersion>
+    </properties>
 
 	<build>
 		<plugins>
@@ -202,6 +204,18 @@
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>cohort-api</artifactId>
 			<version>${cohortModuleVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>billing-api</artifactId>
+			<version>${billingVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>stockmanagement-api</artifactId>
+			<version>${stockmanagementVersion}</version>
 			<scope>provided</scope>
 		</dependency>
 
