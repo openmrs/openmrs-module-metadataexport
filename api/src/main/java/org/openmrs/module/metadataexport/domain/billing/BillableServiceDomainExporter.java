@@ -28,34 +28,34 @@ import java.util.List;
 @Component
 @OpenmrsProfile(modules = "billing:2.4.0")
 public class BillableServiceDomainExporter extends CsvDomainExporter<BillableService> {
-
+	
 	@Override
 	protected List<BaseLineExporter<BillableService>> chain() {
 		return Collections.singletonList(new BillableServiceLineExporter());
 	}
-
+	
 	@Override
 	protected String fileName() {
 		return "billableService.csv";
 	}
-
+	
 	@Override
 	public Domain getDomain() {
 		return Domain.BILLABLE_SERVICES;
 	}
-
+	
 	@Override
 	public boolean handles(OpenmrsObject instance) {
 		return instance instanceof BillableService;
 	}
-
+	
 	@Override
 	public Collection<BillableService> getAllInstances() {
 		BillableServiceService billableServiceServices = Context.getService(BillableServiceService.class);
 		return billableServiceServices.getBillableServices(new BillableServiceSearch(null, null, null, null, null, true),
 		    null);
 	}
-
+	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(BillableService instance) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
