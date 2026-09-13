@@ -218,7 +218,12 @@
 			<version>${stockmanagementVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.openmrs</groupId>
+			<artifactId>event-api</artifactId>
+			<version>4.0.0</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>tasks-api</artifactId>
