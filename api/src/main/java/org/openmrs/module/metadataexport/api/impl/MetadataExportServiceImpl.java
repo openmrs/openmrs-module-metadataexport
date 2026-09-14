@@ -91,12 +91,6 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 	
 	@Override
 	@Transactional(readOnly = true)
-	public List<ExportBuild> getBuilds(ExportPackage exportPackage) {
-		return metadataExportDao.getBuilds(exportPackage);
-	}
-	
-	@Override
-	@Transactional(readOnly = true)
 	public List<ExportBuild> getBuilds(ExportPackage exportPackage, int startIndex, int limit) {
 		return metadataExportDao.getBuilds(exportPackage, startIndex, limit);
 	}

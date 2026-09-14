@@ -22,7 +22,6 @@ import org.openmrs.module.metadataexport.api.model.ExportStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * Triggers export builds and runs them on a daemon thread. Deliberately not transactional: the
@@ -46,16 +45,16 @@ public class ExportJobRunner {
 			throw new RetiredPackageException(
 			        "Package '" + exportPackage.getName() + "' is retired: " + exportPackage.getRetireReason());
 		}
-		List<ExportBuild> builds = service.getBuilds(exportPackage);
-		for (ExportBuild existing : builds) {
-			if (!existing.getExportStatus().isTerminal()) {
-				throw new ActiveBuildException("Build v" + existing.getVersion() + " of '" + exportPackage.getName()
-				        + "' is already " + existing.getExportStatus());
-			}
+		// only the newest build can be non-terminal: trigger is the sole creator, refuses while one is
+		// active, and the activator fails anything stranded at startup - so one row answers both questions
+		ExportBuild latest = service.getLatestBuild(exportPackage);
+		if (latest != null && !latest.getExportStatus().isTerminal()) {
+			throw new ActiveBuildException("Build v" + latest.getVersion() + " of '" + exportPackage.getName()
+			        + "' is already " + latest.getExportStatus());
 		}
 		ExportBuild build = new ExportBuild();
 		build.setExportPackage(exportPackage);
-		build.setVersion(builds.isEmpty() ? 1 : builds.get(0).getVersion() + 1);
+		build.setVersion(latest == null ? 1 : latest.getVersion() + 1);
 		build.setExportStatus(ExportStatus.QUEUED);
 		final ExportBuild queued;
 		try {

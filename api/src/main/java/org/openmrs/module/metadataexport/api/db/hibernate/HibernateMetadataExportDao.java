@@ -100,11 +100,6 @@ public class HibernateMetadataExportDao implements MetadataExportDao {
 	}
 	
 	@Override
-	public List<ExportBuild> getBuilds(ExportPackage exportPackage) {
-		return buildsQuery(exportPackage).getResultList();
-	}
-	
-	@Override
 	public List<ExportBuild> getBuilds(ExportPackage exportPackage, int startIndex, int limit) {
 		return window(buildsQuery(exportPackage), startIndex, limit).getResultList();
 	}

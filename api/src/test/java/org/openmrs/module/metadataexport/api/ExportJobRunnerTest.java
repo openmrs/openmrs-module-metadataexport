@@ -103,7 +103,7 @@ class ExportJobRunnerTest extends BaseModuleContextSensitiveTest {
 		// no daemon token in tests, so the launch fails after the QUEUED build is saved
 		assertThrows(APIException.class, () -> runner.trigger(exportPackage.getUuid()));
 		
-		List<ExportBuild> builds = service.getBuilds(exportPackage);
+		List<ExportBuild> builds = service.getBuilds(exportPackage, 0, 10);
 		assertEquals(2, builds.size());
 		ExportBuild second = builds.get(0);
 		assertEquals(2, second.getVersion());

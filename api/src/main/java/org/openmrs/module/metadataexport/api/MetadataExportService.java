@@ -50,9 +50,6 @@ public interface MetadataExportService extends OpenmrsService {
 	ExportBuild getBuildByUuid(String uuid);
 	
 	@Authorized(MetadataExportConstants.GET_PRIVILEGE)
-	List<ExportBuild> getBuilds(ExportPackage exportPackage);
-	
-	@Authorized(MetadataExportConstants.GET_PRIVILEGE)
 	List<ExportBuild> getBuilds(ExportPackage exportPackage, int startIndex, int limit);
 	
 	@Authorized(MetadataExportConstants.GET_PRIVILEGE)
