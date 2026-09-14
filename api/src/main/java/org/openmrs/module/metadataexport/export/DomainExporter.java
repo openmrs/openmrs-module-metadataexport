@@ -27,10 +27,11 @@ import java.util.stream.Collectors;
  * a registry of these and never contains any per-domain logic, so adding a domain is a new class
  * rather than a new service method.
  * <p>
- * Implementations own their own output: a CSV domain writes one file, a future forms domain could
- * write many JSON files. The selection seam ({@link #getAllInstances} / {@link #getDependencies})
- * is kept separate from the writing ({@link #export}) so that instance-level selection and
- * cross-domain dependency closure can be layered on later without touching the writers.
+ * Implementations own their own output: a CSV domain writes one file, the AMPATH forms domain
+ * writes one JSON file per form. The selection seam ({@link #getAllInstances} /
+ * {@link #getDependencies}) is kept separate from the writing ({@link #export}) so that
+ * instance-level selection and cross-domain dependency closure can be layered on later without
+ * touching the writers.
  */
 public interface DomainExporter<T extends OpenmrsObject> {
 	

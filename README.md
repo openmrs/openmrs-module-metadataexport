@@ -125,11 +125,35 @@ Currently supported domains:
   module's lookup by uuid, which excludes retired queues, so a retired row can never be matched on
   the target: where it already exists the re-import fails on the uuid constraint and Initializer
   2.12 then abandons the rest of the file); requires the queue module (3.0+)
+* AMPATH forms (one JSON schema file per form, the same shape the O3 Form Builder saves: the form's
+  `JSON schema` resource is written back as the file, with the `name`, `version`, `description`,
+  `published`, `retired` and `encounter` entries Initializer copies onto the form refreshed from the
+  form itself; `encounter` carries the encounter type's name, which is what Initializer resolves
+  even though its own error message speaks of an "id") — the encounter type and the form's
+  translation resources are pulled in via cross-domain closure; retired forms and all but the
+  newest version of a name are not exported, with a warning per skipped form (Initializer would
+  import them, but a retired form is dead weight on the target, and Initializer derives the form
+  uuid from name and version and retires the live form of that name before creating a new version,
+  so two versions in one package would leave a survivor that depends on file order); a form whose
+  schema resource has no readable JSON object is not exported either, with a warning; a form
+  without an encounter type is still exported but flagged with a warning, because Initializer
+  rejects the file until an `encounter` entry is added (unless its `processor` is not the
+  encounter form processor); note that Initializer ignores any `uuid` in the file and derives the
+  form's uuid from its name and version, so the imported form keeps the source uuid only when the
+  source form was itself loaded by Initializer
+* AMPATH form translations (one JSON file per form and language, written back from the form's
+  `<form name>_translations_<language>` resource, whether Initializer saved it as a long free text
+  or the O3 Form Builder saved it with no datatype at all, with the `form` entry refreshed to the
+  form's name and a missing `language` filled in from the resource name) — the owning form is pulled in via
+  cross-domain closure; only translations of exported forms (see above) are exported, and a
+  resource whose content has no `translations` entry is skipped with a warning (Initializer would
+  import it, but since it re-matches a translation resource by that entry it would create a fresh
+  duplicate on every re-import)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
-* Forms (Bahmni forms, AMPATH forms, AMPATH form translations, HTML forms)
+* Forms (Bahmni forms, HTML forms)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
 * Data filter mappings
@@ -328,8 +352,37 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 }
 ```
 
-Any other non-CSV, non-XML domain (for example forms as JSON) skips both base classes and implements
-`DomainExporter` directly, writing whatever files it likes in `export(bucket, context)`.
+For a JSON domain (Initializer loads AMPATH forms and their translations from one JSON file per
+form), extend `JsonDomainExporter<T>`. Build the Jackson trees in `toDocuments(instances)` — again
+keyed by file name, and leaving an instance out of the map is how you skip it — using the inherited
+`readTree(json)` to edit stored content or `newObject()` to start from scratch; the base handles
+pretty-printing, encoding, and placement under `configuration/<domain>/`:
+
+```java
+@Component
+public class AmpathFormDomainExporter extends JsonDomainExporter<Form> {
+
+    public Domain getDomain()               { return Domain.AMPATH_FORMS; }
+
+    // ... handles / getAllInstances / getDependencies as for any domain ...
+
+    protected Map<String, JsonNode> toDocuments(Collection<Form> forms) throws IOException {
+        Map<String, JsonNode> documents = new LinkedHashMap<>();
+        for (Form form : forms) {
+            // storedSchemaOf and fileNameFor are illustrative helpers, not framework methods
+            ObjectNode schema = (ObjectNode) readTree(storedSchemaOf(form));
+            schema.put("name", form.getName());
+            // ... refresh the other keys Initializer reads ...
+            documents.put(fileNameFor(form) + ".json", schema);
+        }
+        return documents;
+    }
+}
+```
+
+Any other domain whose files are neither CSV, XML nor JSON (for example the address hierarchy's
+whole-config directory) skips the base classes and implements `DomainExporter` directly, writing
+whatever files it likes in `export(bucket, context)`.
 
 That is all. Because the exporter is a `@Component`, it is registered automatically; there is no
 list to edit. Selection, closure, routing, and writing are handled by the framework.

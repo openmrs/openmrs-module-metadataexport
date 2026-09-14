@@ -33,9 +33,7 @@ import java.io.IOException;
 public class XmlExporter {
 	
 	public void writeXml(Document document, Domain domain, File outDir, String fileName) throws IOException {
-		File domainDir = new File(new File(outDir, "configuration"), domain.getName());
-		domainDir.mkdirs();
-		File target = new File(domainDir, fileName);
+		File target = new File(ExportContext.domainDir(outDir, domain), fileName);
 		try {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();

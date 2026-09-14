@@ -65,9 +65,7 @@ public class CsvExporter<T extends OpenmrsObject> {
 		}
 		String[] headerRow = headers.toArray(new String[0]);
 		
-		File domainDir = new File(new File(outDir, "configuration"), domain.getName());
-		domainDir.mkdirs();
-		File target = new File(domainDir, fileName);
+		File target = new File(ExportContext.domainDir(outDir, domain), fileName);
 		
 		try (CSVWriter writer = new CSVWriter(
 		        new OutputStreamWriter(Files.newOutputStream(target.toPath()), StandardCharsets.UTF_8))) {
