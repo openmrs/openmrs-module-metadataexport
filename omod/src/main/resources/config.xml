@@ -31,6 +31,7 @@
 
 	<require_modules>
 		<require_module>org.openmrs.module.initializer</require_module>
+		<require_module version="${webservicesRestVersion}">org.openmrs.module.webservices.rest</require_module>
 	</require_modules>
 
 	<aware_of_modules>
@@ -61,7 +62,11 @@
 	</privilege>
 	<privilege>
 		<name>Manage Metadata Export Packages</name>
-		<description>Able to create, update and retire metadata export packages, trigger builds and download exports</description>
+		<description>Able to create, update and retire metadata export packages and trigger builds. Grant together with Get Metadata Export Packages: write responses render the saved object, which needs the read privilege</description>
+	</privilege>
+	<privilege>
+		<name>Download Metadata Export Packages</name>
+		<description>Able to download the zip of a completed export build. Grant together with Get Metadata Export Packages: the download looks the build up first</description>
 	</privilege>
 
 

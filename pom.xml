@@ -66,6 +66,7 @@
 		<cohortModuleVersion>3.5.0</cohortModuleVersion>
 		<tasksVersion>1.0.0</tasksVersion>
 		<queueVersion>3.0.0</queueVersion>
+		<webservicesRestVersion>3.1.0</webservicesRestVersion>
     </properties>
 
 	<build>
@@ -209,14 +210,12 @@
 			<version>${tasksVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>queue-api</artifactId>
 			<version>${queueVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<!-- Initializer's queues parser lives in its api-2.3 submodule; only the round-trip test needs it. -->
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
