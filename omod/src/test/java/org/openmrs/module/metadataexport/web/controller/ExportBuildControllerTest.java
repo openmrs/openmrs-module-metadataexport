@@ -107,6 +107,49 @@ class ExportBuildControllerTest extends BaseModuleWebContextSensitiveTest {
 		assertTrue(response.getContentAsString().contains("no-such-uuid"), response.getContentAsString());
 	}
 	
+	/** Manage covers editing and triggering, not taking the zip: that is its own privilege. */
+	@Test
+	void download_returns403ForAUserWithGetAndManageButNoDownloadPrivilege() throws Exception {
+		ExportBuild build = saveBuild(ExportStatus.COMPLETED);
+		Context.becomeUser("3-4");
+		Context.addProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+		Context.addProxyPrivilege(MetadataExportConstants.MANAGE_PRIVILEGE);
+		try {
+			assertEquals(403,
+			    mockMvc.perform(get(BUILDS + "/" + build.getUuid() + "/download")).andReturn().getResponse().getStatus());
+		}
+		finally {
+			Context.removeProxyPrivilege(MetadataExportConstants.MANAGE_PRIVILEGE);
+			Context.removeProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+			authenticate();
+		}
+	}
+	
+	@Test
+	void download_streamsForAUserWithGetAndDownloadPrivileges() throws Exception {
+		File zip = new File(appDataDir, "metadataexport/packages/p-2/1/metadataexport-role-v1.zip");
+		Files.createDirectories(zip.getParentFile().toPath());
+		Files.write(zip.toPath(), "zip for a download-only role".getBytes(StandardCharsets.UTF_8));
+		ExportBuild build = saveBuild(ExportStatus.COMPLETED);
+		build.setZipPath("metadataexport/packages/p-2/1/metadataexport-role-v1.zip");
+		service().saveExportBuild(build);
+		Context.becomeUser("3-4");
+		Context.addProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+		Context.addProxyPrivilege(MetadataExportConstants.DOWNLOAD_PRIVILEGE);
+		try {
+			MockHttpServletResponse response = mockMvc.perform(get(BUILDS + "/" + build.getUuid() + "/download")).andReturn()
+			        .getResponse();
+			
+			assertEquals(200, response.getStatus());
+			assertEquals("application/zip", response.getContentType());
+		}
+		finally {
+			Context.removeProxyPrivilege(MetadataExportConstants.DOWNLOAD_PRIVILEGE);
+			Context.removeProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+			authenticate();
+		}
+	}
+	
 	/**
 	 * Read-only users can poll a build but not take the zip: getBuildZip carries the Manage privilege.
 	 */

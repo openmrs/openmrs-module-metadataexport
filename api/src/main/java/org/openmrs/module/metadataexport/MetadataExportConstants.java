@@ -16,8 +16,14 @@ public final class MetadataExportConstants {
 	/** Read packages and builds. Declared in config.xml. */
 	public static final String GET_PRIVILEGE = "Get Metadata Export Packages";
 	
-	/** Create, update and retire packages; trigger builds; download exports. Declared in config.xml. */
+	/** Create, update and retire packages; trigger builds. Declared in config.xml. */
 	public static final String MANAGE_PRIVILEGE = "Manage Metadata Export Packages";
+	
+	/**
+	 * Download a completed build's zip. Separate from Manage so a role can fetch exports without
+	 * editing them. Declared in config.xml.
+	 */
+	public static final String DOWNLOAD_PRIVILEGE = "Download Metadata Export Packages";
 	
 	private MetadataExportConstants() {
 	}

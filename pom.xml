@@ -210,5 +210,17 @@
 			<version>${tasksVersion}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>queue-api</artifactId>
+			<version>${queueVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>initializer-api-2.3</artifactId>
+			<version>${initializerVersion}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

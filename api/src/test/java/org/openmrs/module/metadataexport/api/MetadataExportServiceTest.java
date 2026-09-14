@@ -35,6 +35,7 @@ import java.util.zip.ZipFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -183,8 +184,17 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 			assertThrows(APIAuthenticationException.class, () -> service.saveExportBuild(new ExportBuild()));
 			assertThrows(APIAuthenticationException.class, () -> service.getBuildZip(new ExportBuild()));
 			assertThrows(APIAuthenticationException.class, () -> service.failStrandedBuilds("x"));
+			
+			// Manage does not imply Download, and Download does not imply Manage
+			Context.addProxyPrivilege(MetadataExportConstants.MANAGE_PRIVILEGE);
+			assertThrows(APIAuthenticationException.class, () -> service.getBuildZip(new ExportBuild()));
+			Context.removeProxyPrivilege(MetadataExportConstants.MANAGE_PRIVILEGE);
+			Context.addProxyPrivilege(MetadataExportConstants.DOWNLOAD_PRIVILEGE);
+			assertNull(service.getBuildZip(new ExportBuild()), "no zip path yet, but the call is allowed");
+			assertThrows(APIAuthenticationException.class, () -> service.retireExportPackage(saved, "x"));
 		}
 		finally {
+			Context.removeProxyPrivilege(MetadataExportConstants.DOWNLOAD_PRIVILEGE);
 			Context.removeProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
 			authenticate();
 		}

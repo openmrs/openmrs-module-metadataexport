@@ -67,6 +67,6 @@ public interface MetadataExportService extends OpenmrsService {
 	@Authorized(MetadataExportConstants.MANAGE_PRIVILEGE)
 	int failStrandedBuilds(String reason);
 	
-	@Authorized(MetadataExportConstants.MANAGE_PRIVILEGE)
+	@Authorized(MetadataExportConstants.DOWNLOAD_PRIVILEGE)
 	File getBuildZip(ExportBuild build);
 }
