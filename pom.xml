@@ -216,6 +216,7 @@
 			<version>${queueVersion}</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Initializer's queues parser lives in its api-2.3 submodule; only the round-trip test needs it. -->
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>initializer-api-2.3</artifactId>

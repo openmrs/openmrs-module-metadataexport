@@ -151,7 +151,8 @@ class ExportBuildControllerTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	/**
-	 * Read-only users can poll a build but not take the zip: getBuildZip carries the Manage privilege.
+	 * Read-only users can poll a build but not take the zip: that needs the Download privilege.
+
 	 */
 	@Test
 	void download_returns403ForAUserWithOnlyTheGetPrivilege() throws Exception {
