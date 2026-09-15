@@ -41,11 +41,6 @@ public abstract class JsonDomainExporter<T extends OpenmrsObject> implements Dom
 		}
 	}
 	
-	/** Parses stored JSON content into a tree the subclass can edit before writing it back. */
-	protected static JsonNode readTree(String json) throws IOException {
-		return JsonExporter.MAPPER.readTree(json);
-	}
-	
 	protected static ObjectNode newObject() {
 		return JsonExporter.MAPPER.createObjectNode();
 	}

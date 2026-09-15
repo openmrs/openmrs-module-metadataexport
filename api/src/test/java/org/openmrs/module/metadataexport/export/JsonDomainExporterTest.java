@@ -98,14 +98,6 @@ class JsonDomainExporterTest {
 		assertTrue(domainDir.list() == null || domainDir.list().length == 0);
 	}
 	
-	@Test
-	void readTree_parsesStoredContentForEditing() throws Exception {
-		JsonNode tree = JsonDomainExporter.readTree("{\"name\":\"x\",\"pages\":[]}");
-		
-		assertEquals("x", tree.get("name").asText());
-		assertTrue(tree.get("pages").isArray());
-	}
-	
 	private static Form form(String uuid, String name) {
 		Form form = new Form();
 		form.setUuid(uuid);

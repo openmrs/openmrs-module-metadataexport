@@ -28,10 +28,7 @@ import java.nio.file.Files;
  */
 public class JsonExporter {
 	
-	/**
-	 * Shared with {@link JsonDomainExporter} so reading and writing can never drift apart in
-	 * configuration.
-	 */
+	/** Also backs {@link JsonDomainExporter#newObject()}. */
 	static final ObjectMapper MAPPER = new ObjectMapper();
 	
 	public void writeJson(JsonNode document, Domain domain, File outDir, String fileName) throws IOException {

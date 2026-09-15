@@ -29,17 +29,20 @@ import java.util.Map;
  * <p>
  * The policy: a form is exported when it carries a {@value FormResources#JSON_SCHEMA_RESOURCE}
  * resource, is not retired, is the newest version of its name, and that resource holds a JSON
- * object. Initializer would import a retired form or an older version; they are left out on
- * purpose. A retired form would only be recreated as dead weight on the target. An older version is
- * pointless because {@code AmpathFormsLoader} derives the form uuid from name and version, and when
- * that uuid is new it retires the live form of that name (core's {@code getForm(name)}, the highest
- * live version) before creating the new one, so with two versions in one package the survivor
- * depends on file order. A translation resource is exported when its form is and its content is a
- * JSON object, whatever its entries: {@code AmpathFormsTranslationsLoader} reads only {@code form}
- * and {@code language}, a file carrying just {@code form_name_translation} is a documented use of
- * the domain, and core's {@code saveFormResource} replaces an existing resource of the same name,
- * so nothing is duplicated on re-import. Only a resource whose clob is missing or does not parse to
- * an object is left out, because there is nothing to write. Deciding all of this before selection
+ * object. A retired form is left out because {@code AmpathFormsLoader} cannot create one: its
+ * {@code createNewForm} copies the retired flag from the file and saves without a retire reason,
+ * which core's {@code FormValidator} rejects, so the file fails on every target that does not
+ * already carry that name and version (only the update path, taken when the derived uuid exists,
+ * sets a reason). Initializer would import an older version, but it is left out because
+ * {@code AmpathFormsLoader} derives the form uuid from name and version, and when that uuid is new
+ * it retires the live form of that name (core's {@code getForm(name)}, the highest live version)
+ * before creating the new one, so with two versions in one package the survivor depends on file
+ * order. A translation resource is exported when its form is and its content is a JSON object,
+ * whatever its entries: {@code AmpathFormsTranslationsLoader} reads only {@code form} and
+ * {@code language}, a file carrying just {@code form_name_translation} is a documented use of the
+ * domain, and core's {@code saveFormResource} replaces an existing resource of the same name, so
+ * nothing is duplicated on re-import. Only a resource whose clob is missing or does not parse to an
+ * object is left out, because there is nothing to write. Deciding all of this before selection
  * keeps the build manifest honest: everything it lists gets a file.
  */
 final class AmpathFormScan {
@@ -72,7 +75,9 @@ final class AmpathFormScan {
 			resourcesByForm.put(form, resources);
 			if (BooleanUtils.isTrue(form.getRetired())) {
 				scan.formExclusions.put(form.getUuid(), FormResources.describe(form)
-				        + " is retired, and would only be recreated, retired, on the importing server");
+				        + " is retired; Initializer cannot create a retired form (its loader saves the retired flag without"
+				        + " a retire reason, which core's FormValidator rejects), so the file fails on any target that does"
+				        + " not already carry this name and version");
 			} else {
 				live.add(form);
 			}

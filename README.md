@@ -131,10 +131,12 @@ Currently supported domains:
   form itself; `encounter` carries the encounter type's name, which is what Initializer resolves
   even though its own error message speaks of an "id") — the encounter type and the form's
   translation resources are pulled in via cross-domain closure; retired forms and all but the
-  newest version of a name are not exported, with a warning per skipped form (Initializer would
-  import them, but a retired form is dead weight on the target, and Initializer derives the form
-  uuid from name and version and retires the live form of that name before creating a new version,
-  so two versions in one package would leave a survivor that depends on file order); a form whose
+  newest version of a name are not exported, with a warning per skipped form (Initializer cannot
+  create a retired form: its loader saves the retired flag without a retire reason, which core's
+  form validator rejects, so the file fails on any target not already carrying that name and
+  version; and Initializer derives the form uuid from name and version and retires the live form
+  of that name before creating a new version, so two versions in one package would leave a
+  survivor that depends on file order); a form whose
   schema resource has no readable JSON object is not exported either, with a warning; a form
   without an encounter type is still exported but flagged with a warning, because Initializer
   rejects the file until an `encounter` entry is added (unless its `processor` is not the
@@ -354,8 +356,8 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 
 For a JSON domain (Initializer loads AMPATH forms and their translations from one JSON file per
 form), extend `JsonDomainExporter<T>`. Build the Jackson trees in `toDocuments(instances)` — again
-keyed by file name, and leaving an instance out of the map is how you skip it — using the inherited
-`readTree(json)` to edit stored content or `newObject()` to start from scratch; the base handles
+keyed by file name, and leaving an instance out of the map is how you skip it — either by parsing
+stored content with Jackson or from scratch with the inherited `newObject()`; the base handles
 pretty-printing, encoding, and placement under `configuration/<domain>/`:
 
 ```java
@@ -369,8 +371,8 @@ public class AmpathFormDomainExporter extends JsonDomainExporter<Form> {
     protected Map<String, JsonNode> toDocuments(Collection<Form> forms) throws IOException {
         Map<String, JsonNode> documents = new LinkedHashMap<>();
         for (Form form : forms) {
-            // storedSchemaOf and fileNameFor are illustrative helpers, not framework methods
-            ObjectNode schema = (ObjectNode) readTree(storedSchemaOf(form));
+            // parseStoredSchema and fileNameFor are illustrative helpers, not framework methods
+            ObjectNode schema = parseStoredSchema(form);
             schema.put("name", form.getName());
             // ... refresh the other keys Initializer reads ...
             documents.put(fileNameFor(form) + ".json", schema);
