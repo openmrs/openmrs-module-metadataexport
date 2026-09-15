@@ -145,7 +145,7 @@ public class AmpathFormDomainExporter extends JsonDomainExporter<Form> {
 	private static List<FormResource> exportableTranslationsOf(Collection<FormResource> resources) {
 		List<FormResource> exportable = new ArrayList<>();
 		for (FormResource resource : FormResources.translationsOf(resources)) {
-			if (FormResources.isTranslationDocument(FormResources.readJsonObject(resource))) {
+			if (FormResources.readJson(resource).isObject()) {
 				exportable.add(resource);
 			}
 		}

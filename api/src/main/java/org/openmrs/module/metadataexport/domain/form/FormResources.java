@@ -60,12 +60,6 @@ final class FormResources {
 	
 	static final String LONG_FREE_TEXT_DATATYPE = LongFreeTextDatatype.class.getName();
 	
-	/**
-	 * The entry Initializer's translations loader uses to recognise an existing resource as a
-	 * translation when it re-imports a file.
-	 */
-	static final String TRANSLATIONS_KEY = "translations";
-	
 	private static final Pattern TRANSLATION_NAME = Pattern.compile("^(.+)_translations_([A-Za-z_]+)$");
 	
 	private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -201,11 +195,6 @@ final class FormResources {
 	/** Parses JSON text into an object node, or null when it is not valid JSON or not an object. */
 	static ObjectNode asJsonObject(String json) {
 		return parseJsonObject(json).node;
-	}
-	
-	/** Whether parsed content is a JSON object with a {@value #TRANSLATIONS_KEY} entry. */
-	static boolean isTranslationDocument(JsonNode document) {
-		return document != null && document.isObject() && document.has(TRANSLATIONS_KEY);
 	}
 	
 	/**

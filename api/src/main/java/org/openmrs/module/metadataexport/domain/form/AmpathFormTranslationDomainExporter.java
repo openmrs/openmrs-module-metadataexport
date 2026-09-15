@@ -48,8 +48,6 @@ public class AmpathFormTranslationDomainExporter extends JsonDomainExporter<Form
 	
 	public static final String LANGUAGE = "language";
 	
-	public static final String TRANSLATIONS = FormResources.TRANSLATIONS_KEY;
-	
 	public static final String FILE_INFIX = "_translations_";
 	
 	@Override
@@ -128,10 +126,9 @@ public class AmpathFormTranslationDomainExporter extends JsonDomainExporter<Form
 		Map<String, String> stems = FormResources.uniqueStems(owningForms(instances));
 		for (FormResource resource : instances) {
 			FormResources.JsonRead read = FormResources.readJson(resource);
-			if (!FormResources.isTranslationDocument(read.node)) {
+			if (!read.isObject()) {
 				throw new IOException("AMPATH form translation resource " + FormResources.describe(resource)
-				        + " no longer holds a JSON object with a '" + TRANSLATIONS + "' entry ("
-				        + (read.isObject() ? "the entry is missing" : read.problem) + "); it did when it was selected");
+				        + " no longer holds a readable JSON object (" + read.problem + "); it did when it was selected");
 			}
 			String fileName = fileNameFor(resource, stems) + JSON_EXTENSION;
 			if (documents.put(fileName, toTranslations(resource, read.node)) != null) {

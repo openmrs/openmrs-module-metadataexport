@@ -98,11 +98,13 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 	
 	private FormResource liveTranslation;
 	
-	private FormResource unmatchableTranslation;
+	private FormResource nameOnlyTranslation;
 	
 	private FormResource supersededTranslation;
 	
 	private FormResource formBuilderTranslation;
+	
+	private FormResource unreadableTranslation;
 	
 	@BeforeEach
 	void seedForms() {
@@ -115,9 +117,12 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		// how the O3 Form Builder saves a translation: name and clob reference only, no datatype
 		formBuilderTranslation = formBuilderTranslationResource(live, "de",
 		    "{\"form\":\"Old Triage\",\"language\":\"de\",\"translations\":{\"Vitals\":\"Vitalwerte\"}}");
-		// a translation resource the loader could never re-match: no "translations" entry
-		unmatchableTranslation = translationResource(live, "es",
-		    "{\"language\":\"es\",\"form_name_translation\":\"Triaje\"}");
+		// a documented Initializer use: only the localized form name, no "translations" entry
+		nameOnlyTranslation = translationResource(live, "es", "{\"language\":\"es\",\"form_name_translation\":\"Triaje\"}");
+		// a translation whose clob is gone: nothing to write
+		unreadableTranslation = translationResource(live, "it", STORED_TRANSLATIONS);
+		Context.getDatatypeService().deleteClobDatatypeStorage(
+		    Context.getDatatypeService().getClobDatatypeStorageByUuid(unreadableTranslation.getValueReference()));
 		
 		Form older = ampathForm(OLDER_UUID, "Triage", "1.0", scheduled, STORED_SCHEMA);
 		supersededTranslation = translationResource(older, "fr", STORED_TRANSLATIONS);
@@ -203,19 +208,23 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		Collection<? extends OpenmrsObject> dependencies = formExporter.getDependencies(live);
 		
 		assertEquals(
-		    new HashSet<>(Arrays.asList(scheduled.getUuid(), liveTranslation.getUuid(), formBuilderTranslation.getUuid())),
-		    uuidsOf(dependencies), "the unmatchable translation must not enter the manifest through closure either");
+		    new HashSet<>(Arrays.asList(scheduled.getUuid(), liveTranslation.getUuid(), formBuilderTranslation.getUuid(),
+		        nameOnlyTranslation.getUuid())),
+		    uuidsOf(dependencies), "the unreadable translation must not enter the manifest through closure either");
 		assertTrue(translationExporter.handles(dependencies.stream().filter(d -> d instanceof FormResource).findFirst()
 		        .orElseThrow(() -> new AssertionError("translation resource missing"))));
 	}
 	
 	@Test
-	void translationExporter_seesTheMatchableTranslationsOfExportableFormsOnly() {
+	void translationExporter_seesTheReadableTranslationsOfExportableFormsOnly() {
 		Collection<FormResource> instances = translationExporter.getAllInstances();
 		
-		assertEquals(new HashSet<>(Arrays.asList(liveTranslation.getUuid(), formBuilderTranslation.getUuid())),
-		    uuidsOf(instances), "the datatype-less Form Builder resource is in; the unmatchable resource and the"
-		            + " superseded form's translation are left out of selection");
+		assertEquals(
+		    new HashSet<>(Arrays.asList(liveTranslation.getUuid(), formBuilderTranslation.getUuid(),
+		        nameOnlyTranslation.getUuid())),
+		    uuidsOf(instances),
+		    "the datatype-less Form Builder resource and the name-only resource are in; the unreadable resource and"
+		            + " the superseded form's translation are left out of selection");
 		assertEquals(LIVE_UUID,
 		    translationExporter.getDependencies(instances.iterator().next()).iterator().next().getUuid());
 	}
@@ -223,11 +232,10 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 	@Test
 	void translationExporter_reportsAHiddenTranslationWithTheReason() {
 		APIException e = assertThrows(APIException.class, () -> translationExporter.getInstancesByUuids(
-		    Arrays.asList(liveTranslation.getUuid(), unmatchableTranslation.getUuid(), UNKNOWN_UUID)));
+		    Arrays.asList(liveTranslation.getUuid(), unreadableTranslation.getUuid(), UNKNOWN_UUID)));
 		
-		assertTrue(
-		    e.getMessage().contains(unmatchableTranslation.getUuid()
-		            + " (Triage_translations_es) has no JSON object with a 'translations' entry: the entry is missing"),
+		assertTrue(e.getMessage().contains(
+		    unreadableTranslation.getUuid() + " (Triage_translations_it) has no readable JSON object: it references clob "),
 		    e.getMessage());
 		assertTrue(e.getMessage().contains("Unknown uuids"));
 		assertTrue(e.getMessage().contains(UNKNOWN_UUID));
@@ -274,9 +282,13 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		translationExporter.export(translationExporter.getAllInstances(), new ExportContext(outDir));
 		
 		File domainDir = domainDir(outDir, Domain.AMPATH_FORMS_TRANSLATIONS);
-		assertEquals(new HashSet<>(Arrays.asList("triage_translations_fr.json", "triage_translations_de.json")),
+		assertEquals(
+		    new HashSet<>(Arrays.asList("triage_translations_fr.json", "triage_translations_de.json",
+		        "triage_translations_es.json")),
 		    new HashSet<>(Arrays.asList(domainDir.list())),
-		    "the superseded form's translation and the unmatchable resource must not be written");
+		    "the superseded form's translation and the unreadable resource must not be written");
+		assertEquals("Triaje",
+		    MAPPER.readTree(new File(domainDir, "triage_translations_es.json")).get("form_name_translation").asText());
 		assertEquals("Vitalwerte",
 		    MAPPER.readTree(new File(domainDir, "triage_translations_de.json")).get("translations").get("Vitals").asText());
 		File written = new File(domainDir, "triage_translations_fr.json");
@@ -316,6 +328,8 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		    "the file itself becomes the stored schema");
 		
 		FormResource translation = formService().getFormResource(triage, "Triage_translations_fr");
+		assertNotNull(formService().getFormResource(triage, "Triage_translations_es"),
+		    "a name-only translation file imports like any other");
 		assertNotNull(translation, "the translation must re-attach to the re-created form by name");
 		assertEquals("Signes vitaux",
 		    MAPPER.readTree(FormResources.readClob(translation)).get("translations").get("Vitals").asText());

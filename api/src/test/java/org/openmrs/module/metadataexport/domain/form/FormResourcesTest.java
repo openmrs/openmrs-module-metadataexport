@@ -128,13 +128,6 @@ class FormResourcesTest {
 	}
 	
 	@Test
-	void isTranslationDocument_requiresAnObjectWithATranslationsEntry() {
-		assertTrue(FormResources.isTranslationDocument(FormResources.asJsonObject("{\"translations\":{}}")));
-		assertFalse(FormResources.isTranslationDocument(FormResources.asJsonObject("{\"language\":\"fr\"}")));
-		assertFalse(FormResources.isTranslationDocument(null));
-	}
-	
-	@Test
 	void fileName_isLowerCaseAndFileSystemSafe() {
 		assertEquals("triage_form__v2_", FormResources.fileName("Triage Form (v2)"));
 		assertEquals("a.b-c_d", FormResources.fileName("  A.b-C/d "));

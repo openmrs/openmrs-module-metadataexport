@@ -146,9 +146,9 @@ Currently supported domains:
   or the O3 Form Builder saved it with no datatype at all, with the `form` entry refreshed to the
   form's name and a missing `language` filled in from the resource name) — the owning form is pulled in via
   cross-domain closure; only translations of exported forms (see above) are exported, and a
-  resource whose content has no `translations` entry is skipped with a warning (Initializer would
-  import it, but since it re-matches a translation resource by that entry it would create a fresh
-  duplicate on every re-import)
+  resource whose clob is missing or does not hold a JSON object is skipped with a warning, since
+  there is nothing to write; a resource carrying only `form_name_translation` (the localized form
+  name, a documented Initializer use) is exported like any other
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):

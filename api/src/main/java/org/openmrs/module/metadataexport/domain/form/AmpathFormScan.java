@@ -35,10 +35,12 @@ import java.util.Map;
  * that uuid is new it retires the live form of that name (core's {@code getForm(name)}, the highest
  * live version) before creating the new one, so with two versions in one package the survivor
  * depends on file order. A translation resource is exported when its form is and its content is a
- * JSON object with a {@value FormResources#TRANSLATIONS_KEY} entry; Initializer would import one
- * without that entry, but could never re-match it to the resource it creates, so every re-import
- * would add a duplicate. Deciding all of this before selection keeps the build manifest honest:
- * everything it lists gets a file.
+ * JSON object, whatever its entries: {@code AmpathFormsTranslationsLoader} reads only {@code form}
+ * and {@code language}, a file carrying just {@code form_name_translation} is a documented use of
+ * the domain, and core's {@code saveFormResource} replaces an existing resource of the same name,
+ * so nothing is duplicated on re-import. Only a resource whose clob is missing or does not parse to
+ * an object is left out, because there is nothing to write. Deciding all of this before selection
+ * keeps the build manifest honest: everything it lists gets a file.
  */
 final class AmpathFormScan {
 	
@@ -95,13 +97,11 @@ final class AmpathFormScan {
 					continue;
 				}
 				FormResources.JsonRead content = FormResources.readJson(resource);
-				if (FormResources.isTranslationDocument(content.node)) {
+				if (content.isObject()) {
 					scan.translationsByForm.computeIfAbsent(form.getUuid(), f -> new ArrayList<>()).add(resource);
 				} else {
-					scan.translationExclusions.put(resource.getUuid(), FormResources.describe(resource)
-					        + " has no JSON object with a '" + FormResources.TRANSLATIONS_KEY + "' entry: "
-					        + (content.isObject() ? "the entry is missing" : content.problem)
-					        + "; Initializer would import it but could never match it again, duplicating it on every re-import");
+					scan.translationExclusions.put(resource.getUuid(),
+					    FormResources.describe(resource) + " has no readable JSON object: " + content.problem);
 				}
 			}
 		}
