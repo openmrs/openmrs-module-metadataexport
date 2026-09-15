@@ -44,9 +44,10 @@ import java.util.regex.Pattern;
  * {@value #JSON_SCHEMA_RESOURCE} whose datatype is the {@value #AMPATH_JSON_SCHEMA_DATATYPE} alias,
  * and each translation is a resource named {@code <form name>_translations_<language>}; the content
  * of both lives in a {@link ClobDatatypeStorage} row whose uuid is the resource's value reference.
- * The O3 Form Builder saves the same resource name and datatype alias for the schema through the
- * REST API, and translation resources with only a name and a value reference (no datatype at all),
- * see {@code src/forms.resource.ts} in openmrs-esm-form-builder.
+ * The O3 Form Builder writes the same two shapes through the REST API: the schema resource with
+ * this name and datatype alias in {@code src/resources/forms.resource.ts}, and the translation
+ * resource with only a name and a value reference (no datatype at all) in
+ * {@code src/hooks/uploadBackendTranslations.ts}, both in openmrs-esm-form-builder.
  */
 final class FormResources {
 	

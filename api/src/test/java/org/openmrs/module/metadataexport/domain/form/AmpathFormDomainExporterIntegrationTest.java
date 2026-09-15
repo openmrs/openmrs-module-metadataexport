@@ -114,9 +114,10 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		live.setDescription("Triage at the door");
 		live.setPublished(true);
 		liveTranslation = translationResource(live, "fr", STORED_TRANSLATIONS);
-		// how the O3 Form Builder saves a translation: name and clob reference only, no datatype
+		// how the O3 Form Builder saves a translation (uploadBackendTranslations.ts): name and clob reference only,
+		// no datatype, and a clob holding just the translations, so "form" and "language" must be filled in on export
 		formBuilderTranslation = formBuilderTranslationResource(live, "de",
-		    "{\"form\":\"Old Triage\",\"language\":\"de\",\"translations\":{\"Vitals\":\"Vitalwerte\"}}");
+		    "{\"translations\":{\"Vitals\":\"Vitalwerte\"}}");
 		// a documented Initializer use: only the localized form name, no "translations" entry
 		nameOnlyTranslation = translationResource(live, "es", "{\"language\":\"es\",\"form_name_translation\":\"Triaje\"}");
 		// a translation whose clob is gone: nothing to write
@@ -289,8 +290,10 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		    "the superseded form's translation and the unreadable resource must not be written");
 		assertEquals("Triaje",
 		    MAPPER.readTree(new File(domainDir, "triage_translations_es.json")).get("form_name_translation").asText());
-		assertEquals("Vitalwerte",
-		    MAPPER.readTree(new File(domainDir, "triage_translations_de.json")).get("translations").get("Vitals").asText());
+		JsonNode formBuilder = MAPPER.readTree(new File(domainDir, "triage_translations_de.json"));
+		assertEquals("Vitalwerte", formBuilder.get("translations").get("Vitals").asText());
+		assertEquals("Triage", formBuilder.get("form").asText(), "filled in: the Form Builder stores no form entry");
+		assertEquals("de", formBuilder.get("language").asText(), "filled in: the Form Builder stores no language entry");
 		File written = new File(domainDir, "triage_translations_fr.json");
 		JsonNode translations = MAPPER.readTree(written);
 		assertEquals("Triage", translations.get("form").asText());
@@ -330,6 +333,8 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		FormResource translation = formService().getFormResource(triage, "Triage_translations_fr");
 		assertNotNull(formService().getFormResource(triage, "Triage_translations_es"),
 		    "a name-only translation file imports like any other");
+		assertNotNull(formService().getFormResource(triage, "Triage_translations_de"),
+		    "the Form Builder translation imports only because export filled in 'form' and 'language'");
 		assertNotNull(translation, "the translation must re-attach to the re-created form by name");
 		assertEquals("Signes vitaux",
 		    MAPPER.readTree(FormResources.readClob(translation)).get("translations").get("Vitals").asText());
