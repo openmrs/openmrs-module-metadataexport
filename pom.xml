@@ -53,7 +53,7 @@
 	</pluginRepositories>
 
     <properties>
-        <openmrsPlatformVersion>2.8.0</openmrsPlatformVersion>
+        <openmrsPlatformVersion>2.8.3</openmrsPlatformVersion>
         <initializerVersion>2.12.0</initializerVersion>
         <patientflagsVersion>3.0.10</patientflagsVersion>
         <jacocoVersion>0.8.12</jacocoVersion>
@@ -68,7 +68,7 @@
 		<queueVersion>3.0.0</queueVersion>
 		<webservicesRestVersion>3.1.0</webservicesRestVersion>
 		<billingVersion>2.4.0</billingVersion>
-		<stockmanagementVersion>1.4.0</stockmanagementVersion>
+		<stockmanagementVersion>3.0.0</stockmanagementVersion>
     </properties>
 
 	<build>
