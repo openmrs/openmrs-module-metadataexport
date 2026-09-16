@@ -92,8 +92,7 @@ public class AddressHierarchyDomainExporter implements DomainExporter<AddressHie
 			return;
 		}
 		
-		File domainDir = new File(new File(context.getOutputDir(), "configuration"), getDomain().getName());
-		domainDir.mkdirs();
+		File domainDir = context.domainDir(getDomain());
 		
 		AddressTemplate template = AddressSupport.getInstance().getDefaultLayoutTemplate();
 		String configXml = buildAddressConfigurationXml(levels, template);

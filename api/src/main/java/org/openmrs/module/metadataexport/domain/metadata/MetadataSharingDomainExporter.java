@@ -62,8 +62,7 @@ public class MetadataSharingDomainExporter implements DomainExporter<ExportedPac
 	
 	@Override
 	public void export(Collection<ExportedPackage> instances, ExportContext context) throws IOException {
-		File domainDir = new File(new File(context.getOutputDir(), "configuration"), getDomain().getName());
-		domainDir.mkdirs();
+		File domainDir = context.domainDir(getDomain());
 		for (ExportedPackage pkg : instances) {
 			try (InputStream in = pkg.getSerializedPackageStream()) {
 				if (in == null) {

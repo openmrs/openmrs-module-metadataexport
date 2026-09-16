@@ -9,13 +9,19 @@
  */
 package org.openmrs.module.metadataexport.export;
 
+import org.openmrs.module.initializer.Domain;
+
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Carries the shared state threaded through every {@link DomainExporter#export}. Currently just the
  * output root; the {@code configuration/} tree is written beneath it.
  */
 public class ExportContext {
+	
+	public static final String CONFIGURATION_DIR = "configuration";
 	
 	private final File outputDir;
 	
@@ -25,5 +31,20 @@ public class ExportContext {
 	
 	public File getOutputDir() {
 		return outputDir;
+	}
+	
+	/**
+	 * The directory Initializer reads a domain from, {@code <output root>/configuration/<domain>},
+	 * created if missing.
+	 */
+	public File domainDir(Domain domain) throws IOException {
+		return domainDir(outputDir, domain);
+	}
+	
+	/** Same as {@link #domainDir(Domain)} for writers that are handed the output root directly. */
+	public static File domainDir(File outputDir, Domain domain) throws IOException {
+		File dir = new File(new File(outputDir, CONFIGURATION_DIR), domain.getName());
+		Files.createDirectories(dir.toPath());
+		return dir;
 	}
 }
