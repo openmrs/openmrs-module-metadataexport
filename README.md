@@ -158,9 +158,8 @@ not yet covered):
 * Forms (Bahmni forms, HTML forms) (Optional)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
-* Data filter mappings
 
-Non-exportable Initializer domains (Liquibase, JSON key-values, OCL, Dispositions) are
+Non-exportable Initializer domains (Liquibase, JSON key-values, OCL, Dispositions, Data filter mappings) are
 out of scope.
 
 How it works
