@@ -155,7 +155,7 @@ Currently supported domains:
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
-* Forms (Bahmni forms, HTML forms)
+* Forms (Bahmni forms, HTML forms) (Optional)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
 * Data filter mappings
