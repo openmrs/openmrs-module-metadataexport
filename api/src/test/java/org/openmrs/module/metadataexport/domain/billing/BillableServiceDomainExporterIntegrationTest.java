@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.billing;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.BillableServiceService;
@@ -33,8 +32,27 @@ public class BillableServiceDomainExporterIntegrationTest extends BaseModuleCont
 	
 	private final BillableServiceDomainExporter domainExporter = new BillableServiceDomainExporter();
 	
-	@BeforeEach
-	void seedOneRetiredAndOneNonRetiredBillableService() {
+	@Test
+	void shouldGetBillableServiceAllInstances() {
+		seedOneRetiredAndOneNonRetiredBillableService();
+		
+		Collection<BillableService> billableServices = domainExporter.getAllInstances();
+		
+		assertNotNull(billableServices);
+		assertEquals(2, billableServices.size());
+		
+		List<String> uuids = billableServices.stream().map(BillableService::getUuid).collect(Collectors.toList());
+		assertTrue(uuids.contains(LIVE_UUID));
+		assertTrue(uuids.contains(RETIRED_UUID));
+	}
+	
+	@Test
+	void shouldGetEmptyBillableServicesIfAllInstancesEmpty() {
+		Collection<BillableService> billableServices = domainExporter.getAllInstances();
+		assertEquals(0, billableServices.size());
+	}
+	
+	private void seedOneRetiredAndOneNonRetiredBillableService() {
 		BillableServiceService service = Context.getService(BillableServiceService.class);
 		
 		BillableService live = createBillableService(LIVE_UUID, "General Consultation", "Gen Con");
@@ -45,18 +63,6 @@ public class BillableServiceDomainExporterIntegrationTest extends BaseModuleCont
 		service.retireBillableService(retired, "Discontinued");
 		
 		Context.flushSession();
-	}
-	
-	@Test
-	void shouldGetBillableServiceAllInstances() {
-		Collection<BillableService> billableServices = domainExporter.getAllInstances();
-		
-		assertNotNull(billableServices);
-		assertEquals(2, billableServices.size());
-		
-		List<String> uuids = billableServices.stream().map(BillableService::getUuid).collect(Collectors.toList());
-		assertTrue(uuids.contains(LIVE_UUID));
-		assertTrue(uuids.contains(RETIRED_UUID));
 	}
 	
 	private BillableService createBillableService(String uuid, String name, String shortName) {
