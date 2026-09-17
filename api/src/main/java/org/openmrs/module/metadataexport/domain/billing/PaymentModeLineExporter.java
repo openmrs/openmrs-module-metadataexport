@@ -34,14 +34,17 @@ public class PaymentModeLineExporter extends MetadataLineExporter<PaymentMode> {
 		
 		List<String> attributes = new ArrayList<>();
 		for (PaymentModeAttributeType pt : paymentMode.getAttributeTypes()) {
-			if (BooleanUtils.isTrue(pt.getRetired())) {
-				continue;
+			if (pt != null) {
+				if (BooleanUtils.isTrue(pt.getRetired())) {
+					continue;
+				}
+				
+				String name = pt.getName() == null ? "" : pt.getName();
+				String format = pt.getFormat() == null ? "" : pt.getFormat();
+				String regex = pt.getRegExp() == null ? "" : pt.getRegExp();
+				String required = BooleanUtils.isTrue(pt.getRequired()) ? "True" : "False";
+				attributes.add(name + " :: " + format + " :: " + regex + " :: " + required);
 			}
-			String name = pt.getName() == null ? "" : pt.getName();
-			String format = pt.getFormat() == null ? "" : pt.getFormat();
-			String regex = pt.getRegExp() == null ? "" : pt.getRegExp();
-			String required = BooleanUtils.isTrue(pt.getRequired()) ? "True" : "False";
-			attributes.add(name + " :: " + format + " :: " + regex + " :: " + required);
 		}
 		
 		if (!attributes.isEmpty()) {

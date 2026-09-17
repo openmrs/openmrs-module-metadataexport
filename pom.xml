@@ -93,33 +93,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<configuration>
-							<excludes>
-								<exclude>**/domain/billing/**</exclude>
-							</excludes>
-							<classpathDependencyExcludes>
-								<classpathDependencyExclude>org.openmrs.module:billing-api</classpathDependencyExclude>
-								<classpathDependencyExclude>org.openmrs.module:stockmanagement-api</classpathDependencyExclude>
-							</classpathDependencyExcludes>
-						</configuration>
-					</execution>
-					<execution>
-						<id>billing-unit-tests</id>
-						<goals><goal>test</goal></goals>
-						<configuration>
-							<includes>
-								<include>**/domain/billing/**/*Test.java</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 
