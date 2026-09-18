@@ -42,7 +42,7 @@ Currently supported domains:
   drug/dosage-form/ingredient concepts are pulled in via cross-domain closure
 * Order types (name, description, java class name, parent, concept classes) — parent order types and
   concept classes are pulled in via cross-domain closure
-* Flags (name, criteria, evaluator, message, priority, enabled, tags, description)
+* Flags (name, criteria, evaluator, message, priority, enabled, tags, description) — requires the patientflags module (3.0+)
 * Order frequencies (frequency per day, concept frequency) — the referenced concept is pulled in via
   cross domain closure
 * Programs (program concept, outcomes concept) — the referenced concepts are pulled in via
