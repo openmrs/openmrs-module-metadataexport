@@ -25,4 +25,7 @@
 	<bean id="metadataExportStubAttributeTypeCsvLineHandler"
 	      class="org.openmrs.module.metadataexport.StubAttributeTypeCsvLineHandler"/>
 
+	<bean id="initializer.InitializerMessageSource"
+		  class="org.openmrs.module.metadataexport.StubInitializerMessageSource"/>
+
 </beans>
