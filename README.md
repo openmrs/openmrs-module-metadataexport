@@ -260,9 +260,8 @@ admin-only API.
 
 Requirements
 ------------
-The Initializer and REST Web Services modules must be installed (both declared in `config.xml`
-`require_modules`); this module
-reuses its `Domain` and CSV header definitions.
+* Initializer 2.12.0+
+* REST Web Services 3.1.0+
 
 Adding a new domain
 -------------------
