@@ -11,13 +11,14 @@ package org.openmrs.module.metadataexport.domain.encounter;
 
 import org.openmrs.EncounterType;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Privilege;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -42,12 +43,22 @@ public class EncounterTypeDomainExporter extends CsvDomainExporter<EncounterType
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(EncounterType instance) {
-		return Collections.emptyList();
+		List<OpenmrsObject> dependencies = new ArrayList<>();
+		
+		Privilege editPrivilege = instance.getEditPrivilege();
+		if (editPrivilege != null) {
+			dependencies.add(editPrivilege);
+		}
+		Privilege viewPrivilege = instance.getViewPrivilege();
+		if (viewPrivilege != null) {
+			dependencies.add(viewPrivilege);
+		}
+		return dependencies;
 	}
 	
 	@Override
 	protected List<BaseLineExporter<EncounterType>> chain() {
-		return Arrays.asList(new EncounterTypeLineExporter());
+		return Collections.singletonList(new EncounterTypeLineExporter());
 	}
 	
 	@Override

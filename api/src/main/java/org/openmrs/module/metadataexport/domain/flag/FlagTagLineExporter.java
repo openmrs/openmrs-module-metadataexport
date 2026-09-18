@@ -28,14 +28,9 @@ public class FlagTagLineExporter extends MetadataLineExporter<Tag> {
 	public void export(Tag tag, ExportLine line) {
 		line.put(BaseLineProcessor.HEADER_NAME, tag.getName());
 		
-		if (tag.getRoles() != null) {
-			line.put(HEADER_ROLES, tag.getRoles().stream().map(Role::getRole).sorted().collect(Collectors.joining(";")));
-		}
-		
-		if (tag.getDisplayPoints() != null) {
-			line.put(HEADER_DISPLAY_POINTS,
-			    tag.getDisplayPoints().stream().map(DisplayPoint::getName).sorted().collect(Collectors.joining(";")));
-		}
+		line.put(HEADER_ROLES, tag.getRoles().stream().map(Role::getRole).sorted().collect(Collectors.joining(";")));
+		line.put(HEADER_DISPLAY_POINTS,
+		    tag.getDisplayPoints().stream().map(DisplayPoint::getName).sorted().collect(Collectors.joining(";")));
 		
 		line.put(BaseLineProcessor.HEADER_DESC, tag.getDescription());
 	}
