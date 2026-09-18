@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.flag;
 
 import org.openmrs.OpenmrsObject;
+import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -22,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+@OpenmrsProfile(modules = "patientflags:3.0.* - 9.*")
 @Component
 public class FlagPriorityDomainExporter extends CsvDomainExporter<Priority> {
 	
