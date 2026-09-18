@@ -30,9 +30,6 @@ public class BillableServiceLineExporterTest {
 		
 		Concept serviceType = new Concept();
 		serviceType.setUuid("550e8400-e29b-41d4-a716-446655440002");
-		ConceptName serviceTypeName = new ConceptName();
-		serviceTypeName.setName("service-name");
-		serviceType.setNames(Collections.singleton(serviceTypeName));
 		
 		BillableService billableService = new BillableService();
 		billableService.setUuid("550e8400-e29b-41d4-a716-446655440003");
@@ -48,7 +45,7 @@ public class BillableServiceLineExporterTest {
 		assertEquals("test", line.get("Service Name"));
 		assertEquals("shortname", line.get("Short Name"));
 		assertEquals("550e8400-e29b-41d4-a716-446655440001", line.get("Concept"));
-		assertEquals("service-name", line.get("Service Type"));
+		assertEquals("550e8400-e29b-41d4-a716-446655440002", line.get("Service Type"));
 		assertEquals(BillableServiceStatus.ENABLED.name(), line.get("Service Status"));
 		assertNull(line.get("void/retire"));
 	}
