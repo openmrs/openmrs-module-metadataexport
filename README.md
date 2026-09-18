@@ -151,13 +151,27 @@ Currently supported domains:
   resource whose clob is missing or does not hold a JSON object is skipped with a warning, since
   there is nothing to write; a resource carrying only `form_name_translation` (the localized form
   name, a documented Initializer use) is exported like any other
+* Appointment specialities (name) — requires the Bahmni appointments module (1.2.1+)
+* Appointment service definitions (name, description, duration, start time, end time, max load,
+  speciality, location, label colour) — the speciality and location are written by uuid and pulled
+  in via cross-domain closure; start and end times are written as `HH:mm`, the only format
+  Initializer parses, so seconds are dropped; voided definitions are not exported by design:
+  Initializer could re-void one by uuid, but on a fresh target a voided row bootstraps blank and
+  fails the not-null name, and the appointments module rejects a save whose name is already held
+  by a live definition; weekly availability and the initial appointment status are not exported
+  (Initializer has no column for them); requires the Bahmni appointments module (1.2.1+)
+* Appointment service types (name, duration, service definition) — the owning service definition is
+  written by uuid and pulled in via cross-domain closure; voided types and the types of voided
+  definitions are not exported, so a voided definition can never enter the package as a live row
+  through its types; note that Initializer's own loader rebuilds a definition's type set from its
+  non-voided types when it imports a type, so voided types already on the importing server are
+  deleted by the import; requires the Bahmni appointments module (1.2.1+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
 * Forms (Bahmni forms, HTML forms) (Optional)
 * Billing / cashier (billable services, payment modes, cash points, cashier item prices)
-* Appointment scheduling (specialities, service definitions, service types)
 
 Non-exportable Initializer domains (Liquibase, JSON key-values, OCL, Dispositions, Data filter mappings) are
 out of scope.
@@ -394,6 +408,9 @@ Known limitations
 * The startup export always exports all instances of the registered domains; instance-level
   selection is available through export packages (see "Export packages (REST)").
 * Cross-domain closure only pulls in objects whose domain has a registered exporter.
+* Appointment service definitions lose their weekly availability, initial appointment status and
+  the seconds of their start/end times (Initializer format/loader limitations). Voided appointment
+  metadata is never exported; that is this module's choice, see the domain notes above.
 
 Building from source
 --------------------
