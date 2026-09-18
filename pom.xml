@@ -53,7 +53,7 @@
 	</pluginRepositories>
 
     <properties>
-        <openmrsPlatformVersion>2.8.0</openmrsPlatformVersion>
+        <openmrsPlatformVersion>2.8.3</openmrsPlatformVersion>
         <initializerVersion>2.12.0</initializerVersion>
         <patientflagsVersion>3.0.10</patientflagsVersion>
         <jacocoVersion>0.8.12</jacocoVersion>
@@ -67,6 +67,8 @@
 		<tasksVersion>1.0.0</tasksVersion>
 		<queueVersion>3.0.0</queueVersion>
 		<webservicesRestVersion>3.1.0</webservicesRestVersion>
+		<billingVersion>2.4.0</billingVersion>
+		<stockmanagementVersion>3.0.0</stockmanagementVersion>
     </properties>
 
 	<build>
@@ -203,7 +205,24 @@
 			<version>${cohortModuleVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>billing-api</artifactId>
+			<version>${billingVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>stockmanagement-api</artifactId>
+			<version>${stockmanagementVersion}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.openmrs</groupId>
+			<artifactId>event-api</artifactId>
+			<version>4.0.0</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.openmrs.module</groupId>
 			<artifactId>tasks-api</artifactId>
