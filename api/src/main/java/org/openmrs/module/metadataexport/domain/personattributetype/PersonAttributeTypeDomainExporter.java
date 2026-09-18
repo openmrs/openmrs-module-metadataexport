@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.personattributetype;
 
+import org.openmrs.Concept;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.context.Context;
@@ -17,6 +18,7 @@ import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +53,14 @@ public class PersonAttributeTypeDomainExporter extends CsvDomainExporter<PersonA
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(PersonAttributeType instance) {
-		return Collections.emptyList();
+		List<OpenmrsObject> dependencies = new ArrayList<>();
+		if (instance.getEditPrivilege() != null) {
+			dependencies.add(instance.getEditPrivilege());
+		}
+		Concept foreignConcept = PersonAttributeTypeLineExporter.foreignConcept(instance);
+		if (foreignConcept != null) {
+			dependencies.add(foreignConcept);
+		}
+		return dependencies;
 	}
 }

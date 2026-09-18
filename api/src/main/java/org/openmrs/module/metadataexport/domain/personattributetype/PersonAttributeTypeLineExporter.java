@@ -39,17 +39,22 @@ public class PersonAttributeTypeLineExporter extends MetadataLineExporter<Person
 			line.put(HEADER_FORMAT, format);
 		}
 		
-		Integer foreignId = personAttributeType.getForeignKey();
-		if (foreignId != null && "org.openmrs.Concept".equals(format)) {
-			Concept foreignConcept = Context.getConceptService().getConcept(foreignId);
-			if (foreignConcept != null) {
-				line.put(HEADER_FOREIGN_UUID, foreignConcept.getUuid());
-			}
+		Concept foreignConcept = foreignConcept(personAttributeType);
+		if (foreignConcept != null) {
+			line.put(HEADER_FOREIGN_UUID, foreignConcept.getUuid());
 		}
 		
 		Privilege editPrivilege = personAttributeType.getEditPrivilege();
 		if (editPrivilege != null) {
 			line.put(HEADER_EDITPRIVILEGE, editPrivilege.getPrivilege());
 		}
+	}
+	
+	static Concept foreignConcept(PersonAttributeType personAttributeType) {
+		Integer foreignId = personAttributeType.getForeignKey();
+		if (foreignId == null || !"org.openmrs.Concept".equals(personAttributeType.getFormat())) {
+			return null;
+		}
+		return Context.getConceptService().getConcept(foreignId);
 	}
 }
