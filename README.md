@@ -151,12 +151,19 @@ Currently supported domains:
   resource whose clob is missing or does not hold a JSON object is skipped with a warning, since
   there is nothing to write; a resource carrying only `form_name_translation` (the localized form
   name, a documented Initializer use) is exported like any other
+* Billable services (service name, short name, concept, service type, service status) — referenced
+  concepts are pulled in via cross-domain closure; requires the billing module (2.4.0+)
+* Cash points (name, description, location) — referenced location is pulled in via cross-domain
+  closure; requires the billing module (2.4.0+)
+* Cashier item prices (name, price, payment mode, stock item, billable service) — referenced
+  payment mode and billable service are pulled in via cross-domain closure; requires the billing
+  module (2.4.0+)
+* Payment modes (name, attributes) — requires the billing module (2.4.0+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
 * Forms (Bahmni forms, HTML forms) (Optional)
-* Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 * Appointment scheduling (specialities, service definitions, service types)
 
 Non-exportable Initializer domains (Liquibase, JSON key-values, OCL, Dispositions, Data filter mappings) are
