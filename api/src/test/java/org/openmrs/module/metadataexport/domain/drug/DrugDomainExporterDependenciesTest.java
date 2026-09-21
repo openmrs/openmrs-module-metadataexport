@@ -11,8 +11,12 @@ package org.openmrs.module.metadataexport.domain.drug;
 
 import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
+import org.openmrs.ConceptMapType;
+import org.openmrs.ConceptReferenceTerm;
+import org.openmrs.ConceptSource;
 import org.openmrs.Drug;
 import org.openmrs.DrugIngredient;
+import org.openmrs.DrugReferenceMap;
 import org.openmrs.OpenmrsObject;
 
 import java.util.Arrays;
@@ -69,5 +73,16 @@ class DrugDomainExporterDependenciesTest {
 	@Test
 	void getDependencies_isEmptyForDrugWithNoConceptRefs() {
 		assertTrue(exporter.getDependencies(new Drug()).isEmpty());
+	}
+	
+	@Test
+	void getDependencies_includesMappingSources() {
+		Drug drug = new Drug();
+		drug.setConcept(concept("drug-concept"));
+		ConceptSource rxnorm = new ConceptSource();
+		rxnorm.setUuid("rxnorm");
+		drug.addDrugReferenceMap(new DrugReferenceMap(new ConceptReferenceTerm(rxnorm, "1191", null), new ConceptMapType()));
+		
+		assertEquals(new HashSet<>(Arrays.asList("drug-concept", "rxnorm")), dependencyUuids(drug));
 	}
 }

@@ -65,6 +65,9 @@ public class DrugDomainExporter extends CsvDomainExporter<Drug> {
 			dependencies.add(dosageForm);
 		}
 		
+		drug.getDrugReferenceMaps().forEach(
+		    drugReferenceMap -> dependencies.add(drugReferenceMap.getConceptReferenceTerm().getConceptSource()));
+		
 		for (DrugIngredient ingredient : drug.getIngredients()) {
 			if (ingredient.getIngredient() != null) {
 				dependencies.add(ingredient.getIngredient());

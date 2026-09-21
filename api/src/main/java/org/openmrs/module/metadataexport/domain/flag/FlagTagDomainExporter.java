@@ -19,6 +19,7 @@ import org.openmrs.module.patientflags.Tag;
 import org.openmrs.module.patientflags.api.FlagService;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +45,7 @@ public class FlagTagDomainExporter extends CsvDomainExporter<Tag> {
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(Tag instance) {
-		return Collections.emptyList();
+		return new ArrayList<>(instance.getRoles());
 	}
 	
 	@Override
