@@ -24,7 +24,12 @@ public class CashPointLineExporter extends MetadataLineExporter<CashPoint> {
 		line.put(BaseLineProcessor.HEADER_DESC, cashPoint.getDescription());
 		
 		if (cashPoint.getLocation() != null) {
-			line.put(HEADER_LOCATION, cashPoint.getLocation().getName());
+			line.put(HEADER_LOCATION, cashPoint.getLocation().getUuid());
 		}
+	}
+	
+	@Override
+	protected void writeRetiredDiscriminators(CashPoint cashPoint, ExportLine line) {
+		export(cashPoint, line);
 	}
 }

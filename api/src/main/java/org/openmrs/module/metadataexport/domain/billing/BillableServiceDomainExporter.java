@@ -9,8 +9,11 @@
  */
 package org.openmrs.module.metadataexport.domain.billing;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.BillableServiceService;
 import org.openmrs.module.billing.api.model.BillableService;
@@ -23,8 +26,12 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @OpenmrsProfile(modules = "billing:2.4.0")
 public class BillableServiceDomainExporter extends CsvDomainExporter<BillableService> {
@@ -51,9 +58,45 @@ public class BillableServiceDomainExporter extends CsvDomainExporter<BillableSer
 	
 	@Override
 	public Collection<BillableService> getAllInstances() {
-		BillableServiceService billableServiceServices = Context.getService(BillableServiceService.class);
-		return billableServiceServices.getBillableServices(new BillableServiceSearch(null, null, null, null, null, true),
-		    null);
+		List<BillableService> live = new ArrayList<>();
+		for (BillableService service : allServices()) {
+			if (BooleanUtils.isTrue(service.getRetired())) {
+				log.warn(
+				    "BillableServices: skipping retired service {} ({}); BillableService.getId() unboxes a"
+				            + " primitive int so Initializer's shouldFill is never true on a void/retire row,"
+				            + " causing an empty BillableService to be saved on a fresh target",
+				    service.getUuid(), service.getName());
+			} else {
+				live.add(service);
+			}
+		}
+		return live;
+	}
+	
+	@Override
+	public Collection<BillableService> getInstancesByUuids(Collection<String> uuids) {
+		Set<String> wanted = new HashSet<>(uuids);
+		List<BillableService> found = new ArrayList<>();
+		for (BillableService service : getAllInstances()) {
+			if (wanted.remove(service.getUuid())) {
+				found.add(service);
+			}
+		}
+		if (!wanted.isEmpty()) {
+			List<String> retired = allServices().stream().map(BillableService::getUuid).filter(wanted::contains)
+			        .collect(Collectors.toList());
+			wanted.removeAll(retired);
+			List<String> problems = new ArrayList<>();
+			if (!retired.isEmpty()) {
+				problems.add("Billable services exist but are retired, and Initializer cannot import a retired billable"
+				        + " service (unretire them on this server or remove them from the package): " + retired);
+			}
+			if (!wanted.isEmpty()) {
+				problems.add("Unknown uuids in domain " + getDomain() + ": " + wanted);
+			}
+			throw new APIException(String.join("; ", problems));
+		}
+		return found;
 	}
 	
 	@Override
@@ -65,9 +108,12 @@ public class BillableServiceDomainExporter extends CsvDomainExporter<BillableSer
 		if (instance.getServiceType() != null) {
 			dependencies.add(instance.getServiceType());
 		}
-		if (instance.getServiceCategory() != null) {
-			dependencies.add(instance.getServiceCategory());
-		}
 		return dependencies;
+	}
+	
+	private static List<BillableService> allServices() {
+		BillableServiceService billableServiceService = Context.getService(BillableServiceService.class);
+		return new ArrayList<>(billableServiceService
+		        .getBillableServices(new BillableServiceSearch(null, null, null, null, null, true), null));
 	}
 }
