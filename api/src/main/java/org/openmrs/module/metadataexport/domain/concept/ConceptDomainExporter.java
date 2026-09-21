@@ -9,8 +9,10 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAnswer;
+import org.openmrs.ConceptAttributeType;
 import org.openmrs.ConceptSet;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
@@ -60,7 +62,16 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 		concept.getConceptMappings()
 		        .forEach(mapping -> dependencies.add(mapping.getConceptReferenceTerm().getConceptSource()));
 		
-		concept.getActiveAttributes().forEach(conceptAttribute -> dependencies.add(conceptAttribute.getAttributeType()));
+		concept.getActiveAttributes().forEach(conceptAttribute -> {
+			ConceptAttributeType attributeType = conceptAttribute.getAttributeType();
+			dependencies.add(attributeType);
+			if (StringUtils.isNotBlank(attributeType.getDatatypeClassname())) {
+				Object value = conceptAttribute.getValue();
+				if (value instanceof OpenmrsObject) {
+					dependencies.add((OpenmrsObject) value);
+				}
+			}
+		});
 		return dependencies;
 	}
 	
