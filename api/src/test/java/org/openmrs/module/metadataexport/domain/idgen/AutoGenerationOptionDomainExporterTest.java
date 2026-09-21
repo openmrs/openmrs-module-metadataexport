@@ -16,12 +16,14 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.module.idgen.AutoGenerationOption;
 import org.openmrs.module.idgen.BaseIdentifierSource;
 import org.openmrs.module.idgen.IdentifierPool;
+import org.openmrs.module.idgen.RemoteIdentifierSource;
 import org.openmrs.module.idgen.SequentialIdentifierGenerator;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -121,5 +123,20 @@ class AutoGenerationOptionDomainExporterTest {
 			option.setLocation(location);
 		}
 		return option;
+	}
+	
+	@Test
+	void exclusionsOf_namesTheOptionItsSourceAndTheSourcesProblem() {
+		RemoteIdentifierSource userless = new RemoteIdentifierSource();
+		userless.setUuid("userless");
+		AutoGenerationOption bad = option("ID Type", null, "bad");
+		bad.setSource(userless);
+		AutoGenerationOption good = option("ID Type", null, "good");
+		
+		Map<String, String> exclusions = AutoGenerationOptionDomainExporter.exclusionsOf(Arrays.asList(good, bad));
+		
+		assertEquals(Collections.singletonMap("bad",
+		    "bad points at identifier source userless, which is a remote source without a user (Initializer requires one)"),
+		    exclusions);
 	}
 }

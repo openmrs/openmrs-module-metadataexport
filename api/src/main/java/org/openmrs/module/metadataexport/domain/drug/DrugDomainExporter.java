@@ -13,6 +13,7 @@ import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugIngredient;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 public class DrugDomainExporter extends CsvDomainExporter<Drug> {
@@ -50,6 +53,13 @@ public class DrugDomainExporter extends CsvDomainExporter<Drug> {
 	@Override
 	public Collection<Drug> getAllInstances() {
 		return Context.getConceptService().getAllDrugs(true);
+	}
+	
+	/** Every drug is exportable, so a package naming a few need not load the formulary. */
+	@Override
+	public Collection<Drug> candidatesFor(Collection<String> uuids) {
+		ConceptService service = Context.getConceptService();
+		return uuids.stream().map(service::getDrugByUuid).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 	
 	@Override

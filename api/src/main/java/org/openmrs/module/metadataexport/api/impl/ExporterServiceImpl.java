@@ -10,7 +10,9 @@
 package org.openmrs.module.metadataexport.api.impl;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.APIException;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.api.ExporterService;
 import org.openmrs.module.metadataexport.export.DomainExporter;
@@ -23,8 +25,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @AllArgsConstructor
 public class ExporterServiceImpl implements ExporterService {
 	
@@ -33,12 +38,33 @@ public class ExporterServiceImpl implements ExporterService {
 	@Override
 	public void export(File outDir, Collection<Domain> domains) throws IOException {
 		List<OpenmrsObject> seeds = new ArrayList<>();
+		List<Domain> selected = new ArrayList<>();
 		for (DomainExporter<?> exporter : registry.all()) {
 			if (isSelected(domains, exporter.getDomain())) {
 				seeds.addAll(exporter.getAllInstances());
+				selected.add(exporter.getDomain());
 			}
 		}
+		exclusions(selected);
 		exportSeeds(outDir, seeds);
+	}
+	
+	@Override
+	public Map<Domain, Map<String, String>> exclusions(Collection<Domain> domains) {
+		Map<Domain, Map<String, String>> excluded = new LinkedHashMap<>();
+		for (Domain domain : domains) {
+			DomainExporter<?> exporter = registry.forDomain(domain);
+			if (exporter == null) {
+				throw new APIException("No exporter registered for domain " + domain);
+			}
+			Map<String, String> exclusions = exporter.exclusions();
+			if (!exclusions.isEmpty()) {
+				excluded.put(domain, exclusions);
+				log.warn("Metadata Export: {} {} row(s) exist but are not exported: {}", exclusions.size(), domain,
+				    String.join("; ", exclusions.values()));
+			}
+		}
+		return excluded;
 	}
 	
 	@Override

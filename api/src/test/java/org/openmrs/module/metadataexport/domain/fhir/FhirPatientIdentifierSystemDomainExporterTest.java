@@ -26,7 +26,11 @@ import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -136,5 +140,29 @@ class FhirPatientIdentifierSystemDomainExporterTest {
 				assertNotNull(line.get("url", true), "row " + line.getUuid() + " must fill 'url'");
 			}
 		}
+	}
+	
+	@Test
+	void exportable_recordsWhyEachDroppedRowWasLeftOut() {
+		FhirPatientIdentifierSystem orphan = new FhirPatientIdentifierSystem();
+		orphan.setUuid("orphan");
+		FhirPatientIdentifierSystem retired = fhirIdentifierSystem("retired", "key-a", "http://a/old");
+		retired.setRetired(true);
+		FhirPatientIdentifierSystem live = fhirIdentifierSystem("live", "key-a", "http://a");
+		FhirPatientIdentifierSystem dup = fhirIdentifierSystem("dup", "key-a", "http://a/dup");
+		Map<String, String> exclusions = new LinkedHashMap<>();
+		
+		List<FhirPatientIdentifierSystem> kept = FhirPatientIdentifierSystemDomainExporter
+		        .exportable(Arrays.asList(orphan, retired, live, dup), exclusions);
+		
+		assertEquals(Collections.singletonList("live"),
+		    kept.stream().map(OpenmrsObject::getUuid).collect(Collectors.toList()));
+		Map<String, String> expected = new LinkedHashMap<>();
+		expected.put("orphan", "orphan has no patient identifier type, which Initializer requires");
+		expected.put("retired",
+		    "retired shares its identifier type with unretired row live, and Initializer keeps one row per identifier type");
+		expected.put("dup",
+		    "dup shares its identifier type with exported row live, and Initializer keeps one row per identifier type");
+		assertEquals(expected, exclusions, "a swapped kept/dropped uuid would send a user to fix the wrong row");
 	}
 }

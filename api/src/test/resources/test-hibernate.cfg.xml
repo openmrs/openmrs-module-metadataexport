@@ -23,5 +23,7 @@
 		<mapping resource="AppointmentServiceDefinition.hbm.xml"/>
 		<mapping resource="AppointmentServiceType.hbm.xml"/>
 		<mapping resource="ServiceWeeklyAvailability.hbm.xml"/>
+		<!-- cohort module: CohortType is a JPA entity, its attribute types are hbm-mapped -->
+		<mapping resource="CohortAttributeType.hbm.xml"/>
 	</session-factory>
 </hibernate-configuration>

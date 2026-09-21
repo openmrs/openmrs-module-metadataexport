@@ -9,13 +9,19 @@
  */
 package org.openmrs.module.metadataexport.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.openmrs.Form;
+import org.openmrs.FormResource;
 import org.openmrs.Location;
 import org.openmrs.api.APIAuthenticationException;
+import org.openmrs.api.APIException;
 import org.openmrs.api.ValidationException;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.ClobDatatypeStorage;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.MetadataExportConstants;
 import org.openmrs.module.metadataexport.api.model.ExportBuild;
@@ -29,10 +35,12 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -302,6 +310,60 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 			assertNotNull(zipFile.getEntry("configuration/encountertypes/encounterTypes.csv"));
 			assertNotNull(zipFile.getEntry("package.json"));
 		}
+	}
+	
+	@Test
+	void runBuild_recordsTheRowsAWholeDomainLeavesOutInTheManifestAndFailsWhenOneIsNamed() throws Exception {
+		Form live = ampathForm("Vitals", "1.0");
+		Form retired = ampathForm("Old vitals", "1.0");
+		Context.getFormService().retireForm(retired, "replaced");
+		Context.flushSession();
+		
+		ExportBuild whole = service.runBuild(queuedBuild(packageWith("All forms", Domain.AMPATH_FORMS.name())).getUuid());
+		JsonNode excluded = new ObjectMapper().readTree(whole.getManifestJson()).get("excluded");
+		assertTrue(excluded.get(Domain.AMPATH_FORMS.name()).get(retired.getUuid()).asText().contains(" is retired"),
+		    excluded.toString());
+		assertNull(excluded.get(Domain.AMPATH_FORMS.name()).get(live.getUuid()), "an exported row is not an exclusion");
+		
+		ExportBuild scoped = service
+		        .runBuild(queuedBuild(packageWith("One form", Domain.AMPATH_FORMS.name(), live.getUuid())).getUuid());
+		assertEquals(0, new ObjectMapper().readTree(scoped.getManifestJson()).get("excluded").size(),
+		    "a uuid-scoped entry records no exclusions; naming an excluded row fails the build instead");
+		
+		ExportBuild naming = queuedBuild(packageWith("Retired form", Domain.AMPATH_FORMS.name(), retired.getUuid()));
+		APIException e = assertThrows(APIException.class, () -> service.runBuild(naming.getUuid()));
+		assertTrue(e.getMessage().contains(retired.getUuid() + " (Old vitals v1.0) is retired"), e.getMessage());
+		assertFalse(e.getMessage().contains("Unknown uuids"), e.getMessage());
+	}
+	
+	private ExportBuild queuedBuild(ExportPackage exportPackage) {
+		ExportBuild build = new ExportBuild();
+		build.setExportPackage(service.saveExportPackage(exportPackage));
+		build.setVersion(1);
+		build.setExportStatus(ExportStatus.QUEUED);
+		return service.saveExportBuild(build);
+	}
+	
+	/**
+	 * An AMPATH form the way Initializer and the Form Builder store one: an alias datatype and a clob.
+	 */
+	private static Form ampathForm(String name, String version) {
+		Form form = new Form();
+		form.setName(name);
+		form.setVersion(version);
+		form.setEncounterType(Context.getEncounterService().getEncounterType(1));
+		form = Context.getFormService().saveForm(form);
+		ClobDatatypeStorage clob = new ClobDatatypeStorage();
+		clob.setUuid(UUID.randomUUID().toString());
+		clob.setValue("{\"name\":\"" + name + "\"}");
+		Context.getDatatypeService().saveClobDatatypeStorage(clob);
+		FormResource schema = new FormResource();
+		schema.setForm(form);
+		schema.setName("JSON schema");
+		schema.setDatatypeClassname("AmpathJsonSchema");
+		schema.setValueReferenceInternal(clob.getUuid());
+		Context.getFormService().saveFormResource(schema);
+		return form;
 	}
 	
 	private static List<String> names(List<ExportPackage> packages) {

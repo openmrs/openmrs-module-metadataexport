@@ -21,6 +21,7 @@ import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -83,5 +84,13 @@ class CohortTypeDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		    () -> exporter.getInstancesByUuids(Collections.singletonList("7e3f4d5a-3f10-11e4-adec-0800271c1b75")));
 		
 		assertTrue(e.getMessage().contains("Unknown uuids"));
+	}
+	
+	@Test
+	void exclusions_areExactlyTheRowsGetAllInstancesLeavesOut() {
+		Map<String, String> exclusions = exporter.exclusions();
+		
+		assertEquals(Collections.singleton(VOIDED_UUID), exclusions.keySet());
+		assertTrue(exclusions.get(VOIDED_UUID).startsWith(VOIDED_UUID + " ('Old Group') is voided"), exclusions.toString());
 	}
 }

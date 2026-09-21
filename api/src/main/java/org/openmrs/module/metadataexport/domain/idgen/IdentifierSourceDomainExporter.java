@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
-import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.idgen.IdentifierPool;
@@ -24,26 +23,25 @@ import org.openmrs.module.idgen.service.IdentifierSourceService;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Identifier sources are written as one file per source type, mirroring Iniz's own fixture layout,
  * so each file carries an {@code _order:} header — pools reference their backing source by uuid, so
  * the pool file must load last. Sources Iniz cannot import — custom {@link IdentifierSource}
- * subclasses, remotes without a user, pools without an importable backing source — are skipped with
- * a warning.
+ * subclasses, remotes without a user, pools without an importable backing source — are left out and
+ * reported as exclusions.
  */
 @Slf4j
 @Component
@@ -128,59 +126,66 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 	 * can never reference a source this domain drops.
 	 */
 	static boolean exports(IdentifierSource source) {
-		IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
+		return importProblem(source) == null;
+	}
+	
+	/**
+	 * Why Iniz cannot import the source, as a clause following its uuid, or null when it can. Names the
+	 * one cause that applies, and the backing source when the problem is down a pool chain.
+	 */
+	static String importProblem(IdentifierSource source) {
+		IdentifierSource self = HibernateUtil.getRealObjectFromProxy(source);
+		IdentifierSource real = self;
 		Set<IdentifierSource> seen = Collections.newSetFromMap(new IdentityHashMap<>());
 		while (real instanceof IdentifierPool) {
 			if (!seen.add(real)) {
-				return false;
+				return "is a pool whose backing chain is a cycle";
 			}
-			real = HibernateUtil.getRealObjectFromProxy(((IdentifierPool) real).getSource());
+			IdentifierSource backing = ((IdentifierPool) real).getSource();
+			if (backing == null) {
+				return real == self ? "is a pool without a backing source"
+				        : "is backed by pool " + real.getUuid() + ", which has no backing source";
+			}
+			real = HibernateUtil.getRealObjectFromProxy(backing);
 		}
-		if (real instanceof RemoteIdentifierSource) {
-			return StringUtils.isNotBlank(((RemoteIdentifierSource) real).getUser());
+		String problem;
+		if (real instanceof SequentialIdentifierGenerator) {
+			return null;
+		} else if (real instanceof RemoteIdentifierSource) {
+			if (StringUtils.isNotBlank(((RemoteIdentifierSource) real).getUser())) {
+				return null;
+			}
+			problem = "a remote source without a user (Initializer requires one)";
+		} else {
+			problem = "of type " + real.getClass().getName() + ", which Initializer cannot import";
 		}
-		return real instanceof SequentialIdentifierGenerator;
+		return real == self ? "is " + problem : "is backed by " + real.getUuid() + ", " + problem;
 	}
 	
 	@Override
 	public Collection<IdentifierSource> getAllInstances() {
 		List<IdentifierSource> sources = new ArrayList<>();
-		for (IdentifierSource source : Context.getService(IdentifierSourceService.class).getAllIdentifierSources(true)) {
-			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(source);
-			if (handles(real)) {
+		for (IdentifierSource source : allSources()) {
+			if (exports(source)) {
 				sources.add(source);
-			} else {
-				log.warn(
-				    "Idgen: skipping identifier source {} of type {}; Iniz cannot import it (unsupported type,"
-				            + " blank remote user, missing/unimportable backing source, or a pool cycle)",
-				    real.getUuid(), real.getClass().getName());
 			}
 		}
 		return sources;
 	}
 	
 	@Override
-	public Collection<IdentifierSource> getInstancesByUuids(Collection<String> uuids) {
-		Set<String> wanted = new HashSet<>(uuids);
-		List<IdentifierSource> found = new ArrayList<>();
-		for (IdentifierSource source : getAllInstances()) {
-			if (wanted.remove(source.getUuid())) {
-				found.add(source);
-			}
-		}
-		if (!wanted.isEmpty()) {
-			// getAllInstances() filters out unimportable sources, so a leftover uuid may name a
-			// source that exists — say so instead of misreporting it as unknown
-			IdentifierSourceService service = Context.getService(IdentifierSourceService.class);
-			List<String> skipped = wanted.stream().filter(uuid -> service.getIdentifierSourceByUuid(uuid) != null)
-			        .collect(Collectors.toList());
-			if (!skipped.isEmpty()) {
-				throw new APIException("Identifier sources exist but cannot be imported by Initializer (unsupported"
-				        + " type, blank remote user, missing/unimportable backing source, or a pool cycle): " + skipped);
-			}
-			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
-		}
-		return found;
+	public Map<String, String> exclusions() {
+		return exclusionsOf(allSources());
+	}
+	
+	/** The sources among the given ones that Iniz cannot import, each with its name and the cause. */
+	static Map<String, String> exclusionsOf(Collection<IdentifierSource> sources) {
+		return DomainExporter.exclusions(sources, source -> !exports(source),
+		    source -> "('" + source.getName() + "') " + importProblem(source));
+	}
+	
+	private static List<IdentifierSource> allSources() {
+		return Context.getService(IdentifierSourceService.class).getAllIdentifierSources(true);
 	}
 	
 	@Override

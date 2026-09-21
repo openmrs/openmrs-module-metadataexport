@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
 import org.openmrs.OpenmrsObject;
-import org.openmrs.api.APIException;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.JsonDomainExporter;
 import org.springframework.stereotype.Component;
@@ -25,11 +24,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Writes each AMPATH form as one JSON file, the inverse of Initializer's {@code AmpathFormsLoader}.
@@ -72,51 +69,17 @@ public class AmpathFormDomainExporter extends JsonDomainExporter<Form> {
 		return instance instanceof Form && FormResources.isAmpathForm(FormResources.resourcesOf((Form) instance));
 	}
 	
-	/** The exportable forms; every AMPATH form left out is logged once here with the reason. */
 	@Override
 	public Collection<Form> getAllInstances() {
-		AmpathFormScan scan = AmpathFormScan.run();
-		for (String exclusion : scan.formExclusions().values()) {
-			log.warn("AMPATH forms: skipping form {}", exclusion);
-		}
-		return scan.exportableForms();
+		return AmpathFormScan.run().exportableForms();
 	}
 	
 	/**
-	 * Same as the default, but a uuid that exists only as a form {@link #getAllInstances()} hides
-	 * (retired, superseded or without a readable schema) is reported with the reason rather than as
-	 * unknown.
+	 * The AMPATH forms left out (retired, superseded, or without a readable schema), with the reason.
 	 */
 	@Override
-	public Collection<Form> getInstancesByUuids(Collection<String> uuids) {
-		AmpathFormScan scan = AmpathFormScan.run();
-		Set<String> wanted = new HashSet<>(uuids);
-		List<Form> found = new ArrayList<>();
-		for (Form form : scan.exportableForms()) {
-			if (wanted.remove(form.getUuid())) {
-				found.add(form);
-			}
-		}
-		if (!wanted.isEmpty()) {
-			List<String> hidden = new ArrayList<>();
-			for (String uuid : new ArrayList<>(wanted)) {
-				String exclusion = scan.formExclusions().get(uuid);
-				if (exclusion != null) {
-					wanted.remove(uuid);
-					hidden.add(exclusion);
-				}
-			}
-			List<String> problems = new ArrayList<>();
-			if (!hidden.isEmpty()) {
-				problems.add("AMPATH forms exist but this exporter does not write them (fix them on this server or remove"
-				        + " them from the package): " + hidden);
-			}
-			if (!wanted.isEmpty()) {
-				problems.add("Unknown uuids in domain " + getDomain() + ": " + wanted);
-			}
-			throw new APIException(String.join("; ", problems));
-		}
-		return found;
+	public Map<String, String> exclusions() {
+		return new LinkedHashMap<>(AmpathFormScan.run().formExclusions());
 	}
 	
 	@Override

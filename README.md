@@ -74,10 +74,10 @@ Currently supported domains:
   `property:idgen.remote.password.<identifier source uuid>` placeholder, and the importing server
   must define the `idgen.remote.password.<identifier source uuid>` system or OpenMRS runtime
   property (retired remote sources included — Initializer still requires the password when it
-  bootstraps them); sources Initializer cannot import are skipped with a warning — custom
-  identifier source types from other modules, remote sources with no user (Initializer requires
-  one), pools whose backing source is missing or itself skipped — as are auto generation options
-  pointing at any skipped source; reserved identifiers on a source are not exported (Initializer
+  bootstraps them); sources Initializer cannot import are left out and recorded as exclusions (see the
+  note on exclusions under "Export packages (REST)") — custom identifier source types from other modules, remote sources with no
+  user (Initializer requires one), pools whose backing source is missing or itself left out — as are
+  auto generation options pointing at any such source; reserved identifiers on a source are not exported (Initializer
   has no column for them) and are flagged with a warning; requires the idgen module (4.6+)
 * Auto generation options (identifier type, location, identifier source, manual entry enabled,
   auto generation enabled) — the referenced identifier type, source and location are pulled in via
@@ -85,16 +85,16 @@ Currently supported domains:
 * FHIR concept sources (concept source, url) — the referenced concept source is pulled in via
   cross-domain closure; name and description are not exported (Initializer has no columns for
   them — it sets the name from the concept source when it creates the row); rows without a
-  concept source are skipped with a warning (Initializer requires that column), and when several
-  rows share one concept source only one is exported, preferring the unretired row, with a
-  warning for the rest (Initializer matches rows by concept source, so duplicates would collapse
+  concept source are left out as exclusions (Initializer requires that column), and when several
+  rows share one concept source only one is exported, preferring the unretired row, the rest
+  recorded as exclusions (Initializer matches rows by concept source, so duplicates would collapse
   unpredictably on import); requires the fhir2 module (1.6+)
 * FHIR patient identifier systems (patient identifier type, url) — the referenced patient
   identifier type is pulled in via cross-domain closure; name and description are not exported
   (Initializer has no columns for them — it overwrites the name with the identifier type's name
-  on import); rows without an identifier type are skipped with a warning (Initializer requires
+  on import); rows without an identifier type are left out as exclusions (Initializer requires
   that column), and when several rows share one identifier type only one is exported, preferring
-  the unretired row, with a warning for the rest (Initializer matches rows by identifier type,
+  the unretired row, the rest recorded as exclusions (Initializer matches rows by identifier type,
   so duplicates would collapse unpredictably on import); requires the fhir2 module (1.6+)
 * Address hierarchy (the `addressConfiguration.xml`, rebuilt from the ordered hierarchy levels and
   the live address template, plus a headerless `addresshierarchy.csv` of one root-to-leaf path per
@@ -121,7 +121,7 @@ Currently supported domains:
   `queue.serviceConceptSetName` global property and the concept set it names, because the queue
   module validates every imported queue against them (the importing server rejects each row until
   the property is set and the service concept is a member of that set); retired queues are not
-  exported, with a warning per skipped queue (Initializer bootstraps a row through the queue
+  exported and are recorded as exclusions (Initializer bootstraps a row through the queue
   module's lookup by uuid, which excludes retired queues, so a retired row can never be matched on
   the target: where it already exists the re-import fails on the uuid constraint and Initializer
   2.12 then abandons the rest of the file); requires the queue module (3.0+)
@@ -131,13 +131,13 @@ Currently supported domains:
   form itself; `encounter` carries the encounter type's name, which is what Initializer resolves
   even though its own error message speaks of an "id") — the encounter type and the form's
   translation resources are pulled in via cross-domain closure; retired forms and all but the
-  newest version of a name are not exported, with a warning per skipped form (Initializer cannot
+  newest version of a name are not exported and are recorded as exclusions (Initializer cannot
   create a retired form: its loader saves the retired flag without a retire reason, which core's
   form validator rejects, so the file fails on any target not already carrying that name and
   version; and Initializer derives the form uuid from name and version and retires the live form
   of that name before creating a new version, so two versions in one package would leave a
   survivor that depends on file order); a form whose
-  schema resource has no readable JSON object is not exported either, with a warning; a form
+  schema resource has no readable JSON object is not exported either, and recorded as an exclusion; a form
   without an encounter type is still exported but flagged with a warning, because Initializer
   rejects the file until an `encounter` entry is added (unless its `processor` is not the
   encounter form processor); note that Initializer ignores any `uuid` in the file and derives the
@@ -148,7 +148,7 @@ Currently supported domains:
   or the O3 Form Builder saved it with no datatype at all, with the `form` entry refreshed to the
   form's name and a missing `language` filled in from the resource name) — the owning form is pulled in via
   cross-domain closure; only translations of exported forms (see above) are exported, and a
-  resource whose clob is missing or does not hold a JSON object is skipped with a warning, since
+  resource whose clob is missing or does not hold a JSON object is left out as an exclusion, since
   there is nothing to write; a resource carrying only `form_name_translation` (the localized form
   name, a documented Initializer use) is exported like any other
 * Appointment specialities (name) — requires the Bahmni appointments module (1.2.1+)
@@ -202,7 +202,14 @@ package with *no entries at all* exports every registered domain; `GET /domains`
 domains are registered on the server. Package
 definitions are stored in the database; every build of a package gets an incrementing version, a
 status (`QUEUED` → `RUNNING` → `COMPLETED`/`FAILED`), and a downloadable zip containing the
-`configuration/` tree plus a `package.json` manifest recording exactly what was exported.
+`configuration/` tree plus a `package.json` manifest recording exactly what was exported and, for
+every domain exported in full, the rows that were left out and why (its `excluded` section).
+
+Exclusions are rows a domain has on the server but never exports because Initializer could not load
+them on a target: retired queues, voided cohort types, identifier sources without a user, superseded
+form versions. A full export of such a domain records them in `package.json` under `excluded` and
+logs one summary line per domain. A package that names an excluded row by uuid does not silently
+drop it: the build fails with the reason, separately from any uuid the domain does not know at all.
 
 Builds run asynchronously on a daemon thread; trigger, then poll. Packages and builds are
 [REST web services](https://wiki.openmrs.org/x/xoAaAQ) resources under the module namespace
@@ -279,8 +286,8 @@ Requirements
 
 Adding a new domain
 -------------------
-Supporting a new metadata type is a new class plus one line in the registry, never a new method on
-the service.
+Supporting a new metadata type is a new class, never a new method on the service; there is no
+registry to edit.
 
 1. Write a `DomainExporter` and annotate it `@Component` so it is discovered automatically. For a
    CSV domain, extend `CsvDomainExporter<T>`:
@@ -397,6 +404,15 @@ public class AmpathFormDomainExporter extends JsonDomainExporter<Form> {
 Any other domain whose files are neither CSV, XML nor JSON (for example the address hierarchy's
 whole-config directory) skips the base classes and implements `DomainExporter` directly, writing
 whatever files it likes in `export(bucket, context)`.
+
+Two optional hooks on `DomainExporter` matter only when a domain does not export every row it has.
+Override `exclusions()` to return the rows it leaves out, uuid to a sentence that names the row and
+the one reason that applies (`DomainExporter.exclusions(all, predicate, reason)` builds it for the
+common cases); the framework records them in the build manifest, logs them once per export, and uses
+them so a package naming such a row fails with the reason instead of as an unknown uuid. Override
+`candidatesFor(uuids)` only in a domain that exports every row and has a by-uuid service lookup, so a
+package naming a few rows does not load the whole table; a filtering domain must keep the default,
+and no domain should override `getInstancesByUuids` itself.
 
 That is all. Because the exporter is a `@Component`, it is registered automatically; there is no
 list to edit. Selection, closure, routing, and writing are handled by the framework.

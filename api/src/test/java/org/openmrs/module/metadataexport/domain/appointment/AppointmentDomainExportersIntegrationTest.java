@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.Location;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.appointments.model.AppointmentServiceDefinition;
 import org.openmrs.module.appointments.model.AppointmentServiceType;
@@ -53,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppointmentDomainExportersIntegrationTest extends BaseModuleContextSensitiveTest {
@@ -127,6 +129,22 @@ class AppointmentDomainExportersIntegrationTest extends BaseModuleContextSensiti
 		assertEquals(Collections.singleton(TYPE_UUID), uuidsOf(typeExporter.getAllInstances()),
 		    "voided types, and live types of voided definitions, must not be exported: the latter would pull the voided definition into the package as a live row");
 		assertTrue(uuidsOf(specialityExporter.getAllInstances()).contains(SPECIALITY_UUID));
+	}
+	
+	@Test
+	void getInstancesByUuids_reportVoidedRowsWithTheReasonRatherThanAsUnknown() {
+		APIException definitions = assertThrows(APIException.class,
+		    () -> definitionExporter.getInstancesByUuids(Arrays.asList(FULL_UUID, VOIDED_UUID)));
+		assertTrue(definitions.getMessage().contains(VOIDED_UUID + " ('Dental') is voided"), definitions.getMessage());
+		assertFalse(definitions.getMessage().contains("Unknown uuids"), definitions.getMessage());
+		
+		APIException types = assertThrows(APIException.class,
+		    () -> typeExporter.getInstancesByUuids(Arrays.asList(VOIDED_TYPE_UUID, ORPHAN_TYPE_UUID)));
+		assertTrue(types.getMessage().contains(VOIDED_TYPE_UUID + " ('Long follow-up') is voided"), types.getMessage());
+		assertTrue(
+		    types.getMessage()
+		            .contains(ORPHAN_TYPE_UUID + " ('Cleaning') belongs to voided service definition " + VOIDED_UUID),
+		    "a live type of a voided definition must be explained by the definition: " + types.getMessage());
 	}
 	
 	@Test

@@ -13,6 +13,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Location;
 import org.openmrs.LocationTag;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.LocationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 public class LocationDomainExporter extends CsvDomainExporter<Location> {
@@ -50,6 +53,13 @@ public class LocationDomainExporter extends CsvDomainExporter<Location> {
 	@Override
 	public Collection<Location> getAllInstances() {
 		return Context.getLocationService().getAllLocations(true);
+	}
+	
+	/** Every location is exportable, so a package naming a few need not load them all. */
+	@Override
+	public Collection<Location> candidatesFor(Collection<String> uuids) {
+		LocationService service = Context.getLocationService();
+		return uuids.stream().map(service::getLocationByUuid).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 	
 	@Override

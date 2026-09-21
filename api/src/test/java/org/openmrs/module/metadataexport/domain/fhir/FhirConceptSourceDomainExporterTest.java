@@ -26,7 +26,11 @@ import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -131,5 +135,29 @@ class FhirConceptSourceDomainExporterTest {
 				assertNotNull(line.get("url", true), "row " + line.getUuid() + " must fill 'url'");
 			}
 		}
+	}
+	
+	@Test
+	void exportable_recordsWhyEachDroppedRowWasLeftOut() {
+		FhirConceptSource orphan = new FhirConceptSource();
+		orphan.setUuid("orphan");
+		FhirConceptSource retired = fhirConceptSource("retired", "key-a", "http://a/old");
+		retired.setRetired(true);
+		FhirConceptSource live = fhirConceptSource("live", "key-a", "http://a");
+		FhirConceptSource dup = fhirConceptSource("dup", "key-a", "http://a/dup");
+		Map<String, String> exclusions = new LinkedHashMap<>();
+		
+		List<FhirConceptSource> kept = FhirConceptSourceDomainExporter.exportable(Arrays.asList(orphan, retired, live, dup),
+		    exclusions);
+		
+		assertEquals(Collections.singletonList("live"),
+		    kept.stream().map(OpenmrsObject::getUuid).collect(Collectors.toList()));
+		Map<String, String> expected = new LinkedHashMap<>();
+		expected.put("orphan", "orphan has no concept source, which Initializer requires");
+		expected.put("retired",
+		    "retired shares its concept source with unretired row live, and Initializer keeps one row per concept source");
+		expected.put("dup",
+		    "dup shares its concept source with exported row live, and Initializer keeps one row per concept source");
+		assertEquals(expected, exclusions, "a swapped kept/dropped uuid would send a user to fix the wrong row");
 	}
 }
