@@ -57,19 +57,14 @@ public class BillableServiceDomainExporterTest {
 		Concept serviceType = new Concept();
 		serviceType.setUuid("123e4567-e89b-12d3-a456-426614175100");
 		
-		Concept serviceCategory = new Concept();
-		serviceCategory.setUuid("323e4567-e89b-12d3-a456-426614174010");
-		
 		BillableService billableService = new BillableService();
 		billableService.setConcept(concept);
 		billableService.setServiceType(serviceType);
-		billableService.setServiceCategory(serviceCategory);
 		
 		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(billableService);
-		assertEquals(3, dependencies.size());
+		assertEquals(2, dependencies.size());
 		assertTrue(dependencies.contains(concept));
 		assertTrue(dependencies.contains(serviceType));
-		assertTrue(dependencies.contains(serviceCategory));
 	}
 	
 	@Test
@@ -96,19 +91,6 @@ public class BillableServiceDomainExporterTest {
 		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(billableService);
 		assertEquals(1, dependencies.size());
 		assertTrue(dependencies.contains(serviceType));
-	}
-	
-	@Test
-	void shouldGetOnlyServiceCategoryDependency() {
-		Concept serviceCategory = new Concept();
-		serviceCategory.setUuid("323e4567-e89b-12d3-a456-426614174010");
-		
-		BillableService billableService = new BillableService();
-		billableService.setServiceCategory(serviceCategory);
-		
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(billableService);
-		assertEquals(1, dependencies.size());
-		assertTrue(dependencies.contains(serviceCategory));
 	}
 	
 	@Test

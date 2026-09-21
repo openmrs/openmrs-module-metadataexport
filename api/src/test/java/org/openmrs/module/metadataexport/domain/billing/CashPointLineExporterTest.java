@@ -22,7 +22,7 @@ public class CashPointLineExporterTest {
 	@Test
 	void exportsAllColumns() {
 		Location location = new Location();
-		location.setName("Main Clinic");
+		location.setUuid("550e8400-e29b-41d4-a716-446655440002");
 		
 		CashPoint cashPoint = new CashPoint();
 		cashPoint.setUuid("550e8400-e29b-41d4-a716-446655440001");
@@ -36,7 +36,7 @@ public class CashPointLineExporterTest {
 		assertEquals("550e8400-e29b-41d4-a716-446655440001", line.get("uuid"));
 		assertEquals("Cash Desk 1", line.get("name"));
 		assertEquals("Main entrance cash desk", line.get("description"));
-		assertEquals("Main Clinic", line.get("location"));
+		assertEquals("550e8400-e29b-41d4-a716-446655440002", line.get("location"));
 		assertNull(line.get("void/retire"));
 	}
 	
@@ -57,11 +57,15 @@ public class CashPointLineExporterTest {
 	}
 	
 	@Test
-	void exportsRetiredInstanceWithVoidRetireFlagOnly() {
+	void exportsRetiredInstanceWithAllColumns() {
+		Location location = new Location();
+		location.setUuid("550e8400-e29b-41d4-a716-446655440002");
+		
 		CashPoint cashPoint = new CashPoint();
 		cashPoint.setUuid("550e8400-e29b-41d4-a716-446655440001");
 		cashPoint.setName("Cash Desk 1");
 		cashPoint.setDescription("Main entrance cash desk");
+		cashPoint.setLocation(location);
 		cashPoint.setRetired(true);
 		
 		ExportLine line = new ExportLine();
@@ -69,8 +73,8 @@ public class CashPointLineExporterTest {
 		
 		assertEquals("550e8400-e29b-41d4-a716-446655440001", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"));
-		assertNull(line.get("description"));
-		assertNull(line.get("location"));
+		assertEquals("Cash Desk 1", line.get("name"));
+		assertEquals("Main entrance cash desk", line.get("description"));
+		assertEquals("550e8400-e29b-41d4-a716-446655440002", line.get("location"));
 	}
 }

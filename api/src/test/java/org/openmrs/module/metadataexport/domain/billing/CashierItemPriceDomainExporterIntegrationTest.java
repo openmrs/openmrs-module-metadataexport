@@ -60,6 +60,7 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 		
 		CashierItemPrice retired = createCashierItemPrice(RETIRED_UUID, "name2", new BigDecimal("123.45"));
 		itemPriceService.saveCashierItemPrice(retired);
+		itemPriceService.retireCashierItemPrice(retired, "Discontinued");
 	}
 	
 	private CashierItemPrice createCashierItemPrice(String uuid, String name, BigDecimal price) {

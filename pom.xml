@@ -249,5 +249,11 @@
 			<version>${appointmentsVersion}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.openmrs.module</groupId>
+			<artifactId>initializer-api-2.7</artifactId>
+			<version>${initializerVersion}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

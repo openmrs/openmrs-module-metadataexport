@@ -138,7 +138,7 @@ public class PaymentModeLineExporterTest {
 	}
 	
 	@Test
-	void exportsRetiredInstanceWithVoidRetireFlagOnly() {
+	void exportsRetiredInstanceWithAllColumns() {
 		PaymentMode paymentMode = new PaymentMode();
 		paymentMode.setUuid("550e8400-e29b-41d4-a716-446655440001");
 		paymentMode.setName("Retired Mode");
@@ -149,7 +149,7 @@ public class PaymentModeLineExporterTest {
 		
 		assertEquals("550e8400-e29b-41d4-a716-446655440001", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"));
+		assertEquals("Retired Mode", line.get("name"));
 		assertNull(line.get("attributes"));
 	}
 }

@@ -75,12 +75,16 @@ public class CashierItemPriceLineExporterTest {
 	}
 	
 	@Test
-	void exportsRetiredInstanceWithVoidRetireFlagOnly() {
+	void exportsRetiredInstanceWithAllColumns() {
+		PaymentMode paymentMode = new PaymentMode();
+		paymentMode.setUuid("123e4567-e89b-12d3-a456-426614174000");
+		
 		CashierItemPrice cashierItemPrice = new CashierItemPrice();
 		cashierItemPrice.setUuid("123e4567-e89b-12d3-a456-4266141740102");
 		cashierItemPrice.setName("test-name");
 		BigDecimal price = new BigDecimal("100.00");
 		cashierItemPrice.setPrice(price);
+		cashierItemPrice.setPaymentMode(paymentMode);
 		cashierItemPrice.setRetired(true);
 		
 		ExportLine line = new ExportLine();
@@ -88,10 +92,8 @@ public class CashierItemPriceLineExporterTest {
 		
 		assertEquals("123e4567-e89b-12d3-a456-4266141740102", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"));
-		assertNull(line.get("Price"));
-		assertNull(line.get("Payment Mode"));
-		assertNull(line.get("Stock Item"));
-		assertNull(line.get("Billable Service"));
+		assertEquals("test-name", line.get("name"));
+		assertEquals("100.00", line.get("Price"));
+		assertEquals(paymentMode.getUuid(), line.get("Payment Mode"));
 	}
 }
