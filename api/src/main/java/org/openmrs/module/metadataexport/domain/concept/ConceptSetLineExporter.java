@@ -22,8 +22,6 @@ public class ConceptSetLineExporter extends BaseLineExporter<ConceptSet> {
 		line.put(ConceptSetLineProcessor.HEADER_MEMBER, conceptSet.getConcept().getUuid());
 		line.put(ConceptSetLineProcessor.HEADER_MEMBER_TYPE, ConceptSetLineProcessor.HEADER_MEMBER_TYPE_CONCEPT_SET);
 		
-		if (conceptSet.getSortWeight() != null) {
-			line.put(ConceptSetLineProcessor.HEADER_SORT_WEIGHT, conceptSet.getSortWeight().toString());
-		}
+		line.put(ConceptSetLineProcessor.HEADER_SORT_WEIGHT, conceptSet.getSortWeight());
 	}
 }

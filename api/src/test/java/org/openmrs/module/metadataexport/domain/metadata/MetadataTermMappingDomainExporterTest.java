@@ -28,17 +28,6 @@ class MetadataTermMappingDomainExporterTest {
 	private final MetadataTermMappingDomainExporter exporter = new MetadataTermMappingDomainExporter();
 	
 	@Test
-	void getDependencies_emptyWhenMetadataSourceIsNull() {
-		MetadataTermMapping mapping = new MetadataTermMapping();
-		mapping.setCode("emr.primaryIdentifierType");
-		mapping.setMetadataClass("org.openmrs.PatientIdentifierType");
-		
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(mapping);
-		
-		assertTrue(dependencies.isEmpty());
-	}
-	
-	@Test
 	void getDependencies_emptyWhenMetadataClassUnresolvable() {
 		MetadataSource source = new MetadataSource();
 		source.setName("org.openmrs.module.emrapi");

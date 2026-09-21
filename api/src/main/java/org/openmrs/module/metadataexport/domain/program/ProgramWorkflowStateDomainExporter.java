@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.program;
 
-import org.openmrs.Concept;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
@@ -21,6 +20,7 @@ import org.openmrs.module.metadataexport.export.CsvDomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -51,16 +51,7 @@ public class ProgramWorkflowStateDomainExporter extends CsvDomainExporter<Progra
 	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(ProgramWorkflowState instance) {
-		List<OpenmrsObject> dependencies = new ArrayList<>();
-		ProgramWorkflow workflow = instance.getProgramWorkflow();
-		if (workflow != null) {
-			dependencies.add(workflow);
-		}
-		Concept concept = instance.getConcept();
-		if (concept != null) {
-			dependencies.add(concept);
-		}
-		return dependencies;
+		return Arrays.asList(instance.getProgramWorkflow(), instance.getConcept());
 	}
 	
 	@Override

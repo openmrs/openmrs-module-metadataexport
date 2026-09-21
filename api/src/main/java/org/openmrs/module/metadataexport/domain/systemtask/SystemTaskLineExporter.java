@@ -41,16 +41,22 @@ public class SystemTaskLineExporter extends MetadataLineExporter<SystemTask> {
 		export(instance, line);
 	}
 	
-	static ProviderRole resolveAssignee(SystemTask task) {
+	/** The default assignee role, or null when the task has none or its stored role id is dangling. */
+	static ProviderRole findAssignee(SystemTask task) {
 		Integer providerRoleId = task.getDefaultAssigneeProviderRoleId();
-		if (providerRoleId == null) {
-			return null;
-		}
-		ProviderRole providerRole = Context.getProviderService().getProviderRole(providerRoleId);
-		if (providerRole == null) {
-			log.warn("System Tasks: skipping default assignee role of system task {} — provider role id {} does not"
-			        + " exist, so the task will import unassigned",
-			    task.getUuid(), providerRoleId);
+		return providerRoleId == null ? null : Context.getProviderService().getProviderRole(providerRoleId);
+	}
+	
+	/**
+	 * {@link #findAssignee}, warning about a dangling id; called once per task, from the row writer.
+	 */
+	private static ProviderRole resolveAssignee(SystemTask task) {
+		ProviderRole providerRole = findAssignee(task);
+		if (providerRole == null && task.getDefaultAssigneeProviderRoleId() != null) {
+			log.warn(
+			    "System Tasks: skipping default assignee role of system task {} — provider role id {} does not"
+			            + " exist, so the task will import unassigned",
+			    task.getUuid(), task.getDefaultAssigneeProviderRoleId());
 		}
 		return providerRole;
 	}

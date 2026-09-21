@@ -41,7 +41,7 @@ public class ExportJobRunner {
 		if (exportPackage == null) {
 			throw new APIException("No export package with uuid " + packageUuid);
 		}
-		if (Boolean.TRUE.equals(exportPackage.getRetired())) {
+		if (exportPackage.getRetired()) {
 			throw new RetiredPackageException(
 			        "Package '" + exportPackage.getName() + "' is retired: " + exportPackage.getRetireReason());
 		}

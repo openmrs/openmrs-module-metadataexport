@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -56,10 +55,7 @@ public class DrugDomainExporter extends CsvDomainExporter<Drug> {
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(Drug drug) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
-		Concept drugConcept = drug.getConcept();
-		if (drugConcept != null) {
-			dependencies.add(drugConcept);
-		}
+		dependencies.add(drug.getConcept());
 		Concept dosageForm = drug.getDosageForm();
 		if (dosageForm != null) {
 			dependencies.add(dosageForm);
@@ -69,9 +65,7 @@ public class DrugDomainExporter extends CsvDomainExporter<Drug> {
 		    drugReferenceMap -> dependencies.add(drugReferenceMap.getConceptReferenceTerm().getConceptSource()));
 		
 		for (DrugIngredient ingredient : drug.getIngredients()) {
-			if (ingredient.getIngredient() != null) {
-				dependencies.add(ingredient.getIngredient());
-			}
+			dependencies.add(ingredient.getIngredient());
 			if (ingredient.getUnits() != null) {
 				dependencies.add(ingredient.getUnits());
 			}

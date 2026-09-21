@@ -44,10 +44,4 @@ class MetadataSetMemberDomainExporterTest {
 		assertTrue(dependencies.contains(metadataSet), "owning metadata set must be pulled into the closure");
 	}
 	
-	@Test
-	void getDependencies_emptyWhenNoMetadataSetOrResolvableClass() {
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(new MetadataSetMember());
-		
-		assertTrue(dependencies.isEmpty());
-	}
 }

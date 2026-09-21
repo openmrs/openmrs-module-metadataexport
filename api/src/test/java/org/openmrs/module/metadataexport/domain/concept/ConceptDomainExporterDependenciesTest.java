@@ -64,17 +64,6 @@ class ConceptDomainExporterDependenciesTest {
 	}
 	
 	@Test
-	void getDependencies_skipsNullAnswerConceptsAndSetConcepts() {
-		Concept c = concept("c");
-		c.addAnswer(new ConceptAnswer(concept("answer1")));
-		c.addAnswer(new ConceptAnswer());
-		c.setConceptSets(Arrays.asList(new ConceptSet(concept("member1"), 1.0), new ConceptSet(null, 2.0)));
-		
-		assertEquals(new HashSet<>(Arrays.asList("answer1")), answerConceptUuids(c));
-		assertEquals(new HashSet<>(Arrays.asList("member1")), membershipMemberUuids(c));
-	}
-	
-	@Test
 	void getDependencies_includesConceptClass() {
 		Concept c = concept("c");
 		ConceptClass conceptClass = new ConceptClass();

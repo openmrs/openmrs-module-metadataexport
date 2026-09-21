@@ -16,7 +16,6 @@ import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.ExportLine;
 
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -37,8 +36,7 @@ public class NestedConceptExporter extends BaseLineExporter<Concept> {
 		
 		String answers = concept.getAnswers().stream()
 		        .sorted(Comparator.comparing(ConceptAnswer::getSortWeight, Comparator.nullsLast(Comparator.naturalOrder())))
-		        .map(ConceptAnswer::getAnswerConcept).filter(Objects::nonNull).map(Concept::getUuid)
-		        .collect(Collectors.joining(LIST_SEPARATOR));
+		        .map(ConceptAnswer::getAnswerConcept).map(Concept::getUuid).collect(Collectors.joining(LIST_SEPARATOR));
 		line.put(HEADER_ANSWERS, answers);
 	}
 }

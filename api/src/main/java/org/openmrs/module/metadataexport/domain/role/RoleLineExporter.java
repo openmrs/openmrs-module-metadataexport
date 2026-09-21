@@ -30,14 +30,9 @@ public class RoleLineExporter extends MetadataLineExporter<Role> {
 		line.put(HEADER_ROLE_NAME, role.getRole());
 		line.put(BaseLineProcessor.HEADER_DESC, role.getDescription());
 		
-		if (role.getInheritedRoles() != null) {
-			line.put(HEADER_INHERITED_ROLES,
-			    role.getInheritedRoles().stream().map(Role::getRole).sorted().collect(Collectors.joining("; ")));
-		}
-		
-		if (role.getPrivileges() != null) {
-			line.put(HEADER_PRIVILEGES,
-			    role.getPrivileges().stream().map(Privilege::getPrivilege).sorted().collect(Collectors.joining("; ")));
-		}
+		line.put(HEADER_INHERITED_ROLES,
+		    role.getInheritedRoles().stream().map(Role::getRole).sorted().collect(Collectors.joining("; ")));
+		line.put(HEADER_PRIVILEGES,
+		    role.getPrivileges().stream().map(Privilege::getPrivilege).sorted().collect(Collectors.joining("; ")));
 	}
 }

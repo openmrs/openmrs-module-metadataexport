@@ -67,15 +67,4 @@ class ProgramWorkflowLineExporterTest {
 		assertEquals("some-concept-uuid", line.get("workflow concept"));
 	}
 	
-	@Test
-	void omitsColumnsWhenProgramOrConceptIsNull() {
-		ProgramWorkflow workflow = new ProgramWorkflow();
-		workflow.setUuid("1b42d0e8-20ad-4bd8-b05d-fbad80a3b665");
-		
-		ExportLine line = new ExportLine();
-		new ProgramWorkflowLineExporter().writeLine(workflow, line);
-		
-		assertNull(line.get("program"));
-		assertNull(line.get("workflow concept"));
-	}
 }

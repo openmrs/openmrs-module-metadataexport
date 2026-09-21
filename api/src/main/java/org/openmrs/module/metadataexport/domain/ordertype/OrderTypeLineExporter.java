@@ -15,7 +15,6 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
 
-import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class OrderTypeLineExporter extends MetadataLineExporter<OrderType> {

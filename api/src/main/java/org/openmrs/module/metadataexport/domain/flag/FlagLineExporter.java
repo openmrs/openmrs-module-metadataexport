@@ -43,9 +43,7 @@ public class FlagLineExporter extends MetadataLineExporter<Flag> {
 			line.put(HEADER_PRIORITY, flag.getPriority().getName());
 		}
 		
-		if (flag.getEnabled() != null) {
-			line.put(HEADER_ENABLED, String.valueOf(flag.getEnabled()));
-		}
+		line.put(HEADER_ENABLED, flag.getEnabled());
 		
 		if (flag.getTags() != null) {
 			line.put(HEADER_TAGS, flag.getTags().stream().filter(tag -> !tag.getRetired()).map(Tag::getName).sorted()

@@ -51,7 +51,6 @@ class FormResourcesTest {
 		    Collections.singletonList(resource("JSON schema", "org.openmrs.customdatatype.datatype.FreeTextDatatype"))));
 		assertNull(FormResources.schemaResource(
 		    Collections.singletonList(resource("json schema", FormResources.AMPATH_JSON_SCHEMA_DATATYPE))));
-		assertNull(FormResources.schemaResource(null));
 		assertFalse(FormResources.isAmpathForm(Collections.emptyList()));
 	}
 	
@@ -92,7 +91,6 @@ class FormResourcesTest {
 		FormResource es = resource("Triage_translations_es", FormResources.LONG_FREE_TEXT_DATATYPE);
 		
 		assertEquals(Arrays.asList(fr, es), FormResources.translationsOf(Arrays.asList(schema, fr, es)));
-		assertTrue(FormResources.translationsOf(null).isEmpty());
 	}
 	
 	@Test

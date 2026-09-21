@@ -40,9 +40,6 @@ public class DrugMappingsExporter extends BaseLineExporter<Drug> {
 		Map<String, String> codesByHeader = new LinkedHashMap<>();
 		for (DrugReferenceMap map : drug.getDrugReferenceMaps()) {
 			ConceptReferenceTerm term = map.getConceptReferenceTerm();
-			if (term == null || term.getConceptSource() == null || map.getConceptMapType() == null) {
-				continue;
-			}
 			String header = MappingsDrugLineProcessor.MAPPING_HEADER_PREFIX + HEADER_SEPARATOR
 			        + map.getConceptMapType().getName() + HEADER_SEPARATOR + term.getConceptSource().getName();
 			codesByHeader.merge(header, term.getCode(), (existing, code) -> existing + LIST_SEPARATOR + code);

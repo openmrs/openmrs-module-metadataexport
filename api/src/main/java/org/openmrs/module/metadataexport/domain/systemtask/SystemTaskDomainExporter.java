@@ -60,7 +60,7 @@ public class SystemTaskDomainExporter extends CsvDomainExporter<SystemTask> {
 		// moved into core. Until an exporter exists, Selector drops the role returned here because no registered
 		// domain owns it. Keeping this here for future sake: it is returned anyway so the closure starts working
 		// the moment a provider roles domain is added.
-		ProviderRole role = SystemTaskLineExporter.resolveAssignee(instance);
+		ProviderRole role = SystemTaskLineExporter.findAssignee(instance);
 		return role == null ? Collections.emptyList() : Collections.singletonList(role);
 	}
 }

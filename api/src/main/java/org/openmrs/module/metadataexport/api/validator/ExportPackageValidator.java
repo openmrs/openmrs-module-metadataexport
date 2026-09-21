@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.api.validator;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.annotation.Handler;
 import org.openmrs.module.initializer.Domain;
@@ -43,8 +44,7 @@ public class ExportPackageValidator implements Validator {
 			errors.rejectValue("name", "metadataexport.package.name.required", "An export package requires a name");
 		} else {
 			ExportPackage sameName = metadataExportDao.getPackageByName(exportPackage.getName());
-			if (sameName != null && !Boolean.TRUE.equals(sameName.getRetired())
-			        && !sameName.getUuid().equals(exportPackage.getUuid())) {
+			if (sameName != null && !sameName.getUuid().equals(exportPackage.getUuid())) {
 				errors.rejectValue("name", "metadataexport.package.name.duplicate",
 				    "An export package with this name already exists");
 			}
@@ -52,16 +52,13 @@ public class ExportPackageValidator implements Validator {
 		
 		for (int i = 0; i < exportPackage.getEntries().size(); i++) {
 			ExportPackageEntry entry = exportPackage.getEntries().get(i);
-			try {
-				Domain domain = entry.getDomainEnum();
-				if (domainExporterRegistry.forDomain(domain) == null) {
-					errors.rejectValue("entries[" + i + "].domain", "metadataexport.package.entry.domain.unsupported",
-					    "No exporter supports domain '" + entry.getDomain() + "'");
-				}
-			}
-			catch (IllegalArgumentException | NullPointerException e) {
+			Domain domain = EnumUtils.getEnum(Domain.class, entry.getDomain());
+			if (domain == null) {
 				errors.rejectValue("entries[" + i + "].domain", "metadataexport.package.entry.domain.unknown",
 				    "Unknown domain '" + entry.getDomain() + "'");
+			} else if (domainExporterRegistry.forDomain(domain) == null) {
+				errors.rejectValue("entries[" + i + "].domain", "metadataexport.package.entry.domain.unsupported",
+				    "No exporter supports domain '" + entry.getDomain() + "'");
 			}
 			for (String itemUuid : entry.getItemUuids()) {
 				if (StringUtils.isBlank(itemUuid) || itemUuid.length() > 38) {

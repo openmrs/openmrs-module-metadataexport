@@ -42,24 +42,4 @@ class ProgramWorkflowDomainExporterTest {
 		assertTrue(dependencies.contains(concept), "referenced workflow concept must be pulled into the closure");
 	}
 	
-	@Test
-	void getDependencies_programOnlyWhenNoConcept() {
-		Program program = new Program();
-		program.setUuid("aids-program-uuid");
-		
-		ProgramWorkflow workflow = new ProgramWorkflow();
-		workflow.setProgram(program);
-		
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(workflow);
-		
-		assertEquals(1, dependencies.size());
-		assertTrue(dependencies.contains(program));
-	}
-	
-	@Test
-	void getDependencies_emptyWhenNoProgramOrConcept() {
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(new ProgramWorkflow());
-		
-		assertTrue(dependencies.isEmpty());
-	}
 }

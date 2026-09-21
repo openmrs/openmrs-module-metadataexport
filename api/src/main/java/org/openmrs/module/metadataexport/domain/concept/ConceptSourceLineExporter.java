@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
-import org.apache.commons.lang3.StringUtils;
 import org.openmrs.ConceptSource;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.export.ExportLine;
@@ -25,11 +24,7 @@ public class ConceptSourceLineExporter extends MetadataLineExporter<ConceptSourc
 		line.put(BaseLineProcessor.HEADER_NAME, conceptSource.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, conceptSource.getDescription());
 		
-		if (StringUtils.isNotEmpty(conceptSource.getHl7Code())) {
-			line.put(HEADER_HL7_CODE, conceptSource.getHl7Code());
-		}
-		if (StringUtils.isNotEmpty(conceptSource.getUniqueId())) {
-			line.put(HEADER_UNIQUE_ID, conceptSource.getUniqueId());
-		}
+		line.put(HEADER_HL7_CODE, conceptSource.getHl7Code());
+		line.put(HEADER_UNIQUE_ID, conceptSource.getUniqueId());
 	}
 }

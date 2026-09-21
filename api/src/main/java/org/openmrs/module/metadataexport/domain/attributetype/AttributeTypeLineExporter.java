@@ -46,28 +46,12 @@ public class AttributeTypeLineExporter extends MetadataLineExporter<BaseAttribut
 		line.put(HEADER_ENTITY_NAME, entityName(attributeType));
 		line.put(BaseLineProcessor.HEADER_NAME, attributeType.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, attributeType.getDescription());
-		if (attributeType.getMinOccurs() != null) {
-			line.put(HEADER_MIN_OCCURS, String.valueOf(attributeType.getMinOccurs()));
-		}
-		
-		if (attributeType.getMaxOccurs() != null) {
-			line.put(HEADER_MAX_OCCURS, String.valueOf(attributeType.getMaxOccurs()));
-		}
-		if (attributeType.getDatatypeClassname() != null) {
-			line.put(HEADER_DATATYPE_CLASSNAME, attributeType.getDatatypeClassname());
-		}
-		
-		if (attributeType.getDatatypeConfig() != null) {
-			line.put(HEADER_DATATYPE_CONFIG, attributeType.getDatatypeConfig());
-		}
-		
-		if (attributeType.getPreferredHandlerClassname() != null) {
-			line.put(HEADER_PREFERRED_HANDLER, attributeType.getPreferredHandlerClassname());
-		}
-		
-		if (attributeType.getHandlerConfig() != null) {
-			line.put(HEADER_HANDLER_CONFIG, attributeType.getHandlerConfig());
-		}
+		line.put(HEADER_MIN_OCCURS, attributeType.getMinOccurs());
+		line.put(HEADER_MAX_OCCURS, attributeType.getMaxOccurs());
+		line.put(HEADER_DATATYPE_CLASSNAME, attributeType.getDatatypeClassname());
+		line.put(HEADER_DATATYPE_CONFIG, attributeType.getDatatypeConfig());
+		line.put(HEADER_PREFERRED_HANDLER, attributeType.getPreferredHandlerClassname());
+		line.put(HEADER_HANDLER_CONFIG, attributeType.getHandlerConfig());
 	}
 	
 	private static String entityName(BaseAttributeType<?> attributeType) {

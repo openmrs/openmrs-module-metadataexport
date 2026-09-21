@@ -12,33 +12,20 @@ package org.openmrs.module.metadataexport.domain.metadata;
 import org.openmrs.module.initializer.api.mdm.MetadataTermMappingsLineProcessor;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
-import org.openmrs.module.metadatamapping.MetadataSource;
 import org.openmrs.module.metadatamapping.MetadataTermMapping;
 
 public class MetadataTermMappingLineExporter extends MetadataLineExporter<MetadataTermMapping> {
 	
 	@Override
 	protected void writeRetiredDiscriminators(MetadataTermMapping mapping, ExportLine line) {
-		line.put(MetadataTermMappingsLineProcessor.MAPPING_CODE, mapping.getCode());
-		
-		MetadataSource source = mapping.getMetadataSource();
-		if (source != null) {
-			line.put(MetadataTermMappingsLineProcessor.MAPPING_SOURCE, source.getName());
-		}
-		
-		line.put(MetadataTermMappingsLineProcessor.METADATA_CLASS_NAME, mapping.getMetadataClass());
-		line.put(MetadataTermMappingsLineProcessor.METADATA_UUID, mapping.getMetadataUuid());
+		// every column is read with get(header, true) on import, so a retired row carries all of them
+		export(mapping, line);
 	}
 	
 	@Override
 	public void export(MetadataTermMapping mapping, ExportLine line) {
 		line.put(MetadataTermMappingsLineProcessor.MAPPING_CODE, mapping.getCode());
-		
-		MetadataSource source = mapping.getMetadataSource();
-		if (source != null) {
-			line.put(MetadataTermMappingsLineProcessor.MAPPING_SOURCE, source.getName());
-		}
-		
+		line.put(MetadataTermMappingsLineProcessor.MAPPING_SOURCE, mapping.getMetadataSource().getName());
 		line.put(MetadataTermMappingsLineProcessor.METADATA_CLASS_NAME, mapping.getMetadataClass());
 		line.put(MetadataTermMappingsLineProcessor.METADATA_UUID, mapping.getMetadataUuid());
 	}

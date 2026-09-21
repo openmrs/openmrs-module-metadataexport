@@ -26,8 +26,6 @@ public class FlagPriorityLineExporter extends MetadataLineExporter<Priority> {
 		line.put(BaseLineProcessor.HEADER_DESC, priority.getDescription());
 		line.put(HEADER_STYLE, priority.getStyle());
 		
-		if (priority.getRank() != null) {
-			line.put(HEADER_RANK, String.valueOf(priority.getRank()));
-		}
+		line.put(HEADER_RANK, priority.getRank());
 	}
 }

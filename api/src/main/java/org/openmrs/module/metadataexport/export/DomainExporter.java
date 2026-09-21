@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A self-describing, format-neutral exporter for one Iniz {@link Domain}. The ExporterService holds

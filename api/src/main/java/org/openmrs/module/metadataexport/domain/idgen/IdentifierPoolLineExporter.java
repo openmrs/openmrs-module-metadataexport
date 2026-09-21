@@ -33,10 +33,9 @@ public class IdentifierPoolLineExporter extends BaseLineExporter<IdentifierSourc
 		if (pool.getSource() != null) {
 			line.put(IdentifierSourceLineExporter.HEADER_POOL_IDENTIFIER_SOURCE, pool.getSource().getUuid());
 		}
-		line.put(IdentifierSourceLineExporter.HEADER_POOL_BATCH_SIZE, String.valueOf(pool.getBatchSize()));
-		line.put(IdentifierSourceLineExporter.HEADER_POOL_MINIMUM_SIZE, String.valueOf(pool.getMinPoolSize()));
-		line.put(IdentifierSourceLineExporter.HEADER_POOL_REFILL_WITH_TASK,
-		    Boolean.toString(pool.isRefillWithScheduledTask()));
-		line.put(IdentifierSourceLineExporter.HEADER_POOL_SEQUENTIAL_ALLOCATION, Boolean.toString(pool.isSequential()));
+		line.put(IdentifierSourceLineExporter.HEADER_POOL_BATCH_SIZE, pool.getBatchSize());
+		line.put(IdentifierSourceLineExporter.HEADER_POOL_MINIMUM_SIZE, pool.getMinPoolSize());
+		line.put(IdentifierSourceLineExporter.HEADER_POOL_REFILL_WITH_TASK, pool.isRefillWithScheduledTask());
+		line.put(IdentifierSourceLineExporter.HEADER_POOL_SEQUENTIAL_ALLOCATION, pool.isSequential());
 	}
 }

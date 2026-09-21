@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAnswer;
 import org.openmrs.ConceptAttributeType;
-import org.openmrs.ConceptSet;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
@@ -48,15 +47,9 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 	public Collection<? extends OpenmrsObject> getDependencies(Concept concept) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
 		for (ConceptAnswer answer : concept.getAnswers()) {
-			if (answer.getAnswerConcept() != null) {
-				dependencies.add(answer.getAnswerConcept());
-			}
+			dependencies.add(answer.getAnswerConcept());
 		}
-		for (ConceptSet member : concept.getConceptSets()) {
-			if (member.getConcept() != null) {
-				dependencies.add(member);
-			}
-		}
+		dependencies.addAll(concept.getConceptSets());
 		dependencies.add(concept.getConceptClass());
 		
 		concept.getConceptMappings()
