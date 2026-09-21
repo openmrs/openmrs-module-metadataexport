@@ -70,9 +70,6 @@ final class FormResources {
 	
 	/** The schema resource of an AMPATH form, or null when these resources are not an AMPATH form's. */
 	static FormResource schemaResource(Collection<FormResource> resources) {
-		if (resources == null) {
-			return null;
-		}
 		for (FormResource resource : resources) {
 			if (JSON_SCHEMA_RESOURCE.equals(resource.getName()) && isClobBacked(resource.getDatatypeClassname())) {
 				return resource;
@@ -109,11 +106,9 @@ final class FormResources {
 	
 	static List<FormResource> translationsOf(Collection<FormResource> resources) {
 		List<FormResource> translations = new ArrayList<>();
-		if (resources != null) {
-			for (FormResource resource : resources) {
-				if (isTranslation(resource)) {
-					translations.add(resource);
-				}
+		for (FormResource resource : resources) {
+			if (isTranslation(resource)) {
+				translations.add(resource);
 			}
 		}
 		return translations;
@@ -134,13 +129,6 @@ final class FormResources {
 	 */
 	static String readClob(FormResource resource) {
 		return readJson(resource).text;
-	}
-	
-	/**
-	 * The clob content parsed as a JSON object, or null when it cannot be; {@link #readJson} says why.
-	 */
-	static ObjectNode readJsonObject(FormResource resource) {
-		return readJson(resource).node;
 	}
 	
 	/**

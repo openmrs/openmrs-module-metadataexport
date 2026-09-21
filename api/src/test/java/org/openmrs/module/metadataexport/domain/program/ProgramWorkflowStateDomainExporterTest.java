@@ -42,24 +42,4 @@ class ProgramWorkflowStateDomainExporterTest {
 		assertTrue(dependencies.contains(concept), "referenced state concept must be pulled into the closure");
 	}
 	
-	@Test
-	void getDependencies_workflowOnlyWhenNoConcept() {
-		ProgramWorkflow workflow = new ProgramWorkflow();
-		workflow.setUuid("standard-treatment-status-workflow-uuid");
-		
-		ProgramWorkflowState state = new ProgramWorkflowState();
-		state.setProgramWorkflow(workflow);
-		
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(state);
-		
-		assertEquals(1, dependencies.size());
-		assertTrue(dependencies.contains(workflow));
-	}
-	
-	@Test
-	void getDependencies_emptyWhenNoWorkflowOrConcept() {
-		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(new ProgramWorkflowState());
-		
-		assertTrue(dependencies.isEmpty());
-	}
 }

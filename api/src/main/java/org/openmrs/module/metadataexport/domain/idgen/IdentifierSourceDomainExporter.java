@@ -73,7 +73,10 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 		for (IdentifierSource instance : instances) {
 			IdentifierSource real = HibernateUtil.getRealObjectFromProxy(instance);
 			if (!handles(real)) {
-				continue;
+				// the manifest only holds sources handles() accepted; anything else is a routing bug, and
+				// dropping it silently would leave the auto generation options that reference it dangling
+				throw new IllegalStateException("Idgen: identifier source " + real.getUuid() + " of type "
+				        + real.getClass().getName() + " reached the writer although it is not exportable");
 			}
 			if (real.getReservedIdentifiers() != null && !real.getReservedIdentifiers().isEmpty()) {
 				// Iniz has no column for reserved identifiers, so a bootstrapped copy of this
@@ -183,9 +186,7 @@ public class IdentifierSourceDomainExporter extends CsvDomainExporter<Identifier
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(IdentifierSource instance) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
-		if (instance.getIdentifierType() != null) {
-			dependencies.add(instance.getIdentifierType());
-		}
+		dependencies.add(instance.getIdentifierType());
 		IdentifierSource real = HibernateUtil.getRealObjectFromProxy(instance);
 		if (real instanceof IdentifierPool && ((IdentifierPool) real).getSource() != null) {
 			dependencies.add(((IdentifierPool) real).getSource());

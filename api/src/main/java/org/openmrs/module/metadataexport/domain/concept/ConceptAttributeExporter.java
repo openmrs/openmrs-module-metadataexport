@@ -30,9 +30,6 @@ public class ConceptAttributeExporter extends BaseLineExporter<Concept> {
 		}
 		
 		for (ConceptAttribute attribute : concept.getActiveAttributes()) {
-			if (attribute.getAttributeType() == null) {
-				continue;
-			}
 			String header = BaseAttributeLineProcessor.HEADER_ATTRIBUTE_PREFIX + attribute.getAttributeType().getName();
 			line.put(header, attribute.getValueReference());
 		}

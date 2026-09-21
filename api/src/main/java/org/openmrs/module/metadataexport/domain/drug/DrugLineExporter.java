@@ -29,10 +29,7 @@ public class DrugLineExporter extends MetadataLineExporter<Drug> {
 		line.put(BaseLineProcessor.HEADER_DESC, drug.getDescription());
 		line.put(HEADER_STRENGTH, drug.getStrength());
 		
-		Concept drugConcept = drug.getConcept();
-		if (drugConcept != null) {
-			line.put(HEADER_CONCEPT_DRUG, drugConcept.getUuid());
-		}
+		line.put(HEADER_CONCEPT_DRUG, drug.getConcept().getUuid());
 		
 		Concept dosageForm = drug.getDosageForm();
 		if (dosageForm != null) {

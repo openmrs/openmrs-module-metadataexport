@@ -74,10 +74,11 @@ class MetadataSetMemberLineExporterTest {
 	}
 	
 	@Test
-	void omitsSortWeightAndMetadataSetWhenAbsent() {
+	void omitsSortWeightWhenAbsent() {
 		MetadataSetMember member = new MetadataSetMember();
 		member.setUuid("ee00777d-0cbe-41b7-4c67-8ff93de67b9e");
 		member.setName("Legacy Id");
+		member.setMetadataSet(metadataSet("f0ebcb99-7618-41b7-b0bf-8ff93de67b9e"));
 		member.setMetadataClass("org.openmrs.PatientIdentifierType");
 		member.setMetadataUuid("n0ebcb90-m618-n1b1-b0bf-kff93de97b9j");
 		
@@ -86,6 +87,5 @@ class MetadataSetMemberLineExporterTest {
 		
 		assertEquals("Legacy Id", line.get("name"));
 		assertNull(line.get("sort weight"));
-		assertNull(line.get("metadata set uuid"));
 	}
 }

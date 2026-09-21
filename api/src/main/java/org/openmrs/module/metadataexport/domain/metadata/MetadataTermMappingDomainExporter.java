@@ -16,7 +16,6 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
-import org.openmrs.module.metadatamapping.MetadataSource;
 import org.openmrs.module.metadatamapping.MetadataTermMapping;
 import org.openmrs.module.metadatamapping.api.MetadataMappingService;
 import org.openmrs.module.metadatamapping.api.MetadataTermMappingSearchCriteriaBuilder;
@@ -51,11 +50,10 @@ public class MetadataTermMappingDomainExporter extends CsvDomainExporter<Metadat
 	public Collection<? extends OpenmrsObject> getDependencies(MetadataTermMapping instance) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
 		
-		MetadataSource source = instance.getMetadataSource();
 		Class<? extends OpenmrsMetadata> type = MetadataMappingUtils.resolveMetadataClass(instance.getMetadataClass());
-		if (source != null && type != null) {
+		if (type != null) {
 			OpenmrsMetadata mappedObject = Context.getService(MetadataMappingService.class).getMetadataItem(type,
-			    source.getName(), instance.getCode());
+			    instance.getMetadataSource().getName(), instance.getCode());
 			if (mappedObject != null) {
 				dependencies.add(mappedObject);
 			}

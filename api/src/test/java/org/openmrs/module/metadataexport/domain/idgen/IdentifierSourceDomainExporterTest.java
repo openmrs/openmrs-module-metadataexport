@@ -38,6 +38,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IdentifierSourceDomainExporterTest {
@@ -75,31 +76,10 @@ class IdentifierSourceDomainExporterTest {
 	}
 	
 	@Test
-	void partitionSkipsUnknownSourceSubclasses() {
-		IdentifierSource custom = new BaseIdentifierSource() {};
-		IdentifierPool pool = new IdentifierPool();
-		pool.setSource(new SequentialIdentifierGenerator());
-		
-		Map<String, Collection<IdentifierSource>> files = exporter.partition(Arrays.asList(custom, pool));
-		
-		assertEquals(1, files.size(), "custom subclasses have no Iniz representation and land in no file");
-		assertTrue(files.get(IdentifierSourceDomainExporter.FILE_POOL).contains(pool));
-	}
-	
-	@Test
-	void partitionSkipsPoolsWithoutAnImportableBackingSource() {
-		IdentifierPool sourceless = new IdentifierPool();
-		IdentifierPool customBacked = new IdentifierPool();
-		customBacked.setSource(new BaseIdentifierSource() {});
-		IdentifierPool good = new IdentifierPool();
-		good.setSource(new SequentialIdentifierGenerator());
-		
-		Map<String, Collection<IdentifierSource>> files = exporter.partition(Arrays.asList(sourceless, customBacked, good));
-		
-		assertEquals(1, files.size());
-		assertEquals(1, files.get(IdentifierSourceDomainExporter.FILE_POOL).size(),
-		    "a pool row without a resolvable backing source uuid can never import");
-		assertTrue(files.get(IdentifierSourceDomainExporter.FILE_POOL).contains(good));
+	void partitionRejectsSourcesThatHandlesWouldNotAccept() {
+		// the manifest never carries one; if it did, dropping it silently would leave dangling references
+		assertThrows(IllegalStateException.class, () -> exporter.partition(Arrays.asList(new BaseIdentifierSource() {})));
+		assertThrows(IllegalStateException.class, () -> exporter.partition(Arrays.asList(new IdentifierPool())));
 	}
 	
 	@Test
@@ -119,16 +99,19 @@ class IdentifierSourceDomainExporterTest {
 		SequentialIdentifierGenerator sequential = new SequentialIdentifierGenerator();
 		sequential.setUuid("seq-uuid");
 		sequential.setName("Sequential");
+		sequential.setIdentifierType(idType());
 		sequential.setFirstIdentifierBase("1000");
 		sequential.setBaseCharacterSet("0123456789");
 		RemoteIdentifierSource remote = new RemoteIdentifierSource();
 		remote.setUuid("rem-uuid");
 		remote.setName("Remote");
+		remote.setIdentifierType(idType());
 		remote.setUrl("https://idgen.example.org/generate");
 		remote.setUser("idgen-user");
 		IdentifierPool pool = new IdentifierPool();
 		pool.setUuid("pool-uuid");
 		pool.setName("Pool");
+		pool.setIdentifierType(idType());
 		pool.setSource(sequential);
 		
 		exporter.export(Arrays.asList(sequential, remote, pool), new ExportContext(outDir));
@@ -149,26 +132,31 @@ class IdentifierSourceDomainExporterTest {
 		SequentialIdentifierGenerator minimal = new SequentialIdentifierGenerator();
 		minimal.setUuid("c1d8a345-3f10-11e4-adec-0800271c1b75");
 		minimal.setName("Sequential");
+		minimal.setIdentifierType(idType());
 		minimal.setFirstIdentifierBase("1000");
 		minimal.setBaseCharacterSet("0123456789");
 		SequentialIdentifierGenerator retired = new SequentialIdentifierGenerator();
 		retired.setUuid("439559c2-a3a4-4a25-b4b2-1a0299e287ee");
 		retired.setName("Retired");
+		retired.setIdentifierType(idType());
 		retired.setFirstIdentifierBase("1");
 		retired.setBaseCharacterSet("0123456789");
 		retired.setRetired(true);
 		RemoteIdentifierSource remote = new RemoteIdentifierSource();
 		remote.setUuid("9e1a2b3c-3f10-11e4-adec-0800271c1b75");
 		remote.setName("Remote");
+		remote.setIdentifierType(idType());
 		remote.setUrl("https://idgen.example.org/generate");
 		remote.setUser("idgen-user");
 		IdentifierPool pool = new IdentifierPool();
 		pool.setUuid("7e3f4d5a-3f10-11e4-adec-0800271c1b75");
 		pool.setName("Pool");
+		pool.setIdentifierType(idType());
 		pool.setSource(minimal);
 		IdentifierPool poolOfPool = new IdentifierPool();
 		poolOfPool.setUuid("8f4a5b6c-3f10-11e4-adec-0800271c1b75");
 		poolOfPool.setName("Pool of pool");
+		poolOfPool.setIdentifierType(idType());
 		poolOfPool.setSource(pool);
 		
 		exporter.export(Arrays.asList(minimal, retired, remote, pool, poolOfPool), new ExportContext(outDir));
@@ -186,6 +174,12 @@ class IdentifierSourceDomainExporterTest {
 	 * source type is inferred by Iniz's own public getIdentifierSourceType, and every column the import
 	 * requires must hold a value.
 	 */
+	private static PatientIdentifierType idType() {
+		PatientIdentifierType type = new PatientIdentifierType();
+		type.setUuid("a5d38e09-efcb-4d91-a526-50ce1ba5011a");
+		return type;
+	}
+	
 	private static void assertInizReads(File outDir, String fileName, int dataRows, int order, IdentifierSourceType type,
 	        String... requiredHeaders) throws Exception {
 		File csv = outDir.toPath().resolve(Paths.get("configuration", Domain.IDGEN.getName(), fileName)).toFile();
@@ -253,8 +247,15 @@ class IdentifierSourceDomainExporterTest {
 	}
 	
 	@Test
-	void dependenciesAreNullSafe() {
-		assertTrue(exporter.getDependencies(new IdentifierPool()).isEmpty());
+	void dependenciesOmitTheBackingSourceOfASourcelessPool() {
+		PatientIdentifierType type = new PatientIdentifierType();
+		IdentifierPool pool = new IdentifierPool();
+		pool.setIdentifierType(type);
+		
+		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(pool);
+		
+		assertEquals(1, dependencies.size());
+		assertTrue(dependencies.contains(type));
 	}
 	
 	@Test

@@ -9,8 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.program;
 
-import org.openmrs.Concept;
-import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
@@ -26,15 +24,8 @@ public class ProgramWorkflowLineExporter extends MetadataLineExporter<ProgramWor
 		// A retired workflow must still carry the columns its import needs to bootstrap-and-save a new
 		// row: "program" is read with get(header, true) and throws if unresolved, and "workflow concept"
 		// backs the not-null program_workflow.concept_id, so both must survive the retired short-circuit.
-		Program program = workflow.getProgram();
-		if (program != null) {
-			line.put(HEADER_PROGRAM, program.getUuid());
-		}
-		
-		Concept concept = workflow.getConcept();
-		if (concept != null) {
-			line.put(HEADER_WORKFLOW_CONCEPT, concept.getUuid());
-		}
+		line.put(HEADER_PROGRAM, workflow.getProgram().getUuid());
+		line.put(HEADER_WORKFLOW_CONCEPT, workflow.getConcept().getUuid());
 	}
 	
 	@Override

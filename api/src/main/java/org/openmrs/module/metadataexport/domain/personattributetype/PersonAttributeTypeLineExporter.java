@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.personattributetype;
 
-import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.Privilege;
@@ -34,10 +33,7 @@ public class PersonAttributeTypeLineExporter extends MetadataLineExporter<Person
 		line.put(BaseLineProcessor.HEADER_DESC, personAttributeType.getDescription());
 		line.put(HEADER_SEARCHABLE, String.valueOf(personAttributeType.getSearchable()));
 		
-		String format = personAttributeType.getFormat();
-		if (StringUtils.isNotEmpty(format)) {
-			line.put(HEADER_FORMAT, format);
-		}
+		line.put(HEADER_FORMAT, personAttributeType.getFormat());
 		
 		Concept foreignConcept = foreignConcept(personAttributeType);
 		if (foreignConcept != null) {

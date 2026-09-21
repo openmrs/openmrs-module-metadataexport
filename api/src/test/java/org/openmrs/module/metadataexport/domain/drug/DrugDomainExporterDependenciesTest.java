@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DrugDomainExporterDependenciesTest {
 	
@@ -68,11 +67,6 @@ class DrugDomainExporterDependenciesTest {
 		drug.getIngredients().add(ingredient("ingredient-concept", null));
 		
 		assertEquals(new HashSet<>(Arrays.asList("drug-concept", "ingredient-concept")), dependencyUuids(drug));
-	}
-	
-	@Test
-	void getDependencies_isEmptyForDrugWithNoConceptRefs() {
-		assertTrue(exporter.getDependencies(new Drug()).isEmpty());
 	}
 	
 	@Test

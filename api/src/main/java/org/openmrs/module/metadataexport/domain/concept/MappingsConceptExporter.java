@@ -39,9 +39,6 @@ public class MappingsConceptExporter extends BaseLineExporter<Concept> {
 		Map<String, String> codesByHeader = new LinkedHashMap<>();
 		for (ConceptMap map : concept.getConceptMappings()) {
 			ConceptReferenceTerm term = map.getConceptReferenceTerm();
-			if (term == null || term.getConceptSource() == null || map.getConceptMapType() == null) {
-				continue;
-			}
 			String header = MappingsConceptLineProcessor.MAPPING_HEADER_PREFIX
 			        + MappingsConceptLineProcessor.MAPPING_HEADER_SEPARATOR + map.getConceptMapType().getName()
 			        + MappingsConceptLineProcessor.MAPPING_HEADER_SEPARATOR + term.getConceptSource().getName();

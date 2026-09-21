@@ -68,18 +68,4 @@ class MetadataTermMappingLineExporterTest {
 		assertEquals("05a29f94-c0ed-11e2-94be-8c13b969e334", line.get("metadata uuid"));
 	}
 	
-	@Test
-	void omitsMappingSourceColumnWhenNull() {
-		MetadataTermMapping mapping = new MetadataTermMapping();
-		mapping.setUuid("dbfd899d-e9e1-4059-8992-73737c924f84");
-		mapping.setCode("emr.admissionEncounterType");
-		mapping.setMetadataClass("org.openmrs.EncounterType");
-		mapping.setMetadataUuid("e22e39fd-7db2-45e7-80f1-60fa0d5a4378");
-		
-		ExportLine line = new ExportLine();
-		new MetadataTermMappingLineExporter().writeLine(mapping, line);
-		
-		assertEquals("emr.admissionEncounterType", line.get("mapping code"));
-		assertNull(line.get("mapping source"));
-	}
 }

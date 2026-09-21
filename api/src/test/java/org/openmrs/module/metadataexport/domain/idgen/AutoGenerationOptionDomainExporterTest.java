@@ -67,13 +67,7 @@ class AutoGenerationOptionDomainExporterTest {
 	}
 	
 	@Test
-	void dependenciesAreNullSafe() {
-		assertTrue(exporter.getDependencies(new AutoGenerationOption()).isEmpty());
-	}
-	
-	@Test
 	void handlesOnlyOptionsWhoseSourceIsExported() {
-		assertTrue(exporter.handles(new AutoGenerationOption()));
 		assertFalse(exporter.handles(new PatientIdentifierType()));
 		
 		AutoGenerationOption goodSource = new AutoGenerationOption();
@@ -103,9 +97,8 @@ class AutoGenerationOptionDomainExporterTest {
 	}
 	
 	@Test
-	void exportableSortsByTypeNameThenLocationNullSafe() {
-		AutoGenerationOption unnamedType = new AutoGenerationOption();
-		unnamedType.setUuid("a");
+	void exportableSortsByTypeNameThenLocation() {
+		AutoGenerationOption unnamedType = option("", null, "a");
 		AutoGenerationOption noLocation = option("ID Type", null, "b");
 		AutoGenerationOption withLocation = option("ID Type", "Ward", "c");
 		
@@ -121,6 +114,7 @@ class AutoGenerationOptionDomainExporterTest {
 		PatientIdentifierType type = new PatientIdentifierType();
 		type.setName(typeName);
 		option.setIdentifierType(type);
+		option.setSource(new SequentialIdentifierGenerator());
 		if (locationName != null) {
 			Location location = new Location();
 			location.setName(locationName);

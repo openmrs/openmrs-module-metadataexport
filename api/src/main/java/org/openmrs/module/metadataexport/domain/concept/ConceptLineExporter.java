@@ -66,12 +66,8 @@ public class ConceptLineExporter extends MetadataLineExporter<Concept> {
 	}
 	
 	private void exportClassification(Concept concept, ExportLine line) {
-		if (concept.getConceptClass() != null) {
-			line.put(ConceptLineProcessor.HEADER_CLASS, concept.getConceptClass().getName());
-		}
-		if (concept.getDatatype() != null) {
-			line.put(ConceptLineProcessor.HEADER_DATATYPE, concept.getDatatype().getName());
-		}
+		line.put(ConceptLineProcessor.HEADER_CLASS, concept.getConceptClass().getName());
+		line.put(ConceptLineProcessor.HEADER_DATATYPE, concept.getDatatype().getName());
 		line.put(ConceptLineProcessor.HEADER_VERSION, concept.getVersion());
 	}
 	

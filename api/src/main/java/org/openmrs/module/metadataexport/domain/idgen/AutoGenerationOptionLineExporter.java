@@ -25,15 +25,11 @@ public class AutoGenerationOptionLineExporter extends BaseLineExporter<AutoGener
 	@Override
 	public void export(AutoGenerationOption option, ExportLine line) {
 		line.put(BaseLineProcessor.HEADER_UUID, option.getUuid());
-		if (option.getIdentifierType() != null) {
-			line.put(AutoGenerationOptionLineProcessor.IDENTIFIER_TYPE, option.getIdentifierType().getUuid());
-		}
+		line.put(AutoGenerationOptionLineProcessor.IDENTIFIER_TYPE, option.getIdentifierType().getUuid());
 		if (option.getLocation() != null) {
 			line.put(AutoGenerationOptionLineProcessor.LOCATION, option.getLocation().getUuid());
 		}
-		if (option.getSource() != null) {
-			line.put(AutoGenerationOptionLineProcessor.IDENTIFIER_SOURCE, option.getSource().getUuid());
-		}
+		line.put(AutoGenerationOptionLineProcessor.IDENTIFIER_SOURCE, option.getSource().getUuid());
 		line.put(AutoGenerationOptionLineProcessor.MANUAL_ENTRY_ENABLED, Boolean.toString(option.isManualEntryEnabled()));
 		line.put(AutoGenerationOptionLineProcessor.AUTO_GEN_ENABLED,
 		    Boolean.toString(option.isAutomaticGenerationEnabled()));

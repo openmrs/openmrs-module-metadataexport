@@ -56,10 +56,7 @@ public class MetadataSetMemberDomainExporter extends CsvDomainExporter<MetadataS
 	public Collection<? extends OpenmrsObject> getDependencies(MetadataSetMember instance) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
 		
-		MetadataSet metadataSet = instance.getMetadataSet();
-		if (metadataSet != null) {
-			dependencies.add(metadataSet);
-		}
+		dependencies.add(instance.getMetadataSet());
 		
 		Class<? extends OpenmrsMetadata> type = MetadataMappingUtils.resolveMetadataClass(instance.getMetadataClass());
 		if (type != null) {

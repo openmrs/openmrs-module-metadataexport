@@ -91,15 +91,4 @@ class ProgramWorkflowStateLineExporterTest {
 		assertEquals("false", line.get("Terminal"), "not terminal, but the column is still emitted as false");
 	}
 	
-	@Test
-	void omitsColumnsWhenWorkflowOrConceptIsNull() {
-		ProgramWorkflowState state = new ProgramWorkflowState();
-		state.setUuid("no-workflow-or-concept-uuid");
-		
-		ExportLine line = new ExportLine();
-		new ProgramWorkflowStateLineExporter().writeLine(state, line);
-		
-		assertNull(line.get("Workflow"));
-		assertNull(line.get("State concept"));
-	}
 }

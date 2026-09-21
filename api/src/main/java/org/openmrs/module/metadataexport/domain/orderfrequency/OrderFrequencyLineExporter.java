@@ -22,9 +22,7 @@ public class OrderFrequencyLineExporter extends MetadataLineExporter<OrderFreque
 	
 	@Override
 	public void export(OrderFrequency orderFrequency, ExportLine line) {
-		if (orderFrequency.getFrequencyPerDay() != null) {
-			line.put(HEADER_FREQ_PER_DAY, String.valueOf(orderFrequency.getFrequencyPerDay()));
-		}
+		line.put(HEADER_FREQ_PER_DAY, orderFrequency.getFrequencyPerDay());
 		
 		Concept concept = orderFrequency.getConcept();
 		if (concept != null) {

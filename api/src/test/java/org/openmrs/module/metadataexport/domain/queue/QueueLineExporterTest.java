@@ -66,20 +66,6 @@ class QueueLineExporterTest {
 	}
 	
 	@Test
-	void corruptRowWithoutServiceOrLocationIsStillWrittenWithoutThoseColumns() {
-		Queue queue = triageQueue();
-		queue.setService(null);
-		queue.setLocation(null);
-		
-		ExportLine line = new ExportLine();
-		new QueueLineExporter().writeLine(queue, line);
-		
-		assertEquals("Triage Queue", line.get("name"), "the row is written (and warned about), not dropped");
-		assertNull(line.get("service"));
-		assertNull(line.get("location"));
-	}
-	
-	@Test
 	void retiredQueueEmitsUuidAndFlagOnly() {
 		Queue queue = triageQueue();
 		queue.setRetired(true);

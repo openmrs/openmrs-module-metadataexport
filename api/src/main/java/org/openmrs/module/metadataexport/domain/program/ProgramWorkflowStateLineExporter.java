@@ -10,8 +10,6 @@
 package org.openmrs.module.metadataexport.domain.program;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.openmrs.Concept;
-import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
@@ -28,15 +26,8 @@ public class ProgramWorkflowStateLineExporter extends MetadataLineExporter<Progr
 	
 	@Override
 	protected void writeRetiredDiscriminators(ProgramWorkflowState state, ExportLine line) {
-		ProgramWorkflow workflow = state.getProgramWorkflow();
-		if (workflow != null) {
-			line.put(HEADER_WORKFLOW, workflow.getUuid());
-		}
-		
-		Concept concept = state.getConcept();
-		if (concept != null) {
-			line.put(HEADER_STATE_CONCEPT, concept.getUuid());
-		}
+		line.put(HEADER_WORKFLOW, state.getProgramWorkflow().getUuid());
+		line.put(HEADER_STATE_CONCEPT, state.getConcept().getUuid());
 		
 		// Initial and Terminal are read with get(header, true), so the columns must always be present or
 		// import throws for every row; emit them unconditionally as true/false rather than blank-for-false.

@@ -48,9 +48,7 @@ public class IdentifierSourceLineExporter extends MetadataLineExporter<Identifie
 	
 	@Override
 	public void export(IdentifierSource source, ExportLine line) {
-		if (source.getIdentifierType() != null) {
-			line.put(HEADER_IDTYPE, source.getIdentifierType().getUuid());
-		}
+		line.put(HEADER_IDTYPE, source.getIdentifierType().getUuid());
 		line.put(BaseLineProcessor.HEADER_NAME, source.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, source.getDescription());
 	}

@@ -153,14 +153,14 @@ public class AddressHierarchyDomainExporter implements DomainExporter<AddressHie
 		Set<Integer> parentIds = new HashSet<>();
 		for (AddressHierarchyEntry entry : instances) {
 			AddressHierarchyEntry parent = entry.getParent();
-			if (parent != null && parent.getId() != null) {
+			if (parent != null) {
 				parentIds.add(parent.getId());
 			}
 		}
 		
 		List<String> rows = new ArrayList<>();
 		for (AddressHierarchyEntry entry : instances) {
-			if (entry.getId() != null && parentIds.contains(entry.getId())) {
+			if (parentIds.contains(entry.getId())) {
 				continue; // not a leaf: it is covered by its descendants' rows
 			}
 			rows.add(buildRow(entry));
@@ -198,6 +198,8 @@ public class AddressHierarchyDomainExporter implements DomainExporter<AddressHie
 			return Integer.parseInt(size.trim());
 		}
 		catch (NumberFormatException e) {
+			log.warn("Address Hierarchy: address template size mapping '{}' is not a number; using {}", size,
+			    DEFAULT_SIZE_MAPPING);
 			return DEFAULT_SIZE_MAPPING;
 		}
 	}

@@ -13,7 +13,6 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.initializer.api.mds.MetadataSetMemberLineProcessor;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
-import org.openmrs.module.metadatamapping.MetadataSet;
 import org.openmrs.module.metadatamapping.MetadataSetMember;
 
 public class MetadataSetMemberLineExporter extends MetadataLineExporter<MetadataSetMember> {
@@ -24,28 +23,14 @@ public class MetadataSetMemberLineExporter extends MetadataLineExporter<Metadata
 	protected void writeRetiredDiscriminators(MetadataSetMember member, ExportLine line) {
 		line.put(MetadataSetMemberLineProcessor.METADATA_CLASS, member.getMetadataClass());
 		line.put(HEADER_METADATA_UUID, member.getMetadataUuid());
-		
-		MetadataSet metadataSet = member.getMetadataSet();
-		if (metadataSet != null) {
-			line.put(MetadataSetMemberLineProcessor.METADATA_SET_UUID, metadataSet.getUuid());
-		}
+		line.put(MetadataSetMemberLineProcessor.METADATA_SET_UUID, member.getMetadataSet().getUuid());
 	}
 	
 	@Override
 	public void export(MetadataSetMember member, ExportLine line) {
 		line.put(BaseLineProcessor.HEADER_NAME, member.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, member.getDescription());
-		
-		if (member.getSortWeight() != null) {
-			line.put(MetadataSetMemberLineProcessor.SORT_WEIGHT, String.valueOf(member.getSortWeight()));
-		}
-		
-		line.put(MetadataSetMemberLineProcessor.METADATA_CLASS, member.getMetadataClass());
-		line.put(HEADER_METADATA_UUID, member.getMetadataUuid());
-		
-		MetadataSet metadataSet = member.getMetadataSet();
-		if (metadataSet != null) {
-			line.put(MetadataSetMemberLineProcessor.METADATA_SET_UUID, metadataSet.getUuid());
-		}
+		line.put(MetadataSetMemberLineProcessor.SORT_WEIGHT, member.getSortWeight());
+		writeRetiredDiscriminators(member, line);
 	}
 }

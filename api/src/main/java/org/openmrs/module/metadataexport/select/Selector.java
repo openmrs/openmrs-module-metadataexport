@@ -43,9 +43,6 @@ public class Selector {
 		
 		while (!queue.isEmpty()) {
 			OpenmrsObject instance = HibernateUtil.getRealObjectFromProxy(queue.poll());
-			if (instance == null) {
-				continue;
-			}
 			
 			DomainExporter<?> owner = registry.forObject(instance);
 			if (owner == null) {

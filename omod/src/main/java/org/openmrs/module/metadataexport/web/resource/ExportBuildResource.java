@@ -75,13 +75,8 @@ public class ExportBuildResource extends DataDelegatingCrudResource<ExportBuild>
 	 */
 	@Override
 	public ExportBuild save(ExportBuild build) {
-		ExportPackage exportPackage = build.getExportPackage();
-		if (exportPackage == null) {
-			// the framework rejects a missing "package" before save(); the setter rejects an unknown one
-			throw new IllegalStateException("save() reached without a package");
-		}
 		try {
-			return jobRunner().trigger(exportPackage.getUuid());
+			return jobRunner().trigger(build.getExportPackage().getUuid());
 		}
 		catch (RetiredPackageException | ActiveBuildException e) {
 			throw new ConflictException(e.getMessage(), e);
@@ -171,8 +166,7 @@ public class ExportBuildResource extends DataDelegatingCrudResource<ExportBuild>
 	
 	@PropertyGetter("display")
 	public static String getDisplayString(ExportBuild build) {
-		String packageName = build.getExportPackage() == null ? "?" : build.getExportPackage().getName();
-		return packageName + " v" + build.getVersion() + " (" + build.getExportStatus() + ")";
+		return build.getExportPackage().getName() + " v" + build.getVersion() + " (" + build.getExportStatus() + ")";
 	}
 	
 	@PropertyGetter("package")
@@ -196,7 +190,7 @@ public class ExportBuildResource extends DataDelegatingCrudResource<ExportBuild>
 	
 	@PropertyGetter("status")
 	public static String getStatus(ExportBuild build) {
-		return build.getExportStatus() == null ? null : build.getExportStatus().name();
+		return build.getExportStatus().name();
 	}
 	
 	/**

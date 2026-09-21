@@ -57,11 +57,8 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 	public boolean handles(OpenmrsObject instance) {
 		// an option is only exportable when the idgen domain also exports its source; enforcing
 		// that here keeps future seeding paths from writing a dangling source uuid
-		if (!(instance instanceof AutoGenerationOption)) {
-			return false;
-		}
-		IdentifierSource source = ((AutoGenerationOption) instance).getSource();
-		return source == null || IdentifierSourceDomainExporter.exports(source);
+		return instance instanceof AutoGenerationOption
+		        && IdentifierSourceDomainExporter.exports(((AutoGenerationOption) instance).getSource());
 	}
 	
 	@Override
@@ -69,10 +66,7 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 		IdentifierSourceService service = Context.getService(IdentifierSourceService.class);
 		List<AutoGenerationOption> options = new ArrayList<>();
 		for (PatientIdentifierType type : Context.getPatientService().getAllPatientIdentifierTypes(true)) {
-			List<AutoGenerationOption> forType = service.getAutoGenerationOptions(type);
-			if (forType != null) {
-				options.addAll(forType);
-			}
+			options.addAll(service.getAutoGenerationOptions(type));
 		}
 		return exportable(options);
 	}
@@ -107,7 +101,7 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 		List<AutoGenerationOption> result = new ArrayList<>();
 		for (AutoGenerationOption option : options) {
 			// a source the idgen exporter drops would leave this row's source uuid dangling
-			if (option.getSource() != null && !IdentifierSourceDomainExporter.exports(option.getSource())) {
+			if (!IdentifierSourceDomainExporter.exports(option.getSource())) {
 				IdentifierSource source = HibernateUtil.getRealObjectFromProxy(option.getSource());
 				log.warn("Idgen: skipping auto generation option {} — its source {} of type {} is not exported",
 				    option.getUuid(), source.getUuid(), source.getClass().getName());
@@ -115,10 +109,7 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 			}
 			result.add(option);
 		}
-		result.sort(Comparator
-		        .comparing(
-		            (AutoGenerationOption o) -> o.getIdentifierType() == null || o.getIdentifierType().getName() == null ? ""
-		                    : o.getIdentifierType().getName())
+		result.sort(Comparator.comparing((AutoGenerationOption o) -> o.getIdentifierType().getName())
 		        .thenComparing(o -> o.getLocation() == null ? "" : o.getLocation().getName(),
 		            Comparator.nullsFirst(Comparator.naturalOrder()))
 		        .thenComparing(AutoGenerationOption::getUuid, Comparator.nullsFirst(Comparator.naturalOrder())));
@@ -128,12 +119,8 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(AutoGenerationOption instance) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();
-		if (instance.getIdentifierType() != null) {
-			dependencies.add(instance.getIdentifierType());
-		}
-		if (instance.getSource() != null) {
-			dependencies.add(instance.getSource());
-		}
+		dependencies.add(instance.getIdentifierType());
+		dependencies.add(instance.getSource());
 		if (instance.getLocation() != null) {
 			dependencies.add(instance.getLocation());
 		}

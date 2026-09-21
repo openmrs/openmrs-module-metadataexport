@@ -48,9 +48,10 @@ class IdentifierSourceLineExporterTest {
 	}
 	
 	@Test
-	void liveSourceWithoutDescriptionOrTypeOmitsThoseColumns() {
+	void liveSourceWithoutDescriptionOmitsThatColumn() {
 		SequentialIdentifierGenerator source = new SequentialIdentifierGenerator();
 		source.setUuid("c1d8a345-3f10-11e4-adec-0800271c1b75");
+		source.setIdentifierType(identifierType("a5d38e09-efcb-4d91-a526-50ce1ba5011a"));
 		source.setName("OpenMRS ID Generator");
 		
 		ExportLine line = new ExportLine();
@@ -58,7 +59,6 @@ class IdentifierSourceLineExporterTest {
 		
 		assertEquals("OpenMRS ID Generator", line.get("name"));
 		assertNull(line.get("description"), "empty description is not written as a column");
-		assertNull(line.get("Identifier type"), "missing identifier type is not written as a column");
 	}
 	
 	@Test
