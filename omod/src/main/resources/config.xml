@@ -71,19 +71,13 @@
 		<description>Able to download the zip of a completed export build. Grant together with Get Metadata Export Packages: the download looks the build up first</description>
 	</privilege>
 
-
-	<!-- Required Global Properties 
 	<globalProperty>
-		<property>@MODULE_ID@.someProperty</property>
-		<defaultValue></defaultValue>
-		<description>
-			A description of the global property goes here.  The description
-			should explain enough for administrators to understand the purpose
-			and possible values for the global property.
-		</description>
+		<property>${project.parent.artifactId}.exportOnStartup</property>
+		<defaultValue>false</defaultValue>
+		<description>When true, export all metadata of the registered domains to &lt;app data dir&gt;/metadata_export on module startup</description>
 	</globalProperty>
-	/Required Global Properties -->
-	
+
+
 	<!--
 	<dwr>
 		<allow>

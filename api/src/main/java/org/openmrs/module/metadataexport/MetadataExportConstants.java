@@ -25,6 +25,12 @@ public final class MetadataExportConstants {
 	 */
 	public static final String DOWNLOAD_PRIVILEGE = "Download Metadata Export Packages";
 	
+	/**
+	 * When true, export all metadata of the registered domains to
+	 * {@code <app data dir>/metadata_export} on module startup. Declared in config.xml.
+	 */
+	public static final String EXPORT_ON_STARTUP_GP = MODULE_ID + ".exportOnStartup";
+	
 	private MetadataExportConstants() {
 	}
 }
