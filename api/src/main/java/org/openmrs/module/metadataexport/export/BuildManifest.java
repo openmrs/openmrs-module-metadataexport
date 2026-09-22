@@ -34,7 +34,8 @@ import java.util.TimeZone;
  * The human- and machine-readable record of one build: the package identity, the entries as the
  * user defined them, and every item that actually got exported (including dependency-pulled ones).
  * Written as {@code package.json} at the zip root and stored on the build row as
- * {@code manifest_json} — the metadatasharing header.xml analogue.
+ * {@code manifest_json} — the metadatasharing header.xml analogue. Also records, per domain
+ * exported in full, the rows that were deliberately left out and why.
  */
 @Getter
 @Setter
@@ -56,6 +57,12 @@ public class BuildManifest {
 	
 	private Map<String, List<Item>> resolvedItems = new LinkedHashMap<>();
 	
+	/**
+	 * For each domain exported in full, the rows this server has that were left out, uuid to reason.
+	 * The one place a consumer of the zip can learn that an export was not complete.
+	 */
+	private Map<String, Map<String, String>> excluded = new LinkedHashMap<>();
+	
 	@Getter
 	@Setter
 	public static class Entry {
@@ -76,7 +83,8 @@ public class BuildManifest {
 		private String display;
 	}
 	
-	public static BuildManifest of(ExportPackage exportPackage, ExportBuild build, ExportManifest exported) {
+	public static BuildManifest of(ExportPackage exportPackage, ExportBuild build, ExportManifest exported,
+	        Map<Domain, Map<String, String>> excluded) {
 		BuildManifest manifest = new BuildManifest();
 		manifest.setName(exportPackage.getName());
 		manifest.setDescription(exportPackage.getDescription());
@@ -105,6 +113,9 @@ public class BuildManifest {
 				items.add(item);
 			}
 			manifest.getResolvedItems().put(domain.name(), items);
+		}
+		for (Map.Entry<Domain, Map<String, String>> entry : excluded.entrySet()) {
+			manifest.getExcluded().put(entry.getKey().name(), new LinkedHashMap<>(entry.getValue()));
 		}
 		return manifest;
 	}

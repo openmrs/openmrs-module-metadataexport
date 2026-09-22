@@ -10,6 +10,8 @@
 package org.openmrs.module.metadataexport.domain.form;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
 import org.openmrs.api.context.Context;
@@ -23,8 +25,8 @@ import java.util.Map;
 /**
  * One pass over the server's AMPATH forms that decides, once, which forms and which translation
  * resources the two AMPATH exporters write, and records a sentence for every one they leave out.
- * Both exporters' {@code getAllInstances} and {@code getInstancesByUuids} run one scan each, so the
- * export policy lives in exactly one place and an excluded uuid is explained from the decision that
+ * Both exporters' {@code getAllInstances} and {@code exclusions} read the same scan, so the export
+ * policy lives in exactly one place and an excluded uuid is explained from the decision that
  * excluded it rather than re-derived by elimination.
  * <p>
  * The policy: a form is exported when it carries a {@value FormResources#JSON_SCHEMA_RESOURCE}
@@ -60,10 +62,52 @@ final class AmpathFormScan {
 	 */
 	private final Map<String, String> translationExclusions = new LinkedHashMap<>();
 	
+	/**
+	 * This thread's last scan and the Hibernate session it was computed in. An export runs as one
+	 * daemon task in one session (a build's transaction, or the startup daemon's), so this collapses
+	 * the four scans of a full export (each exporter's {@code getAllInstances} and {@code exclusions})
+	 * into one and starts fresh for a new session. The daemon thread comes from core's shared cached
+	 * pool, so the last scan stays referenced, forms included, until another scan on that thread
+	 * replaces it or the thread idles out; the session check is what keeps a reused thread from handing
+	 * a later export stale forms. There is no invalidation within a session: an export reads one
+	 * consistent snapshot, and nothing writes forms while it runs.
+	 */
+	private static final ThreadLocal<Cached> CACHED = new ThreadLocal<>();
+	
+	private static final class Cached {
+		
+		final Session session;
+		
+		final AmpathFormScan scan;
+		
+		Cached(Session session, AmpathFormScan scan) {
+			this.session = session;
+			this.scan = scan;
+		}
+	}
+	
 	private AmpathFormScan() {
 	}
 	
+	/** The scan for the current session, run once per session on this thread. */
 	static AmpathFormScan run() {
+		return runIn(Context.getRegisteredComponent("sessionFactory", SessionFactory.class).getCurrentSession());
+	}
+	
+	/**
+	 * {@link #run()} keyed on an explicit session; package-private so the cache itself can be tested.
+	 */
+	static AmpathFormScan runIn(Session session) {
+		Cached hit = CACHED.get();
+		if (hit != null && hit.session == session) {
+			return hit.scan;
+		}
+		AmpathFormScan scan = scan();
+		CACHED.set(new Cached(session, scan));
+		return scan;
+	}
+	
+	private static AmpathFormScan scan() {
 		AmpathFormScan scan = new AmpathFormScan();
 		Map<Form, Collection<FormResource>> resourcesByForm = new LinkedHashMap<>();
 		List<Form> live = new ArrayList<>();

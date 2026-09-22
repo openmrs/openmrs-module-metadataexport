@@ -20,6 +20,9 @@ import org.openmrs.module.metadataexport.api.model.ExportPackageEntry;
 import org.openmrs.module.metadataexport.select.ExportManifest;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -45,7 +48,10 @@ class BuildManifestTest {
 		ExportManifest exported = new ExportManifest();
 		exported.add(Domain.LOCATIONS, Location.class.getName() + " loc-1", siteA);
 		
-		String json = BuildManifest.of(exportPackage, build, exported).toJson();
+		Map<Domain, Map<String, String>> excluded = new LinkedHashMap<>();
+		excluded.put(Domain.LOCATIONS, Collections.singletonMap("loc-9", "loc-9 is retired"));
+		
+		String json = BuildManifest.of(exportPackage, build, exported, excluded).toJson();
 		
 		JsonNode root = new ObjectMapper().readTree(json);
 		assertEquals("Site A locations", root.get("name").asText());
@@ -61,5 +67,19 @@ class BuildManifestTest {
 		assertEquals(Location.class.getName(), item.get("type").asText());
 		assertEquals("loc-1", item.get("uuid").asText());
 		assertEquals("Site A", item.get("display").asText());
+		assertEquals("loc-9 is retired", root.get("excluded").get("LOCATIONS").get("loc-9").asText());
+	}
+	
+	@Test
+	void toJson_leavesDomainsWithoutExclusionsOutOfTheExcludedSection() throws Exception {
+		ExportPackage exportPackage = new ExportPackage();
+		exportPackage.setName("Everything");
+		ExportBuild build = new ExportBuild();
+		build.setExportPackage(exportPackage);
+		build.setVersion(1);
+		
+		String json = BuildManifest.of(exportPackage, build, new ExportManifest(), Collections.emptyMap()).toJson();
+		
+		assertEquals(0, new ObjectMapper().readTree(json).get("excluded").size());
 	}
 }

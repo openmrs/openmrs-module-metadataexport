@@ -12,6 +12,8 @@ package org.openmrs.module.metadataexport.domain.form;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +52,8 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -155,6 +159,18 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		assertTrue(appData.getName().startsWith("appdir-for-unit-tests-"), "refusing to clean " + appData);
 		FileUtils.deleteDirectory(new File(appData, "configuration"));
 		FileUtils.deleteDirectory(new File(appData, "configuration_checksums"));
+	}
+	
+	@Test
+	void scan_runsOncePerSessionAndAgainForANewOne() {
+		AmpathFormScan first = AmpathFormScan.run();
+		assertSame(first, AmpathFormScan.run(),
+		    "a full export asks for the scan four times; all four must share one pass over the forms");
+		
+		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
+		try (Session other = sessionFactory.openSession()) {
+			assertNotSame(first, AmpathFormScan.runIn(other), "a new session must not be handed a previous export's forms");
+		}
 	}
 	
 	@Test
@@ -306,6 +322,7 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 	void export_thenReimportOntoAFreshTargetThroughInitializer(@TempDir File outDir) throws Exception {
 		formExporter.export(formExporter.getAllInstances(), new ExportContext(outDir));
 		translationExporter.export(translationExporter.getAllInstances(), new ExportContext(outDir));
+		// the scan is cached per session: nothing below may call the exporters again in this test
 		purgeSeededForms();
 		assertTrue(allAmpathForms().isEmpty(), "the target must start without AMPATH forms");
 		

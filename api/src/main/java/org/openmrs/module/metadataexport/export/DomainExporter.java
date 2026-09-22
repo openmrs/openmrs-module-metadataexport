@@ -17,9 +17,14 @@ import org.openmrs.module.initializer.Domain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * A self-describing, format-neutral exporter for one Iniz {@link Domain}. The ExporterService holds
@@ -67,17 +72,81 @@ public interface DomainExporter<T extends OpenmrsObject> {
 		return Hibernate.getClass(instance).getName() + ' ' + instance.getUuid();
 	}
 	
+	/**
+	 * The rows to search when a package names specific uuids. The default is every exportable row,
+	 * which is the only correct answer for a domain whose export filter is decided over the whole
+	 * collection. A domain that exports every row it has and offers a direct lookup narrows this to the
+	 * rows the uuids name, so a build seeded with three concepts does not load the dictionary. The
+	 * result must be a subset of {@link #getAllInstances()}.
+	 */
+	default Collection<T> candidatesFor(Collection<String> uuids) {
+		return getAllInstances();
+	}
+	
+	/**
+	 * Rows this domain has on this server but never exports (retired, voided, unimportable), each
+	 * mapped from its uuid to a sentence that names the row and says why. Empty for the many domains
+	 * that export every row. For a domain exported in full, recorded in the build's manifest and logged
+	 * once; for a uuid-scoped entry, consulted by {@link #getInstancesByUuids} so a package that names
+	 * such a row fails with the reason instead of as an unknown uuid.
+	 */
+	default Map<String, String> exclusions() {
+		return Collections.emptyMap();
+	}
+	
+	/**
+	 * {@link #exclusions()} for a domain with one reason: every row of {@code all} that
+	 * {@code excluded} accepts, as {@code uuid → "<uuid> <reason>"}.
+	 */
+	static <R extends OpenmrsObject> Map<String, String> exclusions(Collection<R> all, Predicate<R> excluded,
+	        String reason) {
+		return exclusions(all, excluded, row -> reason);
+	}
+	
+	/**
+	 * {@link #exclusions()} for a domain whose reason depends on the row: every row of {@code all} that
+	 * {@code excluded} accepts, as {@code uuid → "<uuid> <reason.apply(row)>"}. The reason should name
+	 * the row (its name, the referenced row's uuid) and the one cause that applies, since this is what
+	 * the manifest and the failed build show.
+	 */
+	static <R extends OpenmrsObject> Map<String, String> exclusions(Collection<R> all, Predicate<R> excluded,
+	        Function<R, String> reason) {
+		Map<String, String> result = new LinkedHashMap<>();
+		for (R row : all) {
+			if (excluded.test(row)) {
+				result.put(row.getUuid(), row.getUuid() + " " + reason.apply(row));
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * The requested rows, found among {@link #candidatesFor}. Fails when any uuid is left over, naming
+	 * separately those that are {@link #exclusions() excluded} (with the reason) and those the domain
+	 * does not know at all, so one failed build reports every problem with the package.
+	 */
 	default Collection<T> getInstancesByUuids(Collection<String> uuids) {
-		Set<String> wanted = new HashSet<>(uuids);
+		Set<String> wanted = new LinkedHashSet<>(uuids);
 		List<T> found = new ArrayList<>();
-		for (T instance : getAllInstances()) {
+		for (T instance : candidatesFor(wanted)) {
 			if (wanted.remove(instance.getUuid())) {
 				found.add(instance);
 			}
 		}
-		if (!wanted.isEmpty()) {
-			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
+		if (wanted.isEmpty()) {
+			return found;
 		}
-		return found;
+		Map<String, String> excluded = new LinkedHashMap<>(exclusions());
+		excluded.keySet().retainAll(wanted);
+		wanted.removeAll(excluded.keySet());
+		List<String> problems = new ArrayList<>();
+		if (!excluded.isEmpty()) {
+			problems.add("Not exported from domain " + getDomain()
+			        + " (fix them on this server or remove them from the package): " + String.join("; ", excluded.values()));
+		}
+		if (!wanted.isEmpty()) {
+			problems.add("Unknown uuids in domain " + getDomain() + ": " + wanted);
+		}
+		throw new APIException(String.join("; ", problems));
 	}
 }

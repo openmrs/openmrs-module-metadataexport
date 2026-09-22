@@ -48,6 +48,8 @@ class ExporterServiceImplTest {
 		
 		final List<T> exported = new ArrayList<>();
 		
+		final Map<String, String> exclusions = new HashMap<>();
+		
 		int exportCalls = 0;
 		
 		RecordingExporter(Domain domain, Class<T> type) {
@@ -61,6 +63,11 @@ class ExporterServiceImplTest {
 		
 		public Collection<T> getAllInstances() {
 			return allInstances;
+		}
+		
+		@Override
+		public Map<String, String> exclusions() {
+			return exclusions;
 		}
 		
 		public Collection<? extends OpenmrsObject> getDependencies(T instance) {
@@ -159,5 +166,18 @@ class ExporterServiceImplTest {
 		
 		assertEquals(Arrays.asList("c1", "c2"), uuids(concepts.exported));
 		assertEquals(Collections.singletonList("e1"), uuids(encounters.exported));
+	}
+	
+	@Test
+	void exclusions_collectsOnlyTheDomainsThatLeaveRowsOut() {
+		RecordingExporter<Concept> concepts = new RecordingExporter<>(Domain.CONCEPTS, Concept.class);
+		RecordingExporter<EncounterType> encounters = new RecordingExporter<>(Domain.ENCOUNTER_TYPES, EncounterType.class);
+		encounters.exclusions.put("e9", "e9 is retired");
+		
+		Map<Domain, Map<String, String>> excluded = serviceWith(concepts, encounters)
+		        .exclusions(Arrays.asList(Domain.CONCEPTS, Domain.ENCOUNTER_TYPES));
+		
+		assertEquals(Collections.singleton(Domain.ENCOUNTER_TYPES), excluded.keySet());
+		assertEquals("e9 is retired", excluded.get(Domain.ENCOUNTER_TYPES).get("e9"));
 	}
 }

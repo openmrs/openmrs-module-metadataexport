@@ -11,25 +11,19 @@ package org.openmrs.module.metadataexport.domain.form;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Form;
 import org.openmrs.FormResource;
 import org.openmrs.OpenmrsObject;
-import org.openmrs.api.APIException;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.JsonDomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Writes each AMPATH form translation resource as one JSON file, the inverse of Initializer's
@@ -40,7 +34,6 @@ import java.util.Set;
  * with only the {@code form} entry (the owning form's name, which the loader resolves) refreshed
  * and a missing {@code language} filled in from the resource name.
  */
-@Slf4j
 @Component
 public class AmpathFormTranslationDomainExporter extends JsonDomainExporter<FormResource> {
 	
@@ -60,53 +53,18 @@ public class AmpathFormTranslationDomainExporter extends JsonDomainExporter<Form
 		return instance instanceof FormResource && FormResources.isTranslation((FormResource) instance);
 	}
 	
-	/**
-	 * The exportable translation resources; every translation-named resource left out, including those
-	 * of forms that are themselves not exported, is logged once here with the reason.
-	 */
 	@Override
 	public Collection<FormResource> getAllInstances() {
-		AmpathFormScan scan = AmpathFormScan.run();
-		for (String exclusion : scan.translationExclusions().values()) {
-			log.warn("AMPATH form translations: skipping resource {}", exclusion);
-		}
-		return scan.exportableTranslations();
+		return AmpathFormScan.run().exportableTranslations();
 	}
 	
 	/**
-	 * Same as the default, but a uuid that is a translation resource {@link #getAllInstances()} hides
-	 * is reported with the reason rather than as unknown.
+	 * The translation-named resources left out, including those of forms that are themselves not
+	 * exported, with the reason.
 	 */
 	@Override
-	public Collection<FormResource> getInstancesByUuids(Collection<String> uuids) {
-		AmpathFormScan scan = AmpathFormScan.run();
-		Set<String> wanted = new HashSet<>(uuids);
-		List<FormResource> found = new ArrayList<>();
-		for (FormResource resource : scan.exportableTranslations()) {
-			if (wanted.remove(resource.getUuid())) {
-				found.add(resource);
-			}
-		}
-		if (!wanted.isEmpty()) {
-			List<String> hidden = new ArrayList<>();
-			for (String uuid : new ArrayList<>(wanted)) {
-				String exclusion = scan.translationExclusions().get(uuid);
-				if (exclusion != null) {
-					wanted.remove(uuid);
-					hidden.add(exclusion);
-				}
-			}
-			List<String> problems = new ArrayList<>();
-			if (!hidden.isEmpty()) {
-				problems.add("AMPATH form translations exist but this exporter does not write them (fix them on this"
-				        + " server or remove them from the package): " + hidden);
-			}
-			if (!wanted.isEmpty()) {
-				problems.add("Unknown uuids in domain " + getDomain() + ": " + wanted);
-			}
-			throw new APIException(String.join("; ", problems));
-		}
-		return found;
+	public Map<String, String> exclusions() {
+		return new LinkedHashMap<>(AmpathFormScan.run().translationExclusions());
 	}
 	
 	/** The owning form: the loader looks it up by name before it can attach the translation. */

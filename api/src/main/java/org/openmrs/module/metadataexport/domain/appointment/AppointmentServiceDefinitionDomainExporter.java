@@ -19,12 +19,14 @@ import org.openmrs.module.appointments.service.AppointmentServiceDefinitionServi
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @OpenmrsProfile(modules = "appointments:1.2.1 - 9.*")
@@ -53,6 +55,13 @@ public class AppointmentServiceDefinitionDomainExporter extends CsvDomainExporte
 	@Override
 	public Collection<AppointmentServiceDefinition> getAllInstances() {
 		return Context.getService(AppointmentServiceDefinitionService.class).getAllAppointmentServices(false);
+	}
+	
+	@Override
+	public Map<String, String> exclusions() {
+		return DomainExporter.exclusions(
+		    Context.getService(AppointmentServiceDefinitionService.class).getAllAppointmentServices(true),
+		    AppointmentServiceDefinition::getVoided, definition -> "('" + definition.getName() + "') is voided");
 	}
 	
 	@Override

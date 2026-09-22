@@ -9,12 +9,10 @@
  */
 package org.openmrs.module.metadataexport.domain.fhir;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.hibernate.SessionFactory;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
-import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.model.FhirPatientIdentifierSystem;
 import org.openmrs.module.initializer.Domain;
@@ -25,14 +23,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-@Slf4j
 @Component
 @OpenmrsProfile(modules = { "fhir2:1.6.* - 9.*" })
 public class FhirPatientIdentifierSystemDomainExporter extends CsvDomainExporter<FhirPatientIdentifierSystem> {
@@ -69,56 +63,49 @@ public class FhirPatientIdentifierSystemDomainExporter extends CsvDomainExporter
 	
 	/** The subset of rows that can round-trip through Iniz. */
 	static List<FhirPatientIdentifierSystem> exportable(Collection<FhirPatientIdentifierSystem> rows) {
-		Map<String, FhirPatientIdentifierSystem> byIdentifierType = new LinkedHashMap<>();
+		return exportable(rows, new LinkedHashMap<>());
+	}
+	
+	/**
+	 * Splits the rows into those exported and, in {@code exclusions}, those left out with the reason:
+	 * Iniz resolves a row by its identifier type and keeps one row per identifier type, preferring an
+	 * unretired one.
+	 */
+	static List<FhirPatientIdentifierSystem> exportable(Collection<FhirPatientIdentifierSystem> rows,
+	        Map<String, String> exclusions) {
+		Map<String, FhirPatientIdentifierSystem> byKey = new LinkedHashMap<>();
 		for (FhirPatientIdentifierSystem row : rows) {
 			if (!exports(row)) {
-				log.warn(
-				    "Fhir: skipping FHIR patient identifier system {} — it has no patient identifier type, and Iniz requires that column",
-				    row.getUuid());
+				exclusions.put(row.getUuid(), row.getUuid() + " has no patient identifier type, which Initializer requires");
 				continue;
 			}
-			FhirPatientIdentifierSystem kept = byIdentifierType.get(row.getPatientIdentifierType().getUuid());
+			String key = row.getPatientIdentifierType().getUuid();
+			FhirPatientIdentifierSystem kept = byKey.get(key);
 			if (kept == null) {
-				byIdentifierType.put(row.getPatientIdentifierType().getUuid(), row);
+				byKey.put(key, row);
 			} else if (BooleanUtils.isTrue(kept.getRetired()) && !BooleanUtils.isTrue(row.getRetired())) {
-				byIdentifierType.put(row.getPatientIdentifierType().getUuid(), row);
-				log.warn("Fhir: skipping FHIR patient identifier system {} — unretired row {} shares its identifier type,"
-				        + " and Iniz keeps one row per identifier type",
-				    kept.getUuid(), row.getUuid());
+				byKey.put(key, row);
+				exclusions.put(kept.getUuid(), kept.getUuid() + " shares its identifier type with unretired row "
+				        + row.getUuid() + ", and Initializer keeps one row per identifier type");
 			} else {
-				log.warn("Fhir: skipping FHIR patient identifier system {} — row {} shares its identifier type,"
-				        + " and Iniz keeps one row per identifier type",
-				    row.getUuid(), kept.getUuid());
+				exclusions.put(row.getUuid(), row.getUuid() + " shares its identifier type with exported row "
+				        + kept.getUuid() + ", and Initializer keeps one row per identifier type");
 			}
 		}
-		return new ArrayList<>(byIdentifierType.values());
+		return new ArrayList<>(byKey.values());
+	}
+	
+	@Override
+	public Map<String, String> exclusions() {
+		Map<String, String> exclusions = new LinkedHashMap<>();
+		exportable(allRows(), exclusions);
+		return exclusions;
 	}
 	
 	@SuppressWarnings("unchecked")
 	private static List<FhirPatientIdentifierSystem> allRows() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		return sessionFactory.getCurrentSession().createQuery("from FhirPatientIdentifierSystem").list();
-	}
-	
-	@Override
-	public Collection<FhirPatientIdentifierSystem> getInstancesByUuids(Collection<String> uuids) {
-		Set<String> wanted = new HashSet<>(uuids);
-		List<FhirPatientIdentifierSystem> found = new ArrayList<>();
-		for (FhirPatientIdentifierSystem row : getAllInstances()) {
-			if (wanted.remove(row.getUuid())) {
-				found.add(row);
-			}
-		}
-		if (!wanted.isEmpty()) {
-			List<String> skipped = allRows().stream().map(FhirPatientIdentifierSystem::getUuid).filter(wanted::contains)
-			        .collect(Collectors.toList());
-			if (!skipped.isEmpty()) {
-				throw new APIException("FHIR patient identifier systems exist but Initializer cannot import them"
-				        + " (no patient identifier type, or an exported row shares their identifier type): " + skipped);
-			}
-			throw new APIException("Unknown uuids in domain " + getDomain() + ": " + wanted);
-		}
-		return found;
 	}
 	
 	@Override

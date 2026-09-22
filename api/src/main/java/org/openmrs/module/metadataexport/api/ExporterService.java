@@ -16,6 +16,7 @@ import org.openmrs.module.metadataexport.select.ExportManifest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 public interface ExporterService {
 	
@@ -28,5 +29,14 @@ public interface ExporterService {
 	void export(File outDir, Collection<Domain> domains) throws IOException;
 	
 	ExportManifest exportSeeds(File outDir, Collection<? extends OpenmrsObject> seeds) throws IOException;
+	
+	/**
+	 * Rows of the given domains that exist on this server but are never exported, with the reason, as
+	 * each {@link org.openmrs.module.metadataexport.export.DomainExporter#exclusions()} reports them;
+	 * domains without any are left out. Logged once per domain, so a full-domain export that leaves
+	 * rows behind says so somewhere other than a build that names them. Every domain passed must have a
+	 * registered exporter.
+	 */
+	Map<Domain, Map<String, String>> exclusions(Collection<Domain> domains);
 	
 }

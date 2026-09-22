@@ -32,6 +32,7 @@ import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -303,5 +304,39 @@ class IdentifierSourceDomainExporterTest {
 		a.setSource(b);
 		b.setSource(a);
 		assertFalse(exporter.handles(a), "a two-pool cycle must terminate as unexportable, not hang");
+	}
+	
+	@Test
+	void exclusionsOf_namesEachUnimportableSourceAndTheOneCauseThatApplies() {
+		SequentialIdentifierGenerator good = new SequentialIdentifierGenerator();
+		good.setUuid("good");
+		good.setName("Good");
+		RemoteIdentifierSource userless = new RemoteIdentifierSource();
+		userless.setUuid("userless");
+		userless.setName("Remote");
+		IdentifierPool sourceless = new IdentifierPool();
+		sourceless.setUuid("sourceless");
+		sourceless.setName("Empty pool");
+		IdentifierPool userlessBacked = new IdentifierPool();
+		userlessBacked.setUuid("userless-backed");
+		userlessBacked.setName("Pool of remote");
+		userlessBacked.setSource(userless);
+		IdentifierSource custom = new BaseIdentifierSource() {};
+		custom.setUuid("custom");
+		custom.setName("Custom");
+		
+		Map<String, String> exclusions = IdentifierSourceDomainExporter
+		        .exclusionsOf(Arrays.asList(good, userless, sourceless, userlessBacked, custom));
+		
+		assertEquals(new HashSet<>(Arrays.asList("userless", "sourceless", "userless-backed", "custom")),
+		    exclusions.keySet());
+		assertEquals("userless ('Remote') is a remote source without a user (Initializer requires one)",
+		    exclusions.get("userless"));
+		assertEquals("sourceless ('Empty pool') is a pool without a backing source", exclusions.get("sourceless"));
+		assertEquals(
+		    "userless-backed ('Pool of remote') is backed by userless, a remote source without a user (Initializer requires one)",
+		    exclusions.get("userless-backed"));
+		assertTrue(exclusions.get("custom").startsWith("custom ('Custom') is of type "), exclusions.get("custom"));
+		assertTrue(exclusions.get("custom").endsWith(", which Initializer cannot import"), exclusions.get("custom"));
 	}
 }

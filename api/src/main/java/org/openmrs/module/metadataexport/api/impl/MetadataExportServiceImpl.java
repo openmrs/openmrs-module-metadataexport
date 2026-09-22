@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.api.ExporterService;
 import org.openmrs.module.metadataexport.api.MetadataExportService;
 import org.openmrs.module.metadataexport.api.db.MetadataExportDao;
@@ -36,6 +37,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @Transactional
@@ -116,10 +118,13 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 		ExportPackage exportPackage = build.getExportPackage();
 		
 		List<OpenmrsObject> seeds = new ArrayList<>();
+		// domains exported in full; rows they leave out are recorded in the manifest
+		List<Domain> wholeDomains = new ArrayList<>();
 		if (exportPackage.getEntries().isEmpty()) {
 			// no entries = every registered domain, like the startup export
 			for (DomainExporter<?> exporter : domainExporterRegistry.all()) {
 				seeds.addAll(exporter.getAllInstances());
+				wholeDomains.add(exporter.getDomain());
 			}
 		} else {
 			for (ExportPackageEntry entry : exportPackage.getEntries()) {
@@ -129,11 +134,13 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 				}
 				if (entry.getItemUuids().isEmpty()) {
 					seeds.addAll(exporter.getAllInstances());
+					wholeDomains.add(exporter.getDomain());
 				} else {
 					seeds.addAll(exporter.getInstancesByUuids(entry.getItemUuids()));
 				}
 			}
 		}
+		Map<Domain, Map<String, String>> excluded = exporterService.exclusions(wholeDomains);
 		
 		File appDataDir = new File(OpenmrsUtil.getApplicationDataDirectory());
 		File versionDir = Paths.get(appDataDir.getPath(), "metadataexport", "packages", exportPackage.getUuid(),
@@ -142,7 +149,7 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 		try {
 			ExportManifest exported = exporterService.exportSeeds(contentDir, seeds);
 			
-			String manifestJson = BuildManifest.of(exportPackage, build, exported).toJson();
+			String manifestJson = BuildManifest.of(exportPackage, build, exported, excluded).toJson();
 			Files.createDirectories(contentDir.toPath());
 			Files.write(new File(contentDir, "package.json").toPath(), manifestJson.getBytes(StandardCharsets.UTF_8));
 			

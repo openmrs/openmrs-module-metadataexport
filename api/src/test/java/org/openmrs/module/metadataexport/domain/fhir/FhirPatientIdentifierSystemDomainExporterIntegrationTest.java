@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -73,8 +74,11 @@ class FhirPatientIdentifierSystemDomainExporterIntegrationTest extends BaseModul
 		APIException e = assertThrows(APIException.class,
 		    () -> exporter.getInstancesByUuids(Arrays.asList(LIVE_UUID, RETIRED_UUID)));
 		
-		assertTrue(e.getMessage().contains(RETIRED_UUID),
-		    "the dropped duplicate must be named, or the package quietly collapses on import");
+		// row order from the query is unspecified, so match the prefix shared by both variants of the reason
+		assertTrue(e.getMessage().contains(RETIRED_UUID + " shares its identifier type with"), e.getMessage());
+		assertTrue(e.getMessage().contains(LIVE_UUID), "the row that won must be named: " + e.getMessage());
+		assertFalse(e.getMessage().contains("Unknown uuids"),
+		    "the dropped duplicate must be explained, not reported as unknown: " + e.getMessage());
 	}
 	
 	@Test
