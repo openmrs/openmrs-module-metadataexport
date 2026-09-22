@@ -63,12 +63,14 @@ final class AmpathFormScan {
 	private final Map<String, String> translationExclusions = new LinkedHashMap<>();
 	
 	/**
-	 * This thread's last scan and the Hibernate session it was computed in. An export runs on its own
-	 * daemon thread and in one session (a build's transaction, or the startup daemon's), so this
-	 * collapses the four scans of a full export (each exporter's {@code getAllInstances} and
-	 * {@code exclusions}) into one, starts fresh for a new session, and is released with the thread,
-	 * forms included. There is no invalidation within a session: an export reads one consistent
-	 * snapshot, and nothing writes forms while it runs.
+	 * This thread's last scan and the Hibernate session it was computed in. An export runs as one
+	 * daemon task in one session (a build's transaction, or the startup daemon's), so this collapses
+	 * the four scans of a full export (each exporter's {@code getAllInstances} and {@code exclusions})
+	 * into one and starts fresh for a new session. The daemon thread comes from core's shared cached
+	 * pool, so the last scan stays referenced, forms included, until another scan on that thread
+	 * replaces it or the thread idles out; the session check is what keeps a reused thread from handing
+	 * a later export stale forms. There is no invalidation within a session: an export reads one
+	 * consistent snapshot, and nothing writes forms while it runs.
 	 */
 	private static final ThreadLocal<Cached> CACHED = new ThreadLocal<>();
 	

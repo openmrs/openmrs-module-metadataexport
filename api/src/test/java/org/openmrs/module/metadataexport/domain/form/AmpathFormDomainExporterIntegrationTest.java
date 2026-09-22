@@ -323,8 +323,6 @@ class AmpathFormDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		formExporter.export(formExporter.getAllInstances(), new ExportContext(outDir));
 		translationExporter.export(translationExporter.getAllInstances(), new ExportContext(outDir));
 		// the scan is cached per session: nothing below may call the exporters again in this test
-		// the scan is cached per session: nothing below may call the exporters again in this test
-		// the scan is cached per session: nothing below may call the exporters again in this test
 		purgeSeededForms();
 		assertTrue(allAmpathForms().isEmpty(), "the target must start without AMPATH forms");
 		
