@@ -21,6 +21,7 @@ import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -93,6 +94,18 @@ public class BillableServiceDomainExporterIntegrationTest extends BaseModuleCont
 		assertTrue(e.getMessage().contains(RETIRED_UUID), "the retired uuid must be reported");
 		assertTrue(e.getMessage().contains(UNKNOWN_UUID), "the unknown uuid must be reported in the same round");
 		assertFalse(e.getMessage().contains(LIVE_UUID), "a resolvable uuid is not a problem");
+	}
+	
+	@Test
+	void getAllInstances_andExclusions_partitionTheRows() {
+		Collection<BillableService> exported = exporter.getAllInstances();
+		Map<String, String> exclusions = exporter.exclusions();
+		
+		assertEquals(1, exported.size());
+		assertEquals(LIVE_UUID, exported.iterator().next().getUuid());
+		assertEquals(Collections.singleton(RETIRED_UUID), exclusions.keySet());
+		assertTrue(exclusions.get(RETIRED_UUID).startsWith(RETIRED_UUID + " ('Discontinued Service') is retired"),
+		    exclusions.toString());
 	}
 	
 	private BillableService createBillableService(String uuid, String name, String shortName) {
