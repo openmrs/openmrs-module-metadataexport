@@ -178,10 +178,14 @@ out of scope.
 
 How it works
 ------------
-On module startup the activator runs an export on a daemon thread (so it has full read access and
-does not block startup). It writes to:
+When the `metadataexport.exportOnStartup` global property is `true`, the activator exports every
+instance of every registered domain on module startup. It runs on a daemon thread (so it has full
+read access and does not block startup) and writes to:
 
     <OpenMRS application data directory>/metadata_export/configuration/<domain>/...
+
+The property defaults to `false`, so a fresh install exports nothing until an administrator turns
+it on. Named export packages (below) are built on demand and do not depend on it.
 
 The export is built in two separated stages:
 
@@ -194,8 +198,8 @@ The export is built in two separated stages:
 
 Export packages (REST)
 ----------------------
-Besides the export-everything-on-startup behaviour, named *export packages* can be defined and
-built over REST. A package describes what to export — a list of entries, each an Initializer
+Besides the optional export-everything-on-startup behaviour, named *export packages* can be
+defined and built over REST. A package describes what to export — a list of entries, each an Initializer
 domain optionally narrowed to specific item uuids (empty list = the whole domain) — so e.g. a
 "Site A locations" package exports just one site's locations (plus dependency closure). A
 package with *no entries at all* exports every registered domain; `GET /domains` lists which
@@ -405,8 +409,9 @@ Known limitations
 -----------------
 * Concept description UUIDs and index-term names are not round-trip-able (Initializer
   format/loader limitations), so they are not preserved or re-loadable.
-* The startup export always exports all instances of the registered domains; instance-level
-  selection is available through export packages (see "Export packages (REST)").
+* The startup export (when enabled via `metadataexport.exportOnStartup`) always exports all
+  instances of the registered domains; instance-level selection is available through export
+  packages (see "Export packages (REST)").
 * Cross-domain closure only pulls in objects whose domain has a registered exporter.
 * Appointment service definitions lose their weekly availability, initial appointment status and
   the seconds of their start/end times (Initializer format/loader limitations). Voided appointment

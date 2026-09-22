@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.context.Daemon;
 import org.openmrs.module.BaseModuleActivator;
@@ -36,7 +37,11 @@ public class MetadataExportActivator extends BaseModuleActivator implements Daem
 	public void started() {
 		Daemon.runInDaemonThreadWithoutResult(() -> {
 			recoverStrandedBuilds();
-			exportAllMetadata();
+			boolean exportOnStartup = BooleanUtils.toBoolean(
+			    Context.getAdministrationService().getGlobalProperty(MetadataExportConstants.EXPORT_ON_STARTUP_GP));
+			if (exportOnStartup) {
+				exportAllMetadata();
+			}
 		}, daemonToken);
 	}
 	
