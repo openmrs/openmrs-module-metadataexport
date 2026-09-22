@@ -10,6 +10,8 @@
 package org.openmrs.module.metadataexport.domain.billing;
 
 import org.openmrs.Concept;
+import org.openmrs.ConceptName;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.model.BillableService;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
@@ -34,7 +36,11 @@ public class BillableServiceLineExporter extends MetadataLineExporter<BillableSe
 			line.put(HEADER_CONCEPT, instance.getConcept().getUuid());
 		}
 		if (instance.getServiceType() != null) {
-			line.put(HEADER_SERVICE_TYPE, instance.getServiceType().getUuid());
+			Concept serviceType = instance.getServiceType();
+			ConceptName serviceTypeName = serviceType.getPreferredName(Context.getLocale());
+			if (serviceTypeName != null) {
+				line.put(HEADER_SERVICE_TYPE, serviceTypeName.getName());
+			}
 		}
 		if (instance.getServiceStatus() != null) {
 			line.put(HEADER_SERVICE_STATUS, instance.getServiceStatus().name());
