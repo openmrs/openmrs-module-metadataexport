@@ -43,7 +43,7 @@ public class BillableServiceDomainExporter extends CsvDomainExporter<BillableSer
 	
 	@Override
 	protected String fileName() {
-		return "billableService.csv";
+		return "billableServices.csv";
 	}
 	
 	@Override

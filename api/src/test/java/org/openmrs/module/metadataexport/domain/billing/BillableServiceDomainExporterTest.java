@@ -33,7 +33,7 @@ public class BillableServiceDomainExporterTest {
 	
 	@Test
 	void fileNameShouldReturnBillableServiceCsv() {
-		assertEquals("billableService.csv", exporter.fileName());
+		assertEquals("billableServices.csv", exporter.fileName());
 	}
 	
 	@Test
