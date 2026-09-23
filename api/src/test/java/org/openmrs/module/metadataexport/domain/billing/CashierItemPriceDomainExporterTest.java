@@ -94,4 +94,39 @@ public class CashierItemPriceDomainExporterTest {
 		assertEquals(1, dependencies.size());
 		assertTrue(dependencies.contains(billableService));
 	}
+	
+	@Test
+	void shouldExcludeRetiredBillableServiceFromDependencies() {
+		BillableService billableService = new BillableService();
+		billableService.setUuid("123e4567-e89b-12d3-a456-426614174001");
+		billableService.setRetired(true);
+		
+		CashierItemPrice cashierItemPrice = new CashierItemPrice();
+		cashierItemPrice.setUuid("123e4567-e89b-12d3-a456-426614174003");
+		cashierItemPrice.setBillableService(billableService);
+		
+		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(cashierItemPrice);
+		assertEquals(0, dependencies.size());
+		assertFalse(dependencies.contains(billableService));
+	}
+	
+	@Test
+	void shouldExcludeRetiredBillableServiceButRetainPaymentModeDependency() {
+		PaymentMode paymentMode = new PaymentMode();
+		paymentMode.setUuid("123e4567-e89b-12d3-a456-426614174000");
+		
+		BillableService billableService = new BillableService();
+		billableService.setUuid("123e4567-e89b-12d3-a456-426614174001");
+		billableService.setRetired(true);
+		
+		CashierItemPrice cashierItemPrice = new CashierItemPrice();
+		cashierItemPrice.setUuid("123e4567-e89b-12d3-a456-426614174003");
+		cashierItemPrice.setPaymentMode(paymentMode);
+		cashierItemPrice.setBillableService(billableService);
+		
+		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(cashierItemPrice);
+		assertEquals(1, dependencies.size());
+		assertTrue(dependencies.contains(paymentMode));
+		assertFalse(dependencies.contains(billableService));
+	}
 }
