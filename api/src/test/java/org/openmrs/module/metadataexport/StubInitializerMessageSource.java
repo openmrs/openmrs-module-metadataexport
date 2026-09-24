@@ -12,11 +12,11 @@ package org.openmrs.module.metadataexport;
 import org.openmrs.module.initializer.InitializerMessageSource;
 
 /**
- * Overriding the {@code InitializerMessageSource#initialize} call to suppress PostConstruct classpath
- * scanning to avoid Windows URI syntax errors during build.
+ * Overriding the {@code InitializerMessageSource#initialize} call to suppress PostConstruct
+ * classpath scanning to avoid Windows URI syntax errors during build.
  */
 public class StubInitializerMessageSource extends InitializerMessageSource {
-
+	
 	@Override
 	public void initialize() {
 	}
