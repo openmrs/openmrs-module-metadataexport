@@ -18,7 +18,7 @@
 	<name>${project.parent.name}</name>
 	<version>${project.parent.version}</version>
 	<package>org.openmrs.module.metadataexport</package>
-	<author>wikum</author>
+	<author>OpenMRS</author>
 	<description>
 			${project.parent.description}
 	</description>
@@ -35,7 +35,6 @@
 	</require_modules>
 
 	<aware_of_modules>
-		<aware_of_module>org.openmrs.module.legacyui</aware_of_module>
 		<aware_of_module>org.openmrs.module.emrapi</aware_of_module>
 		<aware_of_module>org.openmrs.module.fhir2</aware_of_module>
 		<aware_of_module>org.openmrs.module.idgen</aware_of_module>
@@ -111,14 +110,6 @@
 	<messages>
 		<lang>en</lang>
 		<file>messages.properties</file>
-	</messages>
-	<messages>
-		<lang>fr</lang>
-		<file>messages_fr.properties</file>
-	</messages>
-	<messages>
-		<lang>es</lang>
-		<file>messages_es.properties</file>
 	</messages>
 	<!-- /Internationalization -->
 	
