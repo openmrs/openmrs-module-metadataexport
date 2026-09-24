@@ -60,6 +60,14 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 	
 	private static final String RETIRED_SVC_SVC_UUID = "a1b2c3d4-5555-5555-5555-000000000002";
 	
+	private static final String ITEM_RETIRED_SVC_UUID = "c5e7b3d1-3d10-11e4-adec-0800271c1b88";
+	
+	private static final String ITEM_RETIRED_SVC_PM_UUID = "a1b2c3d4-6666-6666-6666-000000000001";
+	
+	private static final String ITEM_RETIRED_SVC_SVC_UUID = "a1b2c3d4-6666-6666-6666-000000000002";
+	
+	private static final String ITEM_RETIRED_SVC_SI_UUID = "a1b2c3d4-6666-6666-6666-000000000003";
+	
 	private final CashierItemPriceDomainExporter exporter = new CashierItemPriceDomainExporter();
 	
 	@Test
@@ -119,6 +127,18 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 	}
 	
 	@Test
+	void getAllInstances_excludesPriceWithStockItemAndRetiredBillableService() {
+		seedValidPrice(VALID_UUID, "valid-price");
+		seedPriceWithStockItemAndRetiredBillableService(ITEM_RETIRED_SVC_UUID, "item-retired-svc-price");
+		
+		Collection<CashierItemPrice> itemPrices = exporter.getAllInstances();
+		
+		assertNotNull(itemPrices);
+		assertEquals(1, itemPrices.size());
+		assertEquals(VALID_UUID, itemPrices.iterator().next().getUuid());
+	}
+	
+	@Test
 	void exclusions_isEmptyWhenAllPricesAreImportable() {
 		seedValidPrice(VALID_UUID, "valid-price");
 		
@@ -161,16 +181,40 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 	}
 	
 	@Test
+	void exclusions_containsPriceWithRetiredBillableServiceWithReason() {
+		seedPriceWithRetiredBillableService(RETIRED_SVC_UUID, "retired-svc-price");
+		
+		Map<String, String> exclusions = exporter.exclusions();
+		
+		assertEquals(1, exclusions.size());
+		assertTrue(exclusions.containsKey(RETIRED_SVC_UUID));
+		assertTrue(exclusions.get(RETIRED_SVC_UUID).contains("retired billable service"));
+	}
+	
+	@Test
+	void exclusions_containsPriceWithStockItemAndRetiredServiceWithReason() {
+		seedPriceWithStockItemAndRetiredBillableService(ITEM_RETIRED_SVC_UUID, "item-retired-svc-price");
+		
+		Map<String, String> exclusions = exporter.exclusions();
+		
+		assertEquals(1, exclusions.size());
+		assertTrue(exclusions.containsKey(ITEM_RETIRED_SVC_UUID));
+		assertTrue(exclusions.get(ITEM_RETIRED_SVC_UUID).contains("retired billable service"));
+	}
+	
+	@Test
 	void exclusions_containsAllInvalidPricesAndNoValidOnes() {
 		seedValidPrice(VALID_UUID, "valid-price");
 		seedPriceWithNoPaymentMode(NO_PAYMENT_UUID, "no-payment-price");
 		seedPriceWithNeitherItemNorService(NEITHER_SET_UUID, "neither-set-price");
+		seedPriceWithRetiredBillableService(RETIRED_SVC_UUID, "retired-svc-price");
 		
 		Map<String, String> exclusions = exporter.exclusions();
 		
-		assertEquals(2, exclusions.size());
+		assertEquals(3, exclusions.size());
 		assertTrue(exclusions.containsKey(NO_PAYMENT_UUID));
 		assertTrue(exclusions.containsKey(NEITHER_SET_UUID));
+		assertTrue(exclusions.containsKey(RETIRED_SVC_UUID));
 		assertFalse(exclusions.containsKey(VALID_UUID));
 	}
 	
@@ -230,6 +274,24 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 		
 		CashierItemPrice price = createCashierItemPrice(uuid, name, new BigDecimal("50.00"));
 		price.setPaymentMode(paymentMode);
+		price.setBillableService(retiredService);
+		getCashierItemPriceService().saveCashierItemPrice(price);
+	}
+	
+	private void seedPriceWithStockItemAndRetiredBillableService(String uuid, String name) {
+		PaymentMode paymentMode = savePaymentMode(ITEM_RETIRED_SVC_PM_UUID, "Mode for " + name);
+		StockItem stockItem = saveStockItem(ITEM_RETIRED_SVC_SI_UUID);
+		
+		BillableServiceService billableServiceService = Context.getService(BillableServiceService.class);
+		BillableService retiredService = new BillableService();
+		retiredService.setUuid(ITEM_RETIRED_SVC_SVC_UUID);
+		retiredService.setName("Retired service for " + name);
+		billableServiceService.saveBillableService(retiredService);
+		billableServiceService.retireBillableService(retiredService, "Discontinued");
+		
+		CashierItemPrice price = createCashierItemPrice(uuid, name, new BigDecimal("50.00"));
+		price.setPaymentMode(paymentMode);
+		price.setItem(stockItem);
 		price.setBillableService(retiredService);
 		getCashierItemPriceService().saveCashierItemPrice(price);
 	}

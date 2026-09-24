@@ -63,19 +63,27 @@ public class CashierItemPriceDomainExporter extends CsvDomainExporter<CashierIte
 	}
 	
 	private static boolean isUnimportable(CashierItemPrice p) {
-		boolean noPaymentMode = p.getPaymentMode() == null;
+		if (p.getPaymentMode() == null) {
+			return true;
+		}
+		if (p.getBillableService() != null && p.getBillableService().getRetired()) {
+			return true;
+		}
 		boolean hasItem = p.getItem() != null;
-		boolean hasService = p.getBillableService() != null && !p.getBillableService().getRetired();
-		boolean badItemServiceCombo = hasItem == hasService;
-		return noPaymentMode || badItemServiceCombo;
+		boolean hasService = p.getBillableService() != null;
+		return hasItem == hasService;
 	}
 	
 	private static String unimportableReason(CashierItemPrice p) {
 		if (p.getPaymentMode() == null) {
 			return "('" + p.getName() + "') has no payment mode and cannot be imported";
 		}
+		if (p.getBillableService() != null && p.getBillableService().getRetired()) {
+			return "('" + p.getName() + "') references a retired billable service ('" + p.getBillableService().getName()
+			        + "') and cannot be imported";
+		}
 		boolean hasItem = p.getItem() != null;
-		boolean hasService = p.getBillableService() != null && !p.getBillableService().getRetired();
+		boolean hasService = p.getBillableService() != null;
 		if (hasItem && hasService) {
 			return "('" + p.getName() + "') references both a stock item and a billable service; exactly one is required";
 		}
