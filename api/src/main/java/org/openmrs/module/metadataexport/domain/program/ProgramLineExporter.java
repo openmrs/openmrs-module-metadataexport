@@ -11,6 +11,7 @@ package org.openmrs.module.metadataexport.domain.program;
 
 import org.openmrs.Concept;
 import org.openmrs.Program;
+import org.openmrs.module.initializer.api.BaseLineProcessor;
 import org.openmrs.module.metadataexport.export.ExportLine;
 import org.openmrs.module.metadataexport.export.MetadataLineExporter;
 
@@ -22,10 +23,10 @@ public class ProgramLineExporter extends MetadataLineExporter<Program> {
 	
 	@Override
 	public void export(Program program, ExportLine line) {
-		Concept concept = program.getConcept();
-		if (concept != null) {
-			line.put(HEADER_CONCEPT_PROGRAM, concept.getUuid());
-		}
+		line.put(BaseLineProcessor.HEADER_NAME, program.getName());
+		line.put(BaseLineProcessor.HEADER_DESC, program.getDescription());
+		
+		line.put(HEADER_CONCEPT_PROGRAM, program.getConcept().getUuid());
 		
 		Concept outcomesConcept = program.getOutcomesConcept();
 		if (outcomesConcept != null) {

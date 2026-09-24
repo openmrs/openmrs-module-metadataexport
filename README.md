@@ -45,7 +45,7 @@ Currently supported domains:
 * Flags (name, criteria, evaluator, message, priority, enabled, tags, description) — requires the patientflags module (3.0+)
 * Order frequencies (frequency per day, concept frequency) — the referenced concept is pulled in via
   cross domain closure
-* Programs (program concept, outcomes concept) — the referenced concepts are pulled in via
+* Programs (name, description, program concept, outcomes concept) — the referenced concepts are pulled in via
   cross domain closure
 * Program workflows (program, workflow concept) — the referenced program and concept are pulled in
   via cross-domain closure
