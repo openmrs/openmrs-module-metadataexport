@@ -25,11 +25,8 @@ public class ProgramLineExporter extends MetadataLineExporter<Program> {
 	public void export(Program program, ExportLine line) {
 		line.put(BaseLineProcessor.HEADER_NAME, program.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, program.getDescription());
-
-		Concept concept = program.getConcept();
-		if (concept != null) {
-			line.put(HEADER_CONCEPT_PROGRAM, concept.getUuid());
-		}
+		
+		line.put(HEADER_CONCEPT_PROGRAM, program.getConcept().getUuid());
 		
 		Concept outcomesConcept = program.getOutcomesConcept();
 		if (outcomesConcept != null) {

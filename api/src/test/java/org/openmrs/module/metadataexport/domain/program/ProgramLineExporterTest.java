@@ -29,6 +29,8 @@ class ProgramLineExporterTest {
 	void exportsAllFieldsForActiveProgram() {
 		Program program = new Program();
 		program.setUuid("eae98b4c-e195-403b-b34a-82d94103b2c0");
+		program.setName("TB Program");
+		program.setDescription("Tuberculosis Program");
 		program.setConcept(concept("tb-program-concept-uuid"));
 		program.setOutcomesConcept(concept("tb-program-outcomes-concept-uuid"));
 		
@@ -36,6 +38,8 @@ class ProgramLineExporterTest {
 		new ProgramLineExporter().writeLine(program, line);
 		
 		assertEquals("eae98b4c-e195-403b-b34a-82d94103b2c0", line.get("uuid"));
+		assertEquals("TB Program", line.get("name"));
+		assertEquals("Tuberculosis Program", line.get("description"));
 		assertEquals("tb-program-concept-uuid", line.get("program concept"));
 		assertEquals("tb-program-outcomes-concept-uuid", line.get("outcomes concept"));
 		assertNull(line.get("void/retire"));
@@ -45,6 +49,8 @@ class ProgramLineExporterTest {
 	void retiredProgramEmitsUuidAndFlagOnly() {
 		Program program = new Program();
 		program.setUuid("28f3da50-3f56-4e4e-93cd-66f334970480");
+		program.setName("Ayurvedic Program");
+		program.setDescription("Ayurvedic Program");
 		program.setConcept(concept("ayurvedic-program-concept-uuid"));
 		program.setOutcomesConcept(concept("ayurvedic-program-outcomes-concept-uuid"));
 		program.setRetired(true);
@@ -54,6 +60,8 @@ class ProgramLineExporterTest {
 		
 		assertEquals("28f3da50-3f56-4e4e-93cd-66f334970480", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
+		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertNull(line.get("description"), "retired rows carry only uuid + flag");
 		assertNull(line.get("program concept"), "retired rows carry only uuid + flag");
 		assertNull(line.get("outcomes concept"), "retired rows carry only uuid + flag");
 	}
