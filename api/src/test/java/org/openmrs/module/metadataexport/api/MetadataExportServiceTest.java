@@ -11,6 +11,7 @@ package org.openmrs.module.metadataexport.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,9 +33,12 @@ import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 import org.openmrs.util.OpenmrsUtil;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
@@ -283,9 +287,19 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 		assertNotNull(zip);
 		assertTrue(zip.exists(), "expected " + zip);
 		try (ZipFile zipFile = new ZipFile(zip)) {
-			assertNotNull(zipFile.getEntry("package.json"), "package.json should sit at the zip root");
+			assertNotNull(zipFile.getEntry("metadataexport-manifest.json"), "the manifest should sit at the zip root");
 			assertNotNull(zipFile.getEntry("configuration/locations/locations.csv"),
 			    "the Initializer tree should sit beside it");
+			Properties content = new Properties();
+			try (InputStream in = zipFile.getInputStream(zipFile.getEntry("content.properties"))) {
+				content.load(in);
+			}
+			assertEquals("Site A locations", content.getProperty("name"));
+			assertEquals("1", content.getProperty("version"));
+			try (InputStream in = zipFile.getInputStream(zipFile.getEntry("content.properties"))) {
+				assertFalse(IOUtils.toString(in, StandardCharsets.ISO_8859_1).contains("#"),
+				    "no timestamp comment, so identical packages give identical files");
+			}
 		}
 	}
 	
@@ -308,7 +322,8 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 		try (ZipFile zipFile = new ZipFile(service.getBuildZip(completed))) {
 			assertNotNull(zipFile.getEntry("configuration/locations/locations.csv"));
 			assertNotNull(zipFile.getEntry("configuration/encountertypes/encounterTypes.csv"));
-			assertNotNull(zipFile.getEntry("package.json"));
+			assertNotNull(zipFile.getEntry("metadataexport-manifest.json"));
+			assertNotNull(zipFile.getEntry("content.properties"));
 		}
 	}
 	

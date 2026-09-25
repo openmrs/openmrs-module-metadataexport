@@ -33,13 +33,15 @@ import java.util.TimeZone;
 /**
  * The human- and machine-readable record of one build: the package identity, the entries as the
  * user defined them, and every item that actually got exported (including dependency-pulled ones).
- * Written as {@code package.json} at the zip root and stored on the build row as
+ * Written as {@value #FILE_NAME} at the zip root and stored on the build row as
  * {@code manifest_json} — the metadatasharing header.xml analogue. Also records, per domain
  * exported in full, the rows that were deliberately left out and why.
  */
 @Getter
 @Setter
 public class BuildManifest {
+	
+	public static final String FILE_NAME = "metadataexport-manifest.json";
 	
 	private String name;
 	

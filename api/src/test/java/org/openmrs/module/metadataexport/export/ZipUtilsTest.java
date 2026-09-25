@@ -32,7 +32,7 @@ class ZipUtilsTest {
 	@Test
 	void zipDirectory_zipsTreeRelativeToSourceWithForwardSlashes(@TempDir File dir) throws IOException {
 		File source = new File(dir, "content");
-		write(new File(source, "package.json"), "{\"version\":1}");
+		write(new File(source, "metadataexport-manifest.json"), "{\"version\":1}");
 		write(new File(source, "configuration/locations/locations.csv"), "uuid,name");
 		write(new File(source, "configuration/encountertypes/encounterTypes.csv"), "uuid");
 		File zip = new File(dir, "out.zip");
@@ -41,8 +41,8 @@ class ZipUtilsTest {
 		
 		try (ZipFile zipFile = new ZipFile(zip)) {
 			assertEquals(Arrays.asList("configuration/encountertypes/encounterTypes.csv",
-			    "configuration/locations/locations.csv", "package.json"), entryNames(zipFile));
-			assertEquals("{\"version\":1}", content(zipFile, "package.json"));
+			    "configuration/locations/locations.csv", "metadataexport-manifest.json"), entryNames(zipFile));
+			assertEquals("{\"version\":1}", content(zipFile, "metadataexport-manifest.json"));
 		}
 	}
 	

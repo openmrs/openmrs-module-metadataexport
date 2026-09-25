@@ -29,6 +29,7 @@ import org.openmrs.module.metadataexport.select.ExportManifest;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,10 +39,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 @AllArgsConstructor
 @Transactional
 public class MetadataExportServiceImpl extends BaseOpenmrsService implements MetadataExportService {
+	
+	private static final String CONTENT_PROPERTIES_FILE_NAME = "content.properties";
 	
 	private final MetadataExportDao metadataExportDao;
 	
@@ -151,7 +155,9 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 			
 			String manifestJson = BuildManifest.of(exportPackage, build, exported, excluded).toJson();
 			Files.createDirectories(contentDir.toPath());
-			Files.write(new File(contentDir, "package.json").toPath(), manifestJson.getBytes(StandardCharsets.UTF_8));
+			Files.write(new File(contentDir, BuildManifest.FILE_NAME).toPath(),
+			    manifestJson.getBytes(StandardCharsets.UTF_8));
+			writeContentProperties(contentDir, exportPackage, build);
 			
 			File zip = new File(versionDir, zipFileName(exportPackage.getName(), build.getVersion()));
 			ZipUtils.zipDirectory(contentDir, zip);
@@ -165,6 +171,23 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 		catch (IOException e) {
 			throw new APIException("Export of build " + buildUuid + " failed", e);
 		}
+	}
+	
+	/**
+	 * The {@code content.properties} that identifies the zip as an OpenMRS content package. The
+	 * packager plugin's validate-content-package goal requires both {@code name} and {@code version}.
+	 */
+	private static void writeContentProperties(File contentDir, ExportPackage exportPackage, ExportBuild build)
+	        throws IOException {
+		Properties properties = new Properties();
+		properties.setProperty("name", exportPackage.getName());
+		properties.setProperty("version", String.valueOf(build.getVersion()));
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		properties.store(out, null);
+		String stored = new String(out.toByteArray(), StandardCharsets.ISO_8859_1);
+		String withoutTimestamp = stored.substring(stored.indexOf('\n') + 1);
+		Files.write(new File(contentDir, CONTENT_PROPERTIES_FILE_NAME).toPath(),
+		    withoutTimestamp.getBytes(StandardCharsets.ISO_8859_1));
 	}
 	
 	private static String zipFileName(String packageName, Integer version) {
