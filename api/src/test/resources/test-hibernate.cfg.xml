@@ -25,5 +25,9 @@
 		<mapping resource="ServiceWeeklyAvailability.hbm.xml"/>
 		<!-- cohort module: CohortType is a JPA entity, its attribute types are hbm-mapped -->
 		<mapping resource="CohortAttributeType.hbm.xml"/>
-	</session-factory>
+        <!-- Billing module-->
+        <mapping resource="Bill.hbm.xml"/>
+        <mapping resource="Cashier.hbm.xml"/>
+        <mapping resource="SequentialReceiptNumberGenerator.hbm.xml"/>
+    </session-factory>
 </hibernate-configuration>

@@ -166,12 +166,22 @@ Currently supported domains:
   through its types; note that Initializer's own loader rebuilds a definition's type set from its
   non-voided types when it imports a type, so voided types already on the importing server are
   deleted by the import; requires the Bahmni appointments module (1.2.1+)
+* Billable services (service name, short name, concept, service type, service status) — referenced
+  concepts are pulled in via cross-domain closure; requires the billing module (2.4.0+)
+* Cash points (name, description, location) — referenced location is pulled in via cross-domain
+  closure; requires the billing module (2.4.0+)
+* Cashier item prices (name, price, payment mode, stock item, billable service) — referenced
+  payment mode and billable service are pulled in via cross-domain closure; **stock-item references
+  are not self-contained**: `CashierItemPriceLineProcessor` resolves a stock item through
+  `StockManagementService.getStockItemByUuid` and throws if it is absent, and Initializer has no
+  stock-item domain for the closure to fall back on, so rows that reference a stock item only load
+  onto a server that already holds the same stock items; requires the billing module (2.4.0+)
+* Payment modes (name, attributes) — requires the billing module (2.4.0+)
 
 Domains contributed by other modules (supportable, but depend on the module being present;
 not yet covered):
 
 * Forms (Bahmni forms, HTML forms) (Optional)
-* Billing / cashier (billable services, payment modes, cash points, cashier item prices)
 
 Non-exportable Initializer domains (Liquibase, JSON key-values, OCL, Dispositions, Data filter mappings) are
 out of scope.
