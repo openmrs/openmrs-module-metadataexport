@@ -205,15 +205,18 @@ domain optionally narrowed to specific item uuids (empty list = the whole domain
 package with *no entries at all* exports every registered domain; `GET /domains` lists which
 domains are registered on the server. Package
 definitions are stored in the database; every build of a package gets an incrementing version, a
-status (`QUEUED` → `RUNNING` → `COMPLETED`/`FAILED`), and a downloadable zip containing the
-`configuration/` tree plus a `package.json` manifest recording exactly what was exported and, for
-every domain exported in full, the rows that were left out and why (its `excluded` section).
+status (`QUEUED` → `RUNNING` → `COMPLETED`/`FAILED`), and a downloadable zip laid out as an
+OpenMRS content package: the `configuration/` tree, a `content.properties` carrying the package
+`name` and build number as `version`, and a `metadataexport-manifest.json` recording exactly what
+was exported and, for every domain exported in full, the rows that were left out and why (its
+`excluded` section).
 
 Exclusions are rows a domain has on the server but never exports because Initializer could not load
 them on a target: retired queues, voided cohort types, identifier sources without a user, superseded
-form versions. A full export of such a domain records them in `package.json` under `excluded` and
-logs one summary line per domain. A package that names an excluded row by uuid does not silently
-drop it: the build fails with the reason, separately from any uuid the domain does not know at all.
+form versions. A full export of such a domain records them in `metadataexport-manifest.json` under
+`excluded` and logs one summary line per domain. A package that names an excluded row by uuid does
+not silently drop it: the build fails with the reason, separately from any uuid the domain does not
+know at all.
 
 Builds run asynchronously on a daemon thread; trigger, then poll. Packages and builds are
 [REST web services](https://wiki.openmrs.org/x/xoAaAQ) resources under the module namespace
