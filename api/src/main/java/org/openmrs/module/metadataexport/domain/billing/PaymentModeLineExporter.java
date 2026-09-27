@@ -9,7 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.billing;
 
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.module.billing.api.model.PaymentMode;
 import org.openmrs.module.billing.api.model.PaymentModeAttributeType;
 import org.openmrs.module.initializer.api.BaseLineProcessor;
@@ -34,17 +34,15 @@ public class PaymentModeLineExporter extends MetadataLineExporter<PaymentMode> {
 		
 		List<String> attributes = new ArrayList<>();
 		for (PaymentModeAttributeType pt : paymentMode.getAttributeTypes()) {
-			if (pt != null) {
-				if (BooleanUtils.isTrue(pt.getRetired())) {
-					continue;
-				}
-				
-				String name = pt.getName() == null ? "" : pt.getName();
-				String format = pt.getFormat() == null ? "" : pt.getFormat();
-				String regex = pt.getRegExp() == null ? "" : pt.getRegExp();
-				String required = BooleanUtils.isTrue(pt.getRequired()) ? "True" : "False";
-				attributes.add(name + " :: " + format + " :: " + regex + " :: " + required);
+			if (BooleanUtils.isTrue(pt.getRetired())) {
+				continue;
 			}
+			
+			String name = pt.getName() == null ? "" : pt.getName();
+			String format = pt.getFormat() == null ? "" : pt.getFormat();
+			String regex = pt.getRegExp() == null ? "" : pt.getRegExp();
+			String required = BooleanUtils.isTrue(pt.getRequired()) ? "True" : "False";
+			attributes.add(name + " :: " + format + " :: " + regex + " :: " + required);
 		}
 		
 		if (!attributes.isEmpty()) {

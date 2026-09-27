@@ -101,7 +101,7 @@ public class CashierItemPriceDomainExporter extends CsvDomainExporter<CashierIte
 		if (instance.getPaymentMode() != null) {
 			dependencies.add(instance.getPaymentMode());
 		}
-		if (instance.getBillableService() != null && !instance.getBillableService().getRetired()) {
+		if (instance.getBillableService() != null) {
 			dependencies.add(instance.getBillableService());
 		}
 		return dependencies;

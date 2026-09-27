@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.billing;
 
 import org.junit.jupiter.api.Test;
+import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.BillableServiceService;
 import org.openmrs.module.billing.api.CashierItemPriceService;
@@ -222,6 +223,21 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 	void shouldGetEmptyCashierItemPricesIfAllInstancesEmpty() {
 		Collection<CashierItemPrice> itemPrices = exporter.getAllInstances();
 		assertEquals(0, itemPrices.size());
+	}
+	
+	@Test
+	void getDependencies_neverContainsRetiredBillableService() {
+		seedValidPrice(VALID_UUID, "valid-price");
+		seedPriceWithRetiredBillableService(RETIRED_SVC_UUID, "retired-svc-price");
+		
+		for (CashierItemPrice price : exporter.getAllInstances()) {
+			for (OpenmrsObject dep : exporter.getDependencies(price)) {
+				if (dep instanceof BillableService) {
+					BillableService service = (BillableService) dep;
+					assertFalse(service.getRetired(), "getDependencies must not include a retired BillableService");
+				}
+			}
+		}
 	}
 	
 	private void seedValidPrice(String uuid, String name) {

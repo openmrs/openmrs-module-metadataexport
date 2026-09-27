@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.billing;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
@@ -29,7 +28,6 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Map;
 
-@Slf4j
 @Component
 @OpenmrsProfile(modules = "billing:2.4.0")
 public class BillableServiceDomainExporter extends CsvDomainExporter<BillableService> {
@@ -58,13 +56,7 @@ public class BillableServiceDomainExporter extends CsvDomainExporter<BillableSer
 	public Collection<BillableService> getAllInstances() {
 		List<BillableService> live = new ArrayList<>();
 		for (BillableService service : allServices()) {
-			if (BooleanUtils.isTrue(service.getRetired())) {
-				log.warn(
-				    "BillableServices: skipping retired service {} ({}); BillableService.getId() unboxes a"
-				            + " primitive int so Initializer's shouldFill is never true on a void/retire row,"
-				            + " causing an empty BillableService to be saved on a fresh target",
-				    service.getUuid(), service.getName());
-			} else {
+			if (!isRetired(service)) {
 				live.add(service);
 			}
 		}
@@ -73,9 +65,8 @@ public class BillableServiceDomainExporter extends CsvDomainExporter<BillableSer
 	
 	@Override
 	public Map<String, String> exclusions() {
-		return DomainExporter.exclusions(allServices(), BillableServiceDomainExporter::isRetired, service -> "('"
-		        + service.getName()
-		        + "') is retired, and Initializer cannot import a retired billable service (unretire them on this server or remove them from the package)");
+		return DomainExporter.exclusions(allServices(), BillableServiceDomainExporter::isRetired,
+		    service -> "('" + service.getName() + "') is retired, and Initializer cannot import a retired billable service");
 	}
 	
 	private static boolean isRetired(BillableService service) {

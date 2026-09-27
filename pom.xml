@@ -70,6 +70,7 @@
 		<appointmentsVersion>1.2.1</appointmentsVersion>
 		<billingVersion>2.4.0</billingVersion>
 		<stockmanagementVersion>3.0.0</stockmanagementVersion>
+		<openmrsEventVersion>4.0.0</openmrsEventVersion>
     </properties>
 
 	<build>
@@ -221,7 +222,7 @@
 		<dependency>
 			<groupId>org.openmrs</groupId>
 			<artifactId>event-api</artifactId>
-			<version>4.0.0</version>
+			<version>${openmrsEventVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
