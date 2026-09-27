@@ -12,6 +12,8 @@ package org.openmrs.module.metadataexport.domain.billing;
 import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
 import org.openmrs.ConceptName;
+import org.openmrs.api.ConceptNameType;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.model.BillableService;
 import org.openmrs.module.billing.api.model.BillableServiceStatus;
 import org.openmrs.module.metadataexport.export.ExportLine;
@@ -32,9 +34,9 @@ public class BillableServiceLineExporterTest {
 		serviceType.setUuid("550e8400-e29b-41d4-a716-446655440002");
 		
 		ConceptName serviceTypeName = new ConceptName();
-		serviceTypeName.setName("service-name");
-		serviceTypeName.setLocale(Locale.ENGLISH);
-		serviceType.setPreferredName(serviceTypeName);
+		serviceTypeName.setName("full service-name");
+		serviceTypeName.setLocale(Context.getLocale());
+		serviceType.setFullySpecifiedName(serviceTypeName);
 		
 		BillableService billableService = new BillableService();
 		billableService.setUuid("550e8400-e29b-41d4-a716-446655440003");
@@ -50,7 +52,7 @@ public class BillableServiceLineExporterTest {
 		assertEquals("test", line.get("Service Name"));
 		assertEquals("shortname", line.get("Short Name"));
 		assertEquals("550e8400-e29b-41d4-a716-446655440001", line.get("Concept"));
-		assertEquals("service-name", line.get("Service Type"));
+		assertEquals("full service-name", line.get("Service Type"));
 		assertEquals(BillableServiceStatus.ENABLED.name(), line.get("Service Status"));
 		assertNull(line.get("void/retire"));
 	}

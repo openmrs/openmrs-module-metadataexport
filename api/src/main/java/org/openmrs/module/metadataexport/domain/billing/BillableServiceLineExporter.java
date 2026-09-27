@@ -37,7 +37,7 @@ public class BillableServiceLineExporter extends MetadataLineExporter<BillableSe
 		}
 		if (instance.getServiceType() != null) {
 			Concept serviceType = instance.getServiceType();
-			ConceptName serviceTypeName = serviceType.getPreferredName(Context.getLocale());
+			ConceptName serviceTypeName = serviceType.getFullySpecifiedName(Context.getLocale());
 			if (serviceTypeName != null) {
 				line.put(HEADER_SERVICE_TYPE, serviceTypeName.getName());
 			}
