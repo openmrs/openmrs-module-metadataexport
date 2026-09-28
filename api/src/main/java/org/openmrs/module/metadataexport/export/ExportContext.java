@@ -16,34 +16,49 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 /**
- * Carries the shared state threaded through every {@link DomainExporter#export}. Currently just the
- * output root; the {@code configuration/} tree is written beneath it.
+ * Carries the shared state threaded through every {@link DomainExporter#export}: the output root
+ * and where beneath it the Initializer domain directories go.
+ * <p>
+ * Initializer itself reads {@code <app data dir>/configuration/<domain>}, which is what the startup
+ * export mirrors ({@link #CONFIGURATION_DIR}). An OpenMRS content package nests the same tree one
+ * level deeper, at {@code configuration/backend_configuration/<domain>}
+ * ({@link #CONTENT_PACKAGE_CONFIGURATION_DIR}): that is the only folder the SDK's
+ * {@code ContentHelper.installBackendConfig} copies out of a content package zip, and a zip without
+ * it installs nothing, silently.
  */
 public class ExportContext {
 	
+	/** Where Initializer reads domains from, relative to the application data directory. */
 	public static final String CONFIGURATION_DIR = "configuration";
 	
-	private final File outputDir;
+	/** Where the SDK and the content packager plugin expect domains inside a content package zip. */
+	public static final String CONTENT_PACKAGE_CONFIGURATION_DIR = CONFIGURATION_DIR + "/backend_configuration";
 	
+	private final File configurationDir;
+	
+	/** Writes domains under {@code <outputDir>/configuration/<domain>}, as Initializer reads them. */
 	public ExportContext(File outputDir) {
-		this.outputDir = outputDir;
-	}
-	
-	public File getOutputDir() {
-		return outputDir;
+		this(outputDir, CONFIGURATION_DIR);
 	}
 	
 	/**
-	 * The directory Initializer reads a domain from, {@code <output root>/configuration/<domain>},
-	 * created if missing.
+	 * Writes domains under {@code <outputDir>/<configurationPath>/<domain>}.
+	 *
+	 * @param configurationPath the directory holding the domain directories, relative to
+	 *            {@code outputDir}, with {@code /} separators; one of the constants on this class
 	 */
-	public File domainDir(Domain domain) throws IOException {
-		return domainDir(outputDir, domain);
+	public ExportContext(File outputDir, String configurationPath) {
+		this.configurationDir = new File(outputDir, configurationPath);
 	}
 	
-	/** Same as {@link #domainDir(Domain)} for writers that are handed the output root directly. */
-	public static File domainDir(File outputDir, Domain domain) throws IOException {
-		File dir = new File(new File(outputDir, CONFIGURATION_DIR), domain.getName());
+	/** Same as {@link #ExportContext(File, String)} with {@link #CONTENT_PACKAGE_CONFIGURATION_DIR}. */
+	public static ExportContext forContentPackage(File outputDir) {
+		return new ExportContext(outputDir, CONTENT_PACKAGE_CONFIGURATION_DIR);
+	}
+	
+	/** The directory this domain's files go in, created if missing. */
+	public File domainDir(Domain domain) throws IOException {
+		File dir = new File(configurationDir, domain.getName());
 		Files.createDirectories(dir.toPath());
 		return dir;
 	}

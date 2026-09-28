@@ -11,6 +11,7 @@ package org.openmrs.module.metadataexport.api;
 
 import org.openmrs.OpenmrsObject;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.export.ExportContext;
 import org.openmrs.module.metadataexport.select.ExportManifest;
 
 import java.io.File;
@@ -28,7 +29,13 @@ public interface ExporterService {
 	 */
 	void export(File outDir, Collection<Domain> domains) throws IOException;
 	
-	ExportManifest exportSeeds(File outDir, Collection<? extends OpenmrsObject> seeds) throws IOException;
+	/**
+	 * Export the given seed objects plus their cross-domain dependency closure, writing each domain
+	 * where {@code context} puts it: {@link ExportContext#ExportContext(File)} mirrors Initializer's
+	 * own {@code configuration/<domain>} layout, {@link ExportContext#forContentPackage(File)} the
+	 * {@code configuration/backend_configuration/<domain>} layout of an OpenMRS content package zip.
+	 */
+	ExportManifest exportSeeds(ExportContext context, Collection<? extends OpenmrsObject> seeds) throws IOException;
 	
 	/**
 	 * Rows of the given domains that exist on this server but are never exported, with the reason, as

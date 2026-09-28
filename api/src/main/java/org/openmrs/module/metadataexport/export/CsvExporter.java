@@ -44,15 +44,15 @@ public class CsvExporter<T extends OpenmrsObject> {
 		return lines;
 	}
 	
-	public void writeCsv(Collection<T> instances, File outDir, String fileName) throws IOException {
-		writeCsv(instances, outDir, fileName, null);
+	public void writeCsv(Collection<T> instances, ExportContext context, String fileName) throws IOException {
+		writeCsv(instances, context, fileName, null);
 	}
 	
 	/**
 	 * @param order Iniz within-domain load order, emitted as an {@code _order:} header column; null for
 	 *            no order annotation (Iniz then loads the file last).
 	 */
-	public void writeCsv(Collection<T> instances, File outDir, String fileName, Integer order) throws IOException {
+	public void writeCsv(Collection<T> instances, ExportContext context, String fileName, Integer order) throws IOException {
 		List<ExportLine> lines = toLines(instances);
 		LinkedHashSet<String> headers = new LinkedHashSet<>();
 		for (ExportLine line : lines) {
@@ -65,7 +65,7 @@ public class CsvExporter<T extends OpenmrsObject> {
 		}
 		String[] headerRow = headers.toArray(new String[0]);
 		
-		File target = new File(ExportContext.domainDir(outDir, domain), fileName);
+		File target = new File(context.domainDir(domain), fileName);
 		
 		try (CSVWriter writer = new CSVWriter(
 		        new OutputStreamWriter(Files.newOutputStream(target.toPath()), StandardCharsets.UTF_8))) {

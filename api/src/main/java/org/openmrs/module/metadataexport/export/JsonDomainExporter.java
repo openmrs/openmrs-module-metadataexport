@@ -37,7 +37,7 @@ public abstract class JsonDomainExporter<T extends OpenmrsObject> implements Dom
 	public void export(Collection<T> instances, ExportContext context) throws IOException {
 		JsonExporter jsonExporter = new JsonExporter();
 		for (Map.Entry<String, JsonNode> file : toDocuments(instances).entrySet()) {
-			jsonExporter.writeJson(file.getValue(), getDomain(), context.getOutputDir(), file.getKey());
+			jsonExporter.writeJson(file.getValue(), getDomain(), context, file.getKey());
 		}
 	}
 	

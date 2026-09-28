@@ -288,8 +288,10 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 		assertTrue(zip.exists(), "expected " + zip);
 		try (ZipFile zipFile = new ZipFile(zip)) {
 			assertNotNull(zipFile.getEntry("metadataexport-manifest.json"), "the manifest should sit at the zip root");
-			assertNotNull(zipFile.getEntry("configuration/locations/locations.csv"),
-			    "the Initializer tree should sit beside it");
+			assertNotNull(zipFile.getEntry("configuration/backend_configuration/locations/locations.csv"),
+			    "the Initializer tree should sit where the SDK's ContentHelper.installBackendConfig looks for it");
+			assertNull(zipFile.getEntry("configuration/locations/locations.csv"),
+			    "nothing directly under configuration/, which the SDK would skip without a word");
 			Properties content = new Properties();
 			try (InputStream in = zipFile.getInputStream(zipFile.getEntry("content.properties"))) {
 				content.load(in);
@@ -320,8 +322,8 @@ class MetadataExportServiceTest extends BaseModuleContextSensitiveTest {
 		
 		assertEquals(ExportStatus.COMPLETED, completed.getExportStatus());
 		try (ZipFile zipFile = new ZipFile(service.getBuildZip(completed))) {
-			assertNotNull(zipFile.getEntry("configuration/locations/locations.csv"));
-			assertNotNull(zipFile.getEntry("configuration/encountertypes/encounterTypes.csv"));
+			assertNotNull(zipFile.getEntry("configuration/backend_configuration/locations/locations.csv"));
+			assertNotNull(zipFile.getEntry("configuration/backend_configuration/encountertypes/encounterTypes.csv"));
 			assertNotNull(zipFile.getEntry("metadataexport-manifest.json"));
 			assertNotNull(zipFile.getEntry("content.properties"));
 		}

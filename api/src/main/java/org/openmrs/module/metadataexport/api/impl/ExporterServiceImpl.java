@@ -46,7 +46,7 @@ public class ExporterServiceImpl implements ExporterService {
 			}
 		}
 		exclusions(selected);
-		exportSeeds(outDir, seeds);
+		exportSeeds(new ExportContext(outDir), seeds);
 	}
 	
 	@Override
@@ -68,10 +68,9 @@ public class ExporterServiceImpl implements ExporterService {
 	}
 	
 	@Override
-	public ExportManifest exportSeeds(File outDir, Collection<? extends OpenmrsObject> seeds) throws IOException {
+	public ExportManifest exportSeeds(ExportContext context, Collection<? extends OpenmrsObject> seeds) throws IOException {
 		ExportManifest manifest = new Selector(registry).select(seeds);
 		
-		ExportContext context = new ExportContext(outDir);
 		for (Domain domain : manifest.getDomains()) {
 			writeDomain(registry.forDomain(domain), manifest.get(domain), context);
 		}

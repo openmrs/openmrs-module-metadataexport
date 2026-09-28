@@ -37,7 +37,7 @@ class XmlExporterTest {
 		config.appendChild(container);
 		document.appendChild(config);
 		
-		new XmlExporter().writeXml(document, Domain.GLOBAL_PROPERTIES, outDir, "globalProperties.xml");
+		new XmlExporter().writeXml(document, Domain.GLOBAL_PROPERTIES, new ExportContext(outDir), "globalProperties.xml");
 		
 		File written = new File(new File(outDir, "configuration"),
 		        Domain.GLOBAL_PROPERTIES.getName() + "/globalProperties.xml");

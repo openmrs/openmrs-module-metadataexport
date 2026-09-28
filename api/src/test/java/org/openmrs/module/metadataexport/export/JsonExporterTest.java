@@ -33,7 +33,7 @@ class JsonExporterTest {
 		document.put("name", "Formulaire d'essai — ខ្មែរ");
 		document.putObject("translations").put("Yes", "Oui");
 		
-		new JsonExporter().writeJson(document, Domain.AMPATH_FORMS, outDir, "test_form.json");
+		new JsonExporter().writeJson(document, Domain.AMPATH_FORMS, new ExportContext(outDir), "test_form.json");
 		
 		File written = new File(new File(outDir, "configuration"), Domain.AMPATH_FORMS.getName() + "/test_form.json");
 		assertTrue(written.exists(), "expected " + written);

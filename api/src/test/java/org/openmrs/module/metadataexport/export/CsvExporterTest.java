@@ -52,7 +52,7 @@ class CsvExporterTest {
 	void writeCsv_buildsUnionHeaderAndAlignsRows() throws Exception {
 		CsvExporter<Concept> exporter = new CsvExporter<>(Collections.singletonList(VARYING_COLUMNS), Domain.CONCEPTS);
 		
-		exporter.writeCsv(Arrays.asList(concept("c1"), concept("c2")), outDir, "test.csv");
+		exporter.writeCsv(Arrays.asList(concept("c1"), concept("c2")), new ExportContext(outDir), "test.csv");
 		
 		File csv = new File(new File(outDir, "configuration"), Domain.CONCEPTS.getName() + "/test.csv");
 		assertTrue(csv.exists(), "expected " + csv);
@@ -73,7 +73,7 @@ class CsvExporterTest {
 	void writeCsv_withOrderAppendsOrderHeaderAfterVersion() throws Exception {
 		CsvExporter<Concept> exporter = new CsvExporter<>(Collections.singletonList(VARYING_COLUMNS), Domain.CONCEPTS);
 		
-		exporter.writeCsv(Collections.singletonList(concept("c1")), outDir, "ordered.csv", 3000);
+		exporter.writeCsv(Collections.singletonList(concept("c1")), new ExportContext(outDir), "ordered.csv", 3000);
 		
 		File csv = new File(new File(outDir, "configuration"), Domain.CONCEPTS.getName() + "/ordered.csv");
 		try (CSVReader reader = new CSVReader(new FileReader(csv))) {
@@ -87,7 +87,7 @@ class CsvExporterTest {
 	void writeCsv_withNullOrderLeavesHeaderUnchanged() throws Exception {
 		CsvExporter<Concept> exporter = new CsvExporter<>(Collections.singletonList(VARYING_COLUMNS), Domain.CONCEPTS);
 		
-		exporter.writeCsv(Collections.singletonList(concept("c1")), outDir, "unordered.csv", null);
+		exporter.writeCsv(Collections.singletonList(concept("c1")), new ExportContext(outDir), "unordered.csv", null);
 		
 		File csv = new File(new File(outDir, "configuration"), Domain.CONCEPTS.getName() + "/unordered.csv");
 		try (CSVReader reader = new CSVReader(new FileReader(csv))) {

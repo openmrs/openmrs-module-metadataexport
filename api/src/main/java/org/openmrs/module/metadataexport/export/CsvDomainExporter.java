@@ -50,7 +50,7 @@ public abstract class CsvDomainExporter<T extends OpenmrsObject> implements Doma
 	public void export(Collection<T> instances, ExportContext context) throws IOException {
 		CsvExporter<T> exporter = new CsvExporter<>(chain(), getDomain());
 		for (Map.Entry<String, Collection<T>> file : partition(instances).entrySet()) {
-			exporter.writeCsv(file.getValue(), context.getOutputDir(), file.getKey(), order(file.getKey()));
+			exporter.writeCsv(file.getValue(), context, file.getKey(), order(file.getKey()));
 		}
 	}
 }

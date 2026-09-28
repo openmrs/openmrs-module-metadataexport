@@ -206,10 +206,10 @@ package with *no entries at all* exports every registered domain; `GET /domains`
 domains are registered on the server. Package
 definitions are stored in the database; every build of a package gets an incrementing version, a
 status (`QUEUED` → `RUNNING` → `COMPLETED`/`FAILED`), and a downloadable zip laid out as an
-OpenMRS content package: the `configuration/` tree, a `content.properties` carrying the package
-`name` and build number as `version`, and a `metadataexport-manifest.json` recording exactly what
-was exported and, for every domain exported in full, the rows that were left out and why (its
-`excluded` section).
+OpenMRS content package: the Initializer tree under `configuration/backend_configuration/` (where
+the OpenMRS SDK installs it from), a `content.properties` carrying the package `name` and build
+number as `version`, and a `metadataexport-manifest.json` recording exactly what was exported and,
+for every domain exported in full, the rows that were left out and why (its `excluded` section).
 
 Exclusions are rows a domain has on the server but never exports because Initializer could not load
 them on a target: retired queues, voided cohort types, identifier sources without a user, superseded
@@ -351,7 +351,7 @@ For an XML domain (Initializer loads some domains, such as global properties, fr
 CSV), extend `XmlDomainExporter<T>` instead of `CsvDomainExporter<T>`. Build the DOM in
 `toDocuments(instances)` — keyed by file name so a domain can emit one file or many — and use the
 inherited `newDocument()` to get a `Document` without JAXP boilerplate; the base handles indentation,
-encoding, and placement under `configuration/<domain>/`:
+encoding, and placement in the domain directory the `ExportContext` chooses:
 
 ```java
 @Component
@@ -384,7 +384,7 @@ For a JSON domain (Initializer loads AMPATH forms and their translations from on
 form), extend `JsonDomainExporter<T>`. Build the Jackson trees in `toDocuments(instances)` — again
 keyed by file name, and leaving an instance out of the map is how you skip it — either by parsing
 stored content with Jackson or from scratch with the inherited `newObject()`; the base handles
-pretty-printing, encoding, and placement under `configuration/<domain>/`:
+pretty-printing, encoding, and placement in the domain directory the `ExportContext` chooses:
 
 ```java
 @Component
@@ -409,8 +409,10 @@ public class AmpathFormDomainExporter extends JsonDomainExporter<Form> {
 ```
 
 Any other domain whose files are neither CSV, XML nor JSON (for example the address hierarchy's
-whole-config directory) skips the base classes and implements `DomainExporter` directly, writing
-whatever files it likes in `export(bucket, context)`.
+whole-config directory) skips the base classes and implements `DomainExporter` directly. Its
+`export(bucket, context)` must write under `context.domainDir(getDomain())` — that is what puts the
+files where the startup export and a package zip each need them — as
+`AddressHierarchyDomainExporter` does.
 
 Two optional hooks on `DomainExporter` matter only when a domain does not export every row it has.
 Override `exclusions()` to return the rows it leaves out, uuid to a sentence that names the row and

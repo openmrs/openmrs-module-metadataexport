@@ -40,7 +40,7 @@ public abstract class XmlDomainExporter<T extends OpenmrsObject> implements Doma
 	public void export(Collection<T> instances, ExportContext context) throws IOException {
 		XmlExporter xmlExporter = new XmlExporter();
 		for (Map.Entry<String, Document> file : toDocuments(instances).entrySet()) {
-			xmlExporter.writeXml(file.getValue(), getDomain(), context.getOutputDir(), file.getKey());
+			xmlExporter.writeXml(file.getValue(), getDomain(), context, file.getKey());
 		}
 	}
 	

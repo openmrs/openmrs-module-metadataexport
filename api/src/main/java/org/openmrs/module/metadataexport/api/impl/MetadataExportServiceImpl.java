@@ -22,6 +22,7 @@ import org.openmrs.module.metadataexport.api.model.ExportPackage;
 import org.openmrs.module.metadataexport.api.model.ExportPackageEntry;
 import org.openmrs.module.metadataexport.api.model.ExportStatus;
 import org.openmrs.module.metadataexport.export.BuildManifest;
+import org.openmrs.module.metadataexport.export.ExportContext;
 import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
 import org.openmrs.module.metadataexport.export.ZipUtils;
@@ -151,7 +152,7 @@ public class MetadataExportServiceImpl extends BaseOpenmrsService implements Met
 		    String.valueOf(build.getVersion())).toFile();
 		File contentDir = new File(versionDir, "content");
 		try {
-			ExportManifest exported = exporterService.exportSeeds(contentDir, seeds);
+			ExportManifest exported = exporterService.exportSeeds(ExportContext.forContentPackage(contentDir), seeds);
 			
 			String manifestJson = BuildManifest.of(exportPackage, build, exported, excluded).toJson();
 			Files.createDirectories(contentDir.toPath());

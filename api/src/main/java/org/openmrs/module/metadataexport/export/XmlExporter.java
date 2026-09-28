@@ -22,8 +22,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Low-level writer for XML domains: serializes an already-built DOM {@link Document} to
- * {@code configuration/<domain>/<fileName>} beneath the export root, indented and UTF-8 encoded.
+ * Low-level writer for XML domains: serializes an already-built DOM {@link Document} to the domain
+ * directory of an {@link ExportContext}, indented and UTF-8 encoded.
  * <p>
  * The XML analogue of {@link CsvExporter}, but the division of labour differs: {@code CsvExporter}
  * builds the document itself from a line-exporter chain, whereas here the caller hands in a
@@ -32,8 +32,8 @@ import java.io.IOException;
  */
 public class XmlExporter {
 	
-	public void writeXml(Document document, Domain domain, File outDir, String fileName) throws IOException {
-		File target = new File(ExportContext.domainDir(outDir, domain), fileName);
+	public void writeXml(Document document, Domain domain, ExportContext context, String fileName) throws IOException {
+		File target = new File(context.domainDir(domain), fileName);
 		try {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
