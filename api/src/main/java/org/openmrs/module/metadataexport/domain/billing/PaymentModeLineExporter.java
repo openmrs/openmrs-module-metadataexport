@@ -34,7 +34,7 @@ public class PaymentModeLineExporter extends MetadataLineExporter<PaymentMode> {
 		
 		List<String> attributes = new ArrayList<>();
 		for (PaymentModeAttributeType pt : paymentMode.getAttributeTypes()) {
-			if (BooleanUtils.isTrue(pt.getRetired())) {
+			if (pt == null || BooleanUtils.isTrue(pt.getRetired())) {
 				continue;
 			}
 			
