@@ -9,24 +9,37 @@
  */
 package org.openmrs.module.metadataexport.domain.billing;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.openmrs.Concept;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.BillableServiceService;
 import org.openmrs.module.billing.api.model.BillableService;
 import org.openmrs.module.billing.api.model.BillableServiceStatus;
+import org.openmrs.module.billing.api.search.BillableServiceSearch;
+import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.initializer.api.CsvFailingLines;
+import org.openmrs.module.initializer.api.billing.BillableServicesCsvParser;
+import org.openmrs.module.initializer.api.billing.BillableServicesLineProcessor;
+import org.openmrs.module.metadataexport.export.ExportContext;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BillableServiceDomainExporterIntegrationTest extends BaseModuleContextSensitiveTest {
 	
@@ -108,11 +121,86 @@ public class BillableServiceDomainExporterIntegrationTest extends BaseModuleCont
 		    exclusions.toString());
 	}
 	
+	@Test
+	void export_thenReimportOntoAFreshTarget(@TempDir File outDir) throws Exception {
+		exporter.export(exporter.getAllInstances(), new ExportContext(outDir));
+		purgeAllBillableServices();
+		assertTrue(getAllBillableServices(true).isEmpty(), "the target must start without the services");
+		
+		CsvFailingLines failed = replayThroughInitializer(outDir);
+		
+		assertTrue(failed.getFailingLines().isEmpty(), describe(failed));
+		BillableService live = billableServiceService().getBillableServiceByUuid(LIVE_UUID);
+		assertNotNull(live, "the live service must come back");
+		assertEquals("General Consultation", live.getName());
+		assertEquals("Gen Con", live.getShortName());
+		assertEquals(BillableServiceStatus.ENABLED, live.getServiceStatus());
+		assertFalse(live.getRetired());
+		assertEquals(1, getLiveBillableServices().size(), "only the live service is exported, so only it must reappear");
+	}
+	
+	@Test
+	void export_thenReimportOntoATargetThatAlreadyHasTheRows(@TempDir File outDir) throws Exception {
+		exporter.export(exporter.getAllInstances(), new ExportContext(outDir));
+		
+		CsvFailingLines failed = replayThroughInitializer(outDir);
+		
+		assertTrue(failed.getFailingLines().isEmpty(), describe(failed));
+		assertEquals(1, getLiveBillableServices().size(), "existing rows are matched by uuid, not duplicated");
+		assertFalse(billableServiceService().getBillableServiceByUuid(LIVE_UUID).getRetired());
+		assertTrue(billableServiceService().getBillableServiceByUuid(RETIRED_UUID).getRetired(),
+		    "the retired service is not in the file, so the import must leave it alone");
+	}
+	
+	private void purgeAllBillableServices() {
+		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
+		for (BillableService svc : getAllBillableServices(true)) {
+			sessionFactory.getCurrentSession().delete(svc);
+		}
+		sessionFactory.getCurrentSession().flush();
+	}
+	
+	private static CsvFailingLines replayThroughInitializer(File outDir) throws Exception {
+		File csv = outDir.toPath()
+		        .resolve(Paths.get("configuration", Domain.BILLABLE_SERVICES.getName(), "billableServices.csv")).toFile();
+		assertTrue(csv.exists(), "expected " + csv);
+		BillableServicesCsvParser parser = new BillableServicesCsvParser(billableServiceService(),
+		        new BillableServicesLineProcessor(Context.getConceptService()));
+		try (InputStream in = new FileInputStream(csv)) {
+			parser.setInputStream(in);
+			List<String[]> lines = parser.getLines();
+			assertEquals(1, lines.size(), "only the live service must be in the file");
+			return parser.process(lines);
+		}
+	}
+	
+	private static String describe(CsvFailingLines failed) {
+		return failed.getErrorDetails().stream()
+		        .map(d -> d.getCsvLine().prettyPrint() + " -> " + ExceptionUtils.getRootCauseMessage(d.getException()))
+		        .collect(Collectors.joining("\n", "Iniz rejected exported lines:\n", ""));
+	}
+	
+	private static List<BillableService> getAllBillableServices(boolean includeRetired) {
+		return billableServiceService()
+		        .getBillableServices(new BillableServiceSearch(null, null, null, null, null, includeRetired), null);
+	}
+	
+	private static List<BillableService> getLiveBillableServices() {
+		return getAllBillableServices(false);
+	}
+	
+	private static BillableServiceService billableServiceService() {
+		return Context.getService(BillableServiceService.class);
+	}
+	
 	private BillableService createBillableService(String uuid, String name, String shortName) {
 		BillableService billableService = new BillableService();
 		billableService.setUuid(uuid);
 		billableService.setName(name);
 		billableService.setShortName(shortName);
+		Concept concept = Context.getConceptService().getConcept(7);
+		billableService.setConcept(concept);
+		billableService.setServiceType(concept);
 		billableService.setServiceStatus(BillableServiceStatus.ENABLED);
 		return billableService;
 	}

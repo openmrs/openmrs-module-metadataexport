@@ -9,7 +9,10 @@
  */
 package org.openmrs.module.metadataexport.domain.billing;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.billing.api.BillableServiceService;
@@ -18,13 +21,24 @@ import org.openmrs.module.billing.api.PaymentModeService;
 import org.openmrs.module.billing.api.model.BillableService;
 import org.openmrs.module.billing.api.model.CashierItemPrice;
 import org.openmrs.module.billing.api.model.PaymentMode;
+import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.initializer.api.CsvFailingLines;
+import org.openmrs.module.initializer.api.billing.CashierItemPriceCsvParser;
+import org.openmrs.module.initializer.api.billing.CashierItemPriceLineProcessor;
+import org.openmrs.module.metadataexport.export.ExportContext;
 import org.openmrs.module.stockmanagement.api.StockManagementService;
 import org.openmrs.module.stockmanagement.api.model.StockItem;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -238,6 +252,70 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 				}
 			}
 		}
+	}
+	
+	@Test
+	void export_thenReimportOntoAFreshTarget(@TempDir File outDir) throws Exception {
+		seedValidPrice(VALID_UUID, "valid-price");
+		exporter.export(exporter.getAllInstances(), new ExportContext(outDir));
+		purgeAllCashierItemPrices();
+		assertTrue(getCashierItemPriceService().getCashierItemPrices(true).isEmpty(),
+		    "the target must start without the prices");
+		
+		CsvFailingLines failed = replayThroughInitializer(outDir);
+		
+		assertTrue(failed.getFailingLines().isEmpty(), describe(failed));
+		CashierItemPrice price = getCashierItemPriceService().getCashierItemPriceByUuid(VALID_UUID);
+		assertNotNull(price, "the valid price must come back");
+		assertEquals("valid-price", price.getName());
+		assertEquals(new BigDecimal("50.00"), price.getPrice());
+		assertEquals(VALID_PM_UUID, price.getPaymentMode().getUuid());
+		assertEquals(VALID_SVC_UUID, price.getBillableService().getUuid());
+		assertEquals(1, getCashierItemPriceService().getCashierItemPrices(true).size(),
+		    "only the valid price must reappear");
+	}
+	
+	@Test
+	void export_thenReimportOntoATargetThatAlreadyHasTheRows(@TempDir File outDir) throws Exception {
+		seedValidPrice(VALID_UUID, "valid-price");
+		exporter.export(exporter.getAllInstances(), new ExportContext(outDir));
+		
+		CsvFailingLines failed = replayThroughInitializer(outDir);
+		
+		assertTrue(failed.getFailingLines().isEmpty(), describe(failed));
+		assertEquals(1, getCashierItemPriceService().getCashierItemPrices(true).size(),
+		    "existing rows are matched by uuid, not duplicated");
+		assertEquals(VALID_PM_UUID,
+		    getCashierItemPriceService().getCashierItemPriceByUuid(VALID_UUID).getPaymentMode().getUuid());
+	}
+	
+	private void purgeAllCashierItemPrices() {
+		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
+		for (CashierItemPrice p : getCashierItemPriceService().getCashierItemPrices(true)) {
+			sessionFactory.getCurrentSession().delete(p);
+		}
+		sessionFactory.getCurrentSession().flush();
+	}
+	
+	private CsvFailingLines replayThroughInitializer(File outDir) throws Exception {
+		File csv = outDir.toPath()
+		        .resolve(Paths.get("configuration", Domain.CASHIER_ITEM_PRICES.getName(), "cashierItemPrices.csv")).toFile();
+		assertTrue(csv.exists(), "expected " + csv);
+		CashierItemPriceCsvParser parser = new CashierItemPriceCsvParser(getCashierItemPriceService(),
+		        new CashierItemPriceLineProcessor(Context.getService(PaymentModeService.class),
+		                Context.getService(StockManagementService.class), Context.getService(BillableServiceService.class)));
+		try (InputStream in = new FileInputStream(csv)) {
+			parser.setInputStream(in);
+			List<String[]> lines = parser.getLines();
+			assertEquals(1, lines.size(), "only the valid price must be in the file");
+			return parser.process(lines);
+		}
+	}
+	
+	private static String describe(CsvFailingLines failed) {
+		return failed.getErrorDetails().stream()
+		        .map(d -> d.getCsvLine().prettyPrint() + " -> " + ExceptionUtils.getRootCauseMessage(d.getException()))
+		        .collect(Collectors.joining("\n", "Iniz rejected exported lines:\n", ""));
 	}
 	
 	private void seedValidPrice(String uuid, String name) {
