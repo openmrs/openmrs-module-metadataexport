@@ -77,7 +77,7 @@ class DrugExportersTest {
 	}
 	
 	@Test
-	void drugLine_retiredDrugEmitsUuidAndFlagOnly() {
+	void drugLine_retiredDrugEmitsFullRowPlusFlag() {
 		Drug drug = new Drug();
 		drug.setUuid("old");
 		drug.setName("Discontinued");
@@ -89,7 +89,8 @@ class DrugExportersTest {
 		
 		assertEquals("old", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Discontinued", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 	
 	@Test
@@ -123,7 +124,7 @@ class DrugExportersTest {
 	}
 	
 	@Test
-	void ingredients_skippedForRetiredDrug() {
+	void ingredients_exportedForRetiredDrugToo() {
 		Drug drug = new Drug();
 		drug.setUuid("old");
 		drug.setRetired(true);
@@ -132,7 +133,8 @@ class DrugExportersTest {
 		ExportLine line = new ExportLine();
 		new DrugIngredientsExporter().export(drug, line);
 		
-		assertTrue(line.getHeaders().isEmpty());
+		assertEquals("ingredient-a", line.get("ingredient 1"),
+		    "a fresh target creates the retired drug from its row, ingredients included");
 	}
 	
 	@Test

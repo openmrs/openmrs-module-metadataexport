@@ -15,12 +15,14 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class OrderTypeDomainExporter extends CsvDomainExporter<OrderType> {
@@ -47,6 +49,20 @@ public class OrderTypeDomainExporter extends CsvDomainExporter<OrderType> {
 	
 	@Override
 	public Collection<OrderType> getAllInstances() {
+		Collection<OrderType> all = allRows();
+		return DomainExporter.without(all, DomainExporter.retiredNameClashes(all, "order type"));
+	}
+	
+	/**
+	 * Retired rows a same-named row would absorb on import; see
+	 * {@link DomainExporter#retiredNameClashes}.
+	 */
+	@Override
+	public Map<String, String> exclusions() {
+		return DomainExporter.retiredNameClashes(allRows(), "order type");
+	}
+	
+	private static Collection<OrderType> allRows() {
 		return Context.getOrderService().getOrderTypes(true);
 	}
 	

@@ -14,7 +14,6 @@ import org.openmrs.RelationshipType;
 import org.openmrs.module.metadataexport.export.ExportLine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class RelationshipTypeLineExporterTest {
 	
@@ -41,11 +40,13 @@ public class RelationshipTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredTypeEmitsUuidAndFlagOnly() {
+	void retiredTypeEmitsFullRowPlusFlag() {
 		RelationshipType relationshipType = new RelationshipType();
 		relationshipType.setUuid("c86d9979-b8ac-4d8c-85cf-cc04e7f16315");
 		relationshipType.setName("Nephew");
 		relationshipType.setDescription("A relationship of an uncle and his nephew");
+		relationshipType.setaIsToB("Uncle");
+		relationshipType.setbIsToA("Nephew");
 		relationshipType.setRetired(true);
 		
 		ExportLine exportLine = new ExportLine();
@@ -53,6 +54,9 @@ public class RelationshipTypeLineExporterTest {
 		
 		assertEquals(relationshipType.getUuid(), exportLine.get("uuid"));
 		assertEquals("true", exportLine.get("void/retire"));
-		assertNull(exportLine.get("description"));
+		assertEquals("A relationship of an uncle and his nephew", exportLine.get("description"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("Uncle", exportLine.get("a is to b"));
+		assertEquals("Nephew", exportLine.get("b is to a"));
 	}
 }

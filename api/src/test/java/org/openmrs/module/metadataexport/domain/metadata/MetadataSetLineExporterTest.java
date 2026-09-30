@@ -35,7 +35,7 @@ class MetadataSetLineExporterTest {
 	}
 	
 	@Test
-	void retiredSetEmitsUuidAndFlagOnly() {
+	void retiredSetEmitsFullRowPlusFlag() {
 		MetadataSet metadataSet = new MetadataSet();
 		metadataSet.setUuid("f0ebcb99-272d-41b7-4c67-078de9342492");
 		metadataSet.setName("Old Set");
@@ -47,7 +47,8 @@ class MetadataSetLineExporterTest {
 		
 		assertEquals("f0ebcb99-272d-41b7-4c67-078de9342492", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("description"), "retired rows carry only uuid + flag");
+		assertEquals("Old Set", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("No longer used", line.get("description"));
 	}
 }

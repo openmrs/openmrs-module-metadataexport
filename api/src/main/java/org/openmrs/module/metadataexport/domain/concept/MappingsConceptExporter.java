@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptMap;
 import org.openmrs.ConceptReferenceTerm;
@@ -32,10 +31,6 @@ public class MappingsConceptExporter extends BaseLineExporter<Concept> {
 	
 	@Override
 	public void export(Concept concept, ExportLine line) {
-		if (BooleanUtils.isTrue(concept.getRetired())) {
-			return;
-		}
-		
 		Map<String, String> codesByHeader = new LinkedHashMap<>();
 		for (ConceptMap map : concept.getConceptMappings()) {
 			ConceptReferenceTerm term = map.getConceptReferenceTerm();

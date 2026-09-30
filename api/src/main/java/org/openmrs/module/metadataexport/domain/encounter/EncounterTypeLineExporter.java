@@ -16,7 +16,7 @@ import org.openmrs.module.metadataexport.export.MetadataLineExporter;
 
 /**
  * Inverse of Initializer's EncounterTypeLineProcessor: uuid, name, description, and the view/edit
- * privileges (by name). A retired type is emitted as uuid + flag only.
+ * privileges (by name). A retired type carries the same columns plus the {@code void/retire} flag.
  */
 public class EncounterTypeLineExporter extends MetadataLineExporter<EncounterType> {
 	

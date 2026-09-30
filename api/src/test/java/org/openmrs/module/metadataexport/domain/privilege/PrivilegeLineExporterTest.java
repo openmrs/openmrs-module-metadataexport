@@ -32,7 +32,7 @@ class PrivilegeLineExporterTest {
 	}
 	
 	@Test
-	void retiredPrivilegeEmitsUuidAndFlagOnly() {
+	void retiredPrivilegeEmitsFullRowPlusFlag() {
 		Privilege privilege = new Privilege("Old Privilege");
 		privilege.setUuid("old-uuid");
 		privilege.setRetired(true);
@@ -41,7 +41,8 @@ class PrivilegeLineExporterTest {
 		new PrivilegeLineExporter().writeLine(privilege, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("privilege name"), "retired rows carry only uuid + flag");
+		assertEquals("Old Privilege", line.get("privilege name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 	
 	@Test

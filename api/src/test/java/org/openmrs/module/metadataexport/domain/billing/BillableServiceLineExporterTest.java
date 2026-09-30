@@ -77,7 +77,7 @@ public class BillableServiceLineExporterTest {
 	}
 	
 	@Test
-	void exportsRetiredInstanceWithVoidRetireFlagOnly() {
+	void exportsRetiredInstanceWithAllColumns() {
 		BillableService billableService = new BillableService();
 		billableService.setUuid("550e8400-e29b-41d4-a716-446655440003");
 		billableService.setName("retired test");
@@ -88,10 +88,8 @@ public class BillableServiceLineExporterTest {
 		new BillableServiceLineExporter().writeLine(billableService, line);
 		assertEquals("550e8400-e29b-41d4-a716-446655440003", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("Service Name"));
-		assertNull(line.get("Short Name"));
-		assertNull(line.get("Concept"));
-		assertNull(line.get("Service Type"));
-		assertNull(line.get("Service Status"));
+		assertEquals("retired test", line.get("Service Name"),
+		    "the domain exporter keeps retired services out of the file; the line exporter itself writes the full row");
+		assertEquals("ret short", line.get("Short Name"));
 	}
 }

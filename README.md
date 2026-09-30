@@ -148,10 +148,9 @@ Currently supported domains:
 * Appointment service definitions (name, description, duration, start time, end time, max load,
   speciality, location, label colour): the speciality and location are written by uuid and pulled
   in via cross-domain closure; start and end times are written as `HH:mm`, the only format
-  Initializer parses, so seconds are dropped; voided definitions are not exported by design:
-  Initializer could re-void one by uuid, but on a fresh target a voided row bootstraps blank and
-  fails the not-null name, and the appointments module rejects a save whose name is already held
-  by a live definition; weekly availability and the initial appointment status are not exported
+  Initializer parses, so seconds are dropped; voided definitions are not exported by design: the
+  appointments module rejects a save whose name is already held by a live definition, so a voided
+  row collides with the live definition that replaced it; weekly availability and the initial appointment status are not exported
   (Initializer has no column for them); requires the Bahmni appointments module (1.2.1+)
 * Appointment service types (name, duration, service definition): the owning service definition is
   written by uuid and pulled in via cross-domain closure; voided types and the types of voided
@@ -209,6 +208,32 @@ The export is built in two separated stages:
 2. Export. Each `DomainExporter` writes its bucket in its own format. The service holds a registry
    of these and contains no per-domain logic.
 
+Retired (or voided) objects are exported as complete rows with the `void/retire` flag set, not as
+uuid-only stubs. Initializer only skips a retired row's columns when the target already has the
+object; on a target that lacks it, Initializer creates the object from the row and then retires
+it, so a stub would fail validation there and take down every live row that references the
+object (for example a concept whose answer is a retired concept).
+
+Two kinds of retired rows are still left out and recorded as exclusions (see "Export packages
+(REST)"). First, rows Initializer cannot round-trip at all: it cannot create a retired AMPATH form
+or a voided cohort type, and it cannot find an already-present retired queue or cohort attribute
+type (its lookups exclude retired rows, so the re-import inserts a duplicate and fails); retired
+billable services (with the item prices that point at them) and voided appointment service
+definitions and their types are left out for the reasons given in their bullets above. Second, in
+the domains whose Initializer parser falls back to a lookup by name when a row's uuid is unknown on
+the target (concept classes, sources and map types, encounter types and roles, visit types, patient
+identifier types, order types, attribute types and drugs), a retired row that shares its name with
+another row of the domain (possible wherever the table does not itself forbid duplicate names) is
+left out: depending on load order it would either retire the live row of
+that name or be merged into it, and its own uuid would never exist on the target. Note that the same
+fallback means a package can retire a same-named object the target created under a different uuid;
+the exporter cannot prevent that. Cross-domain closure never pulls an excluded row back in: a live
+row that references one (a concept whose class is an excluded retired class, say) is exported as it
+is, the log warns about the pair, and the build manifest lists the excluded row with its reason.
+Where the reference is written by name (concept class, mapping source and map type, form encounter
+type) it resolves to the live same-named row on the target; where it is written by uuid it fails to
+resolve there, which the warning tells you in advance.
+
 Export packages (REST)
 ----------------------
 Named *export packages* can be defined and built over REST. A package describes what to export,
@@ -224,7 +249,7 @@ for every domain exported in full, the rows that were left out and why (its `exc
 
 Exclusions are rows a domain has on the server but never exports because Initializer could not load
 them on a target: retired queues, voided cohort types, identifier sources without a user, superseded
-form versions. A package that names an excluded row by uuid does not silently drop it: the build
+form versions, retired rows whose name another row holds in a domain Initializer resolves by name. A package that names an excluded row by uuid does not silently drop it: the build
 fails with the reason, separately from any uuid the domain does not know at all.
 
 Builds run asynchronously on a daemon thread; trigger, then poll. Packages and builds are
@@ -334,8 +359,10 @@ public class EncounterTypeDomainExporter extends CsvDomainExporter<EncounterType
 2. Write the line exporter(s). Each writes header to value pairs into an `ExportLine`; it is the
    inverse of Initializer's matching `BaseLineProcessor.fill(...)`. Reuse Initializer's header
    constants where they are `public` so the two sides cannot drift. For the primary exporter of a
-   domain, extend `MetadataLineExporter<T>`: it writes the uuid and the `void/retire` short-circuit
-   for you, so `export` only handles the live, domain-specific columns:
+   domain, extend `MetadataLineExporter<T>`: it writes the uuid and, for a retired object, the
+   `void/retire` flag, then calls `export` for every object (retired ones included, so a target that
+   lacks the object can create it before retiring it), so `export` only handles the domain-specific
+   columns:
 
 ```java
 public class EncounterTypeLineExporter extends MetadataLineExporter<EncounterType> {

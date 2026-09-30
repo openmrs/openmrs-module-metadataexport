@@ -20,17 +20,12 @@ public class MetadataSetMemberLineExporter extends MetadataLineExporter<Metadata
 	public static final String HEADER_METADATA_UUID = "metadata uuid";
 	
 	@Override
-	protected void writeRetiredDiscriminators(MetadataSetMember member, ExportLine line) {
-		line.put(MetadataSetMemberLineProcessor.METADATA_CLASS, member.getMetadataClass());
-		line.put(HEADER_METADATA_UUID, member.getMetadataUuid());
-		line.put(MetadataSetMemberLineProcessor.METADATA_SET_UUID, member.getMetadataSet().getUuid());
-	}
-	
-	@Override
 	public void export(MetadataSetMember member, ExportLine line) {
 		line.put(BaseLineProcessor.HEADER_NAME, member.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, member.getDescription());
 		line.put(MetadataSetMemberLineProcessor.SORT_WEIGHT, member.getSortWeight());
-		writeRetiredDiscriminators(member, line);
+		line.put(MetadataSetMemberLineProcessor.METADATA_CLASS, member.getMetadataClass());
+		line.put(HEADER_METADATA_UUID, member.getMetadataUuid());
+		line.put(MetadataSetMemberLineProcessor.METADATA_SET_UUID, member.getMetadataSet().getUuid());
 	}
 }

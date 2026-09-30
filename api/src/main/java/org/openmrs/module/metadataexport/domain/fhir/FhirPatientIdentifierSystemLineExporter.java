@@ -30,13 +30,4 @@ public class FhirPatientIdentifierSystemLineExporter extends MetadataLineExporte
 		}
 		line.put(URL_HEADER, system.getUrl());
 	}
-	
-	/**
-	 * Iniz matches existing rows by patient identifier type (not uuid) and requires that column — plus
-	 * the url when the target has no row for that identifier type yet — even on retire rows.
-	 */
-	@Override
-	protected void writeRetiredDiscriminators(FhirPatientIdentifierSystem system, ExportLine line) {
-		export(system, line);
-	}
 }

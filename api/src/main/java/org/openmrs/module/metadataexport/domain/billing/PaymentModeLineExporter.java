@@ -49,9 +49,4 @@ public class PaymentModeLineExporter extends MetadataLineExporter<PaymentMode> {
 			line.put(HEADER_ATTRIBUTES, String.join(";", attributes));
 		}
 	}
-	
-	@Override
-	protected void writeRetiredDiscriminators(PaymentMode paymentMode, ExportLine line) {
-		export(paymentMode, line);
-	}
 }

@@ -49,7 +49,7 @@ class ConceptMapTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredTypeEmitsUuidAndFlagOnly() {
+	void retiredTypeEmitsFullRowPlusFlag() {
 		ConceptMapType type = new ConceptMapType();
 		type.setUuid("old");
 		type.setName("Old");
@@ -59,6 +59,7 @@ class ConceptMapTypeLineExporterTest {
 		new ConceptMapTypeLineExporter().writeLine(type, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

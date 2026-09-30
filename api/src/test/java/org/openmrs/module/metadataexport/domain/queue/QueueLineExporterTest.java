@@ -66,7 +66,7 @@ class QueueLineExporterTest {
 	}
 	
 	@Test
-	void retiredQueueEmitsUuidAndFlagOnly() {
+	void retiredQueueEmitsFullRowPlusFlag() {
 		Queue queue = triageQueue();
 		queue.setRetired(true);
 		
@@ -75,8 +75,8 @@ class QueueLineExporterTest {
 		
 		assertEquals(QUEUE_UUID, line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows never reach the file; if one leaked it would be the bare default");
-		assertNull(line.get("service"));
+		assertEquals("Triage Queue", line.get("name"),
+		    "the domain exporter keeps retired queues out of the file; the line exporter itself writes the full row");
 	}
 	
 	private static Queue triageQueue() {

@@ -27,9 +27,4 @@ public class CashPointLineExporter extends MetadataLineExporter<CashPoint> {
 			line.put(HEADER_LOCATION, cashPoint.getLocation().getUuid());
 		}
 	}
-	
-	@Override
-	protected void writeRetiredDiscriminators(CashPoint cashPoint, ExportLine line) {
-		export(cashPoint, line);
-	}
 }

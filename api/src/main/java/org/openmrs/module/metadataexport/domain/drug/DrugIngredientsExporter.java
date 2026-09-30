@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.drug;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugIngredient;
@@ -43,10 +42,6 @@ public class DrugIngredientsExporter extends BaseLineExporter<Drug> {
 	
 	@Override
 	public void export(Drug drug, ExportLine line) {
-		if (BooleanUtils.isTrue(drug.getRetired())) {
-			return;
-		}
-		
 		List<DrugIngredient> ingredients = drug.getIngredients().stream()
 		        .sorted(Comparator.comparing((DrugIngredient i) -> i.getIngredient().getUuid()))
 		        .collect(Collectors.toList());

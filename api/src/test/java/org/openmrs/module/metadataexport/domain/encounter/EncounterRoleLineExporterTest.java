@@ -47,7 +47,7 @@ class EncounterRoleLineExporterTest {
 	}
 	
 	@Test
-	void retiredRoleEmitsUuidAndFlagOnly() {
+	void retiredRoleEmitsFullRowPlusFlag() {
 		EncounterRole role = new EncounterRole();
 		role.setUuid("old");
 		role.setName("Old Role");
@@ -59,7 +59,8 @@ class EncounterRoleLineExporterTest {
 		
 		assertEquals("old", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("description"), "retired rows carry only uuid + flag");
+		assertEquals("Old Role", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("no longer used", line.get("description"));
 	}
 }

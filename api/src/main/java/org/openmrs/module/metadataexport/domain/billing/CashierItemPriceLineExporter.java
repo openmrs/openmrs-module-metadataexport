@@ -39,9 +39,4 @@ public class CashierItemPriceLineExporter extends MetadataLineExporter<CashierIt
 			line.put(HEADER_BILLABLE_SERVICE, itemPrice.getBillableService().getUuid());
 		}
 	}
-	
-	@Override
-	protected void writeRetiredDiscriminators(CashierItemPrice itemPrice, ExportLine line) {
-		export(itemPrice, line);
-	}
 }

@@ -15,7 +15,6 @@ import org.openmrs.Privilege;
 import org.openmrs.module.metadataexport.export.ExportLine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class EncounterTypeLineExporterTest {
 	
@@ -39,7 +38,7 @@ class EncounterTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredTypeEmitsUuidAndFlagOnly() {
+	void retiredTypeEmitsFullRowPlusFlag() {
 		EncounterType type = new EncounterType();
 		type.setUuid("old");
 		type.setName("Old");
@@ -49,6 +48,7 @@ class EncounterTypeLineExporterTest {
 		new EncounterTypeLineExporter().writeLine(type, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

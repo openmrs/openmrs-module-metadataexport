@@ -46,7 +46,7 @@ class ProgramLineExporterTest {
 	}
 	
 	@Test
-	void retiredProgramEmitsUuidAndFlagOnly() {
+	void retiredProgramEmitsFullRowPlusFlag() {
 		Program program = new Program();
 		program.setUuid("28f3da50-3f56-4e4e-93cd-66f334970480");
 		program.setName("Ayurvedic Program");
@@ -60,10 +60,11 @@ class ProgramLineExporterTest {
 		
 		assertEquals("28f3da50-3f56-4e4e-93cd-66f334970480", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("description"), "retired rows carry only uuid + flag");
-		assertNull(line.get("program concept"), "retired rows carry only uuid + flag");
-		assertNull(line.get("outcomes concept"), "retired rows carry only uuid + flag");
+		assertEquals("Ayurvedic Program", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("Ayurvedic Program", line.get("description"));
+		assertEquals("ayurvedic-program-concept-uuid", line.get("program concept"));
+		assertEquals("ayurvedic-program-outcomes-concept-uuid", line.get("outcomes concept"));
 	}
 	
 	@Test

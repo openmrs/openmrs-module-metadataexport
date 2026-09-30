@@ -46,7 +46,7 @@ class MetadataTermMappingLineExporterTest {
 	}
 	
 	@Test
-	void retiredMappingEmitsUuidFlagAndDiscriminators() {
+	void retiredMappingEmitsFullRowPlusFlag() {
 		MetadataTermMapping mapping = new MetadataTermMapping();
 		mapping.setUuid("5f84b986-232d-475b-aad2-2094306bd655");
 		mapping.setMetadataSource(source("org.openmrs.module.emrapi"));
@@ -60,8 +60,6 @@ class MetadataTermMappingLineExporterTest {
 		
 		assertEquals("5f84b986-232d-475b-aad2-2094306bd655", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		// MetadataTermMappingsLineProcessor.fill reads all four with get(header, true), so every one
-		// must survive the retired short-circuit or the row fails (or bootstraps blank) on import.
 		assertEquals("emr.extraPatientIdentifierTypes", line.get("mapping code"));
 		assertEquals("org.openmrs.module.emrapi", line.get("mapping source"));
 		assertEquals("org.openmrs.module.metadatamapping.MetadataSet", line.get("metadata class name"));

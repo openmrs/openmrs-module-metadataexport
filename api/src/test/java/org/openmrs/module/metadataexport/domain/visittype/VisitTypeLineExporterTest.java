@@ -44,7 +44,7 @@ class VisitTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredVisitTypeEmitsUuidAndFlagOnly() {
+	void retiredVisitTypeEmitsFullRowPlusFlag() {
 		VisitType visitType = new VisitType("Old Type", null);
 		visitType.setUuid("old-uuid");
 		visitType.setRetired(true);
@@ -53,6 +53,7 @@ class VisitTypeLineExporterTest {
 		new VisitTypeLineExporter().writeLine(visitType, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old Type", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

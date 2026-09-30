@@ -92,6 +92,57 @@ class DomainExporterTest {
 		assertEquals(Collections.singletonMap("old", "old is retired"), exclusions);
 	}
 	
+	@Test
+	void retiredNameClashes_excludeTheRetiredRowSharingALiveRowsNameAndKeepTheLiveRow() {
+		EncounterType live = type("live", "Vitals", false);
+		EncounterType retired = type("old", "Vitals", true);
+		List<EncounterType> all = Arrays.asList(live, retired);
+		
+		Map<String, String> clashes = DomainExporter.retiredNameClashes(all, "encounter type");
+		
+		assertEquals(Collections.singleton("old"), clashes.keySet());
+		assertTrue(
+		    clashes.get("old").startsWith("old ('Vitals') is retired and shares its name with the live encounter type live"),
+		    clashes.get("old"));
+		assertEquals(Collections.singletonList(live), DomainExporter.without(all, clashes));
+	}
+	
+	@Test
+	void retiredNameClashes_matchTrimmedAndCaseInsensitively() {
+		List<EncounterType> all = Arrays.asList(type("live", "Vitals", false), type("old", " VITALS ", true));
+		
+		assertEquals(Collections.singleton("old"), DomainExporter.retiredNameClashes(all, "encounter type").keySet());
+	}
+	
+	@Test
+	void retiredNameClashes_excludeBothOfTwoRetiredRowsSharingAName() {
+		List<EncounterType> all = Arrays.asList(type("old1", "Vitals", true), type("old2", "Vitals", true));
+		
+		Map<String, String> clashes = DomainExporter.retiredNameClashes(all, "encounter type");
+		
+		assertEquals(2, clashes.size());
+		assertTrue(clashes.get("old1").contains("the retired encounter type old2"), clashes.get("old1"));
+		assertTrue(DomainExporter.without(all, clashes).isEmpty(),
+		    "whichever loads second would bind to the first by name, so neither can create its own row");
+	}
+	
+	@Test
+	void retiredNameClashes_leaveUniquelyNamedRetiredRowsAndAllLiveRowsAlone() {
+		List<EncounterType> all = Arrays.asList(type("a", "Vitals", false), type("b", "Vitals", false),
+		    type("c", "Old intake", true), type("d", null, true));
+		
+		assertTrue(DomainExporter.retiredNameClashes(all, "encounter type").isEmpty(),
+		    "live duplicates are Initializer's problem, not a retirement one; a unique or blank name never clashes");
+	}
+	
+	@Test
+	void retiredNameClashes_matchOnTheGivenKeyRatherThanTheName() {
+		List<EncounterType> all = Arrays.asList(type("live", "Vitals", false), type("old", "Vitals", true));
+		
+		assertTrue(DomainExporter.retiredNameClashes(all, t -> t.getUuid() + " " + t.getName(), "encounter type").isEmpty(),
+		    "rows whose keys differ do not clash even when their names match");
+	}
+	
 	private static List<String> uuids(Collection<? extends OpenmrsObject> instances) {
 		return instances.stream().map(OpenmrsObject::getUuid).collect(Collectors.toList());
 	}
@@ -99,6 +150,13 @@ class DomainExporterTest {
 	private static EncounterType type(String uuid) {
 		EncounterType type = new EncounterType();
 		type.setUuid(uuid);
+		return type;
+	}
+	
+	private static EncounterType type(String uuid, String name, boolean retired) {
+		EncounterType type = type(uuid);
+		type.setName(name);
+		type.setRetired(retired);
 		return type;
 	}
 	

@@ -119,7 +119,7 @@ class LocationLineExporterTest {
 		ExportLine line = export(child);
 		
 		assertEquals("parent-uuid", line.get("parent"),
-		    "parent must be referenced by uuid so a retired parent (emitted as uuid-only) still resolves on import");
+		    "parent is referenced by uuid, the unambiguous key Initializer tries before falling back to the name");
 	}
 	
 	@Test
@@ -134,7 +134,7 @@ class LocationLineExporterTest {
 	}
 	
 	@Test
-	void retiredLocationEmitsUuidAndFlagOnly() {
+	void retiredLocationEmitsFullRowPlusFlag() {
 		Location location = new Location();
 		location.setUuid("old");
 		location.setName("Closed Clinic");
@@ -143,7 +143,8 @@ class LocationLineExporterTest {
 		ExportLine line = export(location);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Closed Clinic", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 	
 	private static LocationTag namedTag(String name) {

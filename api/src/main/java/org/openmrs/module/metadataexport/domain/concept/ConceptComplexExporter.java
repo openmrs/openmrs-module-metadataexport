@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptComplex;
 import org.openmrs.api.db.hibernate.HibernateUtil;
@@ -26,7 +25,7 @@ public class ConceptComplexExporter extends BaseLineExporter<Concept> {
 		// A complex concept reached as a lazy association (e.g. an answer or set member) is a
 		// Concept-typed proxy, so instanceof ConceptComplex would be false; unwrap to the real class.
 		concept = HibernateUtil.getRealObjectFromProxy(concept);
-		if (BooleanUtils.isTrue(concept.getRetired()) || !(concept instanceof ConceptComplex)) {
+		if (!(concept instanceof ConceptComplex)) {
 			return;
 		}
 		line.put(HEADER_HANDLER, ((ConceptComplex) concept).getHandler());

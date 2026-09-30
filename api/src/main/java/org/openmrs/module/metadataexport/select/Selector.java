@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.select;
 
+import lombok.extern.slf4j.Slf4j;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.metadataexport.export.DomainExporter;
@@ -17,7 +18,9 @@ import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -26,8 +29,12 @@ import java.util.Set;
  * from being content-neutral): each object is routed to its owning domain via the registry, added
  * to the manifest once (visited by the owner's {@link DomainExporter#identityKey}, so cycles and
  * diamonds are safe), and its dependencies are enqueued — repeating until nothing new is
- * discovered.
+ * discovered. A dependency its owning domain {@link DomainExporter#exclusions() excludes} is not
+ * pulled in: the row is unimportable, so exporting it would only move the failure to the target,
+ * and the build manifest would contradict the zip. The referencing row is exported as it is, with a
+ * warning naming both.
  */
+@Slf4j
 public class Selector {
 	
 	private final DomainExporterRegistry registry;
@@ -39,10 +46,13 @@ public class Selector {
 	public ExportManifest select(Collection<? extends OpenmrsObject> seeds) {
 		ExportManifest manifest = new ExportManifest();
 		Set<String> visited = new HashSet<>();
-		Deque<OpenmrsObject> queue = new ArrayDeque<>(seeds);
+		Map<DomainExporter<?>, Map<String, String>> exclusionsByOwner = new HashMap<>();
+		Deque<Pending> queue = new ArrayDeque<>();
+		seeds.forEach(seed -> queue.add(new Pending(seed, null)));
 		
 		while (!queue.isEmpty()) {
-			OpenmrsObject instance = HibernateUtil.getRealObjectFromProxy(queue.poll());
+			Pending pending = queue.poll();
+			OpenmrsObject instance = HibernateUtil.getRealObjectFromProxy(pending.instance);
 			
 			DomainExporter<?> owner = registry.forObject(instance);
 			if (owner == null) {
@@ -58,10 +68,44 @@ public class Selector {
 				continue;
 			}
 			
+			// Seeds were vetted by getAllInstances/getInstancesByUuids; only a dependency can be an excluded row.
+			// (Checking seeds too would also make a scoped build load whole tables the seeds never touch.)
+			if (pending.referrer != null) {
+				String exclusion = exclusionsByOwner.computeIfAbsent(owner, DomainExporter::exclusions)
+				        .get(instance.getUuid());
+				if (exclusion != null) {
+					log.warn(
+					    "Metadata Export: {} {} references a {} row that is not exported ({}); the reference is written"
+					            + " as it is and cannot resolve on a target that lacks the row",
+					    pending.referrerDomain(), pending.referrer.getUuid(), owner.getDomain(), exclusion);
+					continue;
+				}
+			}
+			
 			manifest.add(owner.getDomain(), identity, instance);
-			queue.addAll(dependenciesOf(owner, instance));
+			for (OpenmrsObject dependency : dependenciesOf(owner, instance)) {
+				queue.add(new Pending(dependency, instance));
+			}
 		}
 		return manifest;
+	}
+	
+	/** A queued object and the exported row whose dependencies it came from (null for a seed). */
+	private final class Pending {
+		
+		final OpenmrsObject instance;
+		
+		final OpenmrsObject referrer;
+		
+		Pending(OpenmrsObject instance, OpenmrsObject referrer) {
+			this.instance = instance;
+			this.referrer = referrer;
+		}
+		
+		Object referrerDomain() {
+			DomainExporter<?> owner = registry.forObject(referrer);
+			return owner == null ? referrer.getClass().getSimpleName() : owner.getDomain();
+		}
 	}
 	
 	/**

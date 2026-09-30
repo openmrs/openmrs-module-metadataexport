@@ -39,7 +39,7 @@ class FlagPriorityLineExporterTest {
 	}
 	
 	@Test
-	void retiredPriorityEmitsUuidAndFlagOnly() {
+	void retiredPriorityEmitsFullRowPlusFlag() {
 		Priority priority = new Priority();
 		priority.setUuid("b279d252-g6ge-5ffd-ce4f-744cef2d0718");
 		priority.setName("Retired Priority");
@@ -53,8 +53,9 @@ class FlagPriorityLineExporterTest {
 		
 		assertEquals("b279d252-g6ge-5ffd-ce4f-744cef2d0718", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("style"), "retired rows carry only uuid + flag");
+		assertEquals("Retired Priority", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("default", line.get("style"));
 	}
 	
 	@Test

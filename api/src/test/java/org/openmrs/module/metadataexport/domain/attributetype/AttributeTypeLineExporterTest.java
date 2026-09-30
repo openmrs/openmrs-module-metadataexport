@@ -63,19 +63,21 @@ class AttributeTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredAttributeTypeEmitsUuidFlagEntityNameAndName() {
+	void retiredAttributeTypeEmitsFullRowPlusFlag() {
 		ProviderAttributeType at = new ProviderAttributeType();
 		at.setUuid("some-uuid");
 		at.setName("Provider Rating");
+		at.setDescription("How patients rate the provider");
 		at.setRetired(true);
 		
 		ExportLine line = new ExportLine();
 		new AttributeTypeLineExporter().writeLine(at, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertEquals("Provider", line.get("Entity name"), "Initializer needs entity name to route the retire");
-		assertEquals("Provider Rating", line.get("name"), "Initializer needs name to locate the record");
-		assertNull(line.get("description"), "other domain columns must be absent on retired rows");
+		assertEquals("Provider", line.get("Entity name"));
+		assertEquals("Provider Rating", line.get("name"));
+		assertEquals("How patients rate the provider", line.get("description"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 	
 	@Test

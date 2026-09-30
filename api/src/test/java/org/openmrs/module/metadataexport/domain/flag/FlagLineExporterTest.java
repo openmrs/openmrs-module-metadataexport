@@ -63,7 +63,7 @@ class FlagLineExporterTest {
 	}
 	
 	@Test
-	void retiredFlagEmitsUuidAndFlagOnly() {
+	void retiredFlagEmitsFullRowPlusFlag() {
 		Flag flag = new Flag();
 		flag.setUuid("g38ae363-h7hf-6gge-df5g-855dfg3e1828");
 		flag.setName("Retired Flag");
@@ -83,8 +83,9 @@ class FlagLineExporterTest {
 		
 		assertEquals("g38ae363-h7hf-6gge-df5g-855dfg3e1828", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("priority"), "retired rows carry only uuid + flag");
+		assertEquals("Retired Flag", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("Low Priority", line.get("priority"));
 	}
 	
 	@Test

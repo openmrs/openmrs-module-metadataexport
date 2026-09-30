@@ -14,7 +14,6 @@ import org.openmrs.LocationTag;
 import org.openmrs.module.metadataexport.export.ExportLine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class LocationTagLineExporterTest {
 	
@@ -34,7 +33,7 @@ class LocationTagLineExporterTest {
 	}
 	
 	@Test
-	void retiredTagEmitsUuidAndFlagOnly() {
+	void retiredTagEmitsFullRowPlusFlag() {
 		LocationTag tag = new LocationTag();
 		tag.setUuid("old");
 		tag.setName("Old");
@@ -44,6 +43,7 @@ class LocationTagLineExporterTest {
 		new LocationTagLineExporter().writeLine(tag, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

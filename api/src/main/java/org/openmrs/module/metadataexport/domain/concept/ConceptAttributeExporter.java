@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAttribute;
 import org.openmrs.module.initializer.api.BaseAttributeLineProcessor;
@@ -25,10 +24,6 @@ public class ConceptAttributeExporter extends BaseLineExporter<Concept> {
 	
 	@Override
 	public void export(Concept concept, ExportLine line) {
-		if (BooleanUtils.isTrue(concept.getRetired())) {
-			return;
-		}
-		
 		for (ConceptAttribute attribute : concept.getActiveAttributes()) {
 			String header = BaseAttributeLineProcessor.HEADER_ATTRIBUTE_PREFIX + attribute.getAttributeType().getName();
 			line.put(header, attribute.getValueReference());

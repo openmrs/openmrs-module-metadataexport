@@ -84,19 +84,67 @@ class ConceptExportersTest {
 	}
 	
 	@Test
-	void conceptLine_retiredConceptEmitsUuidAndFlagOnly() {
+	void conceptLine_retiredConceptEmitsFullRowPlusFlag() {
 		Concept c = concept("retired");
 		c.setRetired(true);
 		ConceptName fsn = new ConceptName("Hidden", Locale.ENGLISH);
 		fsn.setConceptNameType(ConceptNameType.FULLY_SPECIFIED);
 		c.addName(fsn);
+		ConceptClass conceptClass = new ConceptClass();
+		conceptClass.setName("Misc");
+		c.setConceptClass(conceptClass);
+		ConceptDatatype datatype = new ConceptDatatype();
+		datatype.setName("N/A");
+		c.setDatatype(datatype);
 		
 		ExportLine line = new ExportLine();
 		new ConceptLineExporter().writeLine(c, line);
 		
 		assertEquals("retired", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("fully specified name:en"), "retired rows carry only uuid + flag");
+		assertEquals("Hidden", line.get("fully specified name:en"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("Misc", line.get("data class"));
+		assertEquals("N/A", line.get("data type"));
+	}
+	
+	@Test
+	void secondaryExporters_writeTheirColumnsForARetiredConceptToo() {
+		ConceptNumeric retired = new ConceptNumeric();
+		retired.setUuid("retired-numeric");
+		retired.setRetired(true);
+		retired.setHiAbsolute(100.0);
+		retired.addAnswer(new ConceptAnswer(concept("a1")));
+		ConceptSource source = new ConceptSource();
+		source.setName("SNOMED CT");
+		ConceptReferenceTerm term = new ConceptReferenceTerm();
+		term.setCode("12345");
+		term.setConceptSource(source);
+		ConceptMapType mapType = new ConceptMapType();
+		mapType.setName("SAME-AS");
+		ConceptMap map = new ConceptMap();
+		map.setConceptReferenceTerm(term);
+		map.setConceptMapType(mapType);
+		retired.addConceptMapping(map);
+		ConceptAttributeType type = new ConceptAttributeType();
+		type.setName("audit note");
+		type.setDatatypeClassname("org.openmrs.customdatatype.datatype.FreeTextDatatype");
+		ConceptAttribute attribute = new ConceptAttribute();
+		attribute.setAttributeType(type);
+		attribute.setValueReferenceInternal("reviewed-by-x");
+		retired.addAttribute(attribute);
+		
+		ExportLine line = new ExportLine();
+		new ConceptNumericExporter().export(retired, line);
+		new NestedConceptExporter().export(retired, line);
+		new MappingsConceptExporter().export(retired, line);
+		new ConceptAttributeExporter().export(retired, line);
+		
+		String why = "a fresh target creates the retired concept from its row, so every column must be there";
+		assertEquals("100.0", line.get("absolute high"), why);
+		assertEquals("a1", line.get("answers"), why);
+		assertEquals("12345", line.get("mappings|SAME-AS|SNOMED CT"), why);
+		assertEquals("reviewed-by-x", line.get("attribute|audit note"), why);
 	}
 	
 	@Test

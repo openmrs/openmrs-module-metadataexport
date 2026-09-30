@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.attributetype;
 
+import org.hibernate.Hibernate;
 import org.openmrs.ConceptAttributeType;
 import org.openmrs.LocationAttributeType;
 import org.openmrs.OpenmrsObject;
@@ -20,12 +21,14 @@ import org.openmrs.attribute.BaseAttributeType;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class AttributeTypeDomainExporter extends CsvDomainExporter<BaseAttributeType<?>> {
@@ -49,6 +52,21 @@ public class AttributeTypeDomainExporter extends CsvDomainExporter<BaseAttribute
 	
 	@Override
 	public Collection<BaseAttributeType<?>> getAllInstances() {
+		Collection<BaseAttributeType<?>> all = allRows();
+		return DomainExporter.without(all,
+		    DomainExporter.retiredNameClashes(all, AttributeTypeDomainExporter::nameWithinEntity, "attribute type"));
+	}
+	
+	/**
+	 * Retired rows a same-named row would absorb on import; see
+	 * {@link DomainExporter#retiredNameClashes}.
+	 */
+	@Override
+	public Map<String, String> exclusions() {
+		return DomainExporter.retiredNameClashes(allRows(), AttributeTypeDomainExporter::nameWithinEntity, "attribute type");
+	}
+	
+	private static List<BaseAttributeType<?>> allRows() {
 		List<BaseAttributeType<?>> all = new ArrayList<>();
 		all.addAll(Context.getLocationService().getAllLocationAttributeTypes());
 		all.addAll(Context.getVisitService().getAllVisitAttributeTypes());
@@ -56,6 +74,13 @@ public class AttributeTypeDomainExporter extends CsvDomainExporter<BaseAttribute
 		all.addAll(Context.getConceptService().getAllConceptAttributeTypes());
 		all.addAll(Context.getProgramWorkflowService().getAllProgramAttributeTypes());
 		return all;
+	}
+	
+	/**
+	 * Initializer resolves an attribute type's name within its entity, so only same-entity rows clash.
+	 */
+	private static String nameWithinEntity(BaseAttributeType<?> attributeType) {
+		return Hibernate.getClass(attributeType).getName() + " " + attributeType.getName();
 	}
 	
 	@Override

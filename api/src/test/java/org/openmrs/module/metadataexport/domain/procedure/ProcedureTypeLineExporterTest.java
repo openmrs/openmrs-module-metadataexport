@@ -46,7 +46,7 @@ class ProcedureTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredTypeEmitsUuidAndFlagOnly() {
+	void retiredTypeEmitsFullRowPlusFlag() {
 		ProcedureType procedureType = new ProcedureType("Discontinued Procedure", "Procedure no longer offered");
 		procedureType.setUuid("439559c2-a3a4-4a25-b4b2-1a0299e287ee");
 		procedureType.setRetired(true);
@@ -56,7 +56,8 @@ class ProcedureTypeLineExporterTest {
 		
 		assertEquals("439559c2-a3a4-4a25-b4b2-1a0299e287ee", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("description"), "retired rows carry only uuid + flag");
+		assertEquals("Discontinued Procedure", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("Procedure no longer offered", line.get("description"));
 	}
 }

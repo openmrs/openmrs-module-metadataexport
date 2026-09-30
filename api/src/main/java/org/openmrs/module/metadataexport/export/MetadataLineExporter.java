@@ -17,12 +17,11 @@ import org.openmrs.module.initializer.api.BaseLineProcessor;
 /**
  * Base for the primary line exporter of a metadata domain. Writes the columns every Initializer row
  * carries — the uuid, and for a retired object the {@code void/retire} flag — then delegates the
- * domain-specific columns to {@link #export}. By default a retired object is emitted as uuid + flag
- * only, so {@link #export} only ever sees a live instance. Domains whose Initializer parser needs
- * more from a retired row can override {@link #writeRetiredDiscriminators} (a no-op by default) to
- * emit further columns after the flag — from single discriminator columns (e.g.
- * {@code entity name}) up to re-dispatching to {@link #export} for parsers that bootstrap and fill
- * retired rows whose uuid is unknown on the target (e.g. idgen).
+ * domain-specific columns to {@link #export}. A retired object carries its full row, flag included:
+ * Initializer's {@code CsvParser} only skips the line processors for a retired row when the target
+ * already has the object, and otherwise bootstraps a new one and fills it from the row before
+ * retiring it, so a row of just uuid + flag fails validation on any target that lacks the object
+ * (and takes every live row that references it down with it).
  */
 public abstract class MetadataLineExporter<T extends OpenmrsObject & Retireable> extends BaseLineExporter<T> {
 	
@@ -32,13 +31,7 @@ public abstract class MetadataLineExporter<T extends OpenmrsObject & Retireable>
 		
 		if (BooleanUtils.isTrue(instance.getRetired())) {
 			line.put(BaseLineProcessor.HEADER_VOID_RETIRE, "true");
-			writeRetiredDiscriminators(instance, line);
-			return;
 		}
-		
 		export(instance, line);
-	}
-	
-	protected void writeRetiredDiscriminators(T instance, ExportLine line) {
 	}
 }

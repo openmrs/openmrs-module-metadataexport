@@ -51,7 +51,7 @@ class ConceptSourceLineExporterTest {
 	}
 	
 	@Test
-	void retiredSourceEmitsUuidAndFlagOnly() {
+	void retiredSourceEmitsFullRowPlusFlag() {
 		ConceptSource source = new ConceptSource();
 		source.setUuid("old");
 		source.setName("Old");
@@ -61,6 +61,7 @@ class ConceptSourceLineExporterTest {
 		new ConceptSourceLineExporter().writeLine(source, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

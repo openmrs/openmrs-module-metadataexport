@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAnswer;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
@@ -30,10 +29,6 @@ public class NestedConceptExporter extends BaseLineExporter<Concept> {
 	
 	@Override
 	public void export(Concept concept, ExportLine line) {
-		if (BooleanUtils.isTrue(concept.getRetired())) {
-			return;
-		}
-		
 		String answers = concept.getAnswers().stream()
 		        .sorted(Comparator.comparing(ConceptAnswer::getSortWeight, Comparator.nullsLast(Comparator.naturalOrder())))
 		        .map(ConceptAnswer::getAnswerConcept).map(Concept::getUuid).collect(Collectors.joining(LIST_SEPARATOR));

@@ -36,12 +36,6 @@ public class AttributeTypeLineExporter extends MetadataLineExporter<BaseAttribut
 	static final String HEADER_HANDLER_CONFIG = "Handler config";
 	
 	@Override
-	protected void writeRetiredDiscriminators(BaseAttributeType<?> attributeType, ExportLine line) {
-		line.put(HEADER_ENTITY_NAME, entityName(attributeType));
-		line.put(BaseLineProcessor.HEADER_NAME, attributeType.getName());
-	}
-	
-	@Override
 	public void export(BaseAttributeType<?> attributeType, ExportLine line) {
 		line.put(HEADER_ENTITY_NAME, entityName(attributeType));
 		line.put(BaseLineProcessor.HEADER_NAME, attributeType.getName());

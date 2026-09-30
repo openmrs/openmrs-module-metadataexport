@@ -57,7 +57,8 @@ class MetadataExportIntegrationTest extends BaseModuleContextSensitiveTest {
 			
 			String[] laboratory = byUuid.get(RETIRED_LABORATORY_UUID);
 			assertEquals("true", laboratory[col.get("void/retire")]);
-			assertEquals("", laboratory[col.get("name")]);
+			assertEquals("Laboratory", laboratory[col.get("name")],
+			    "a retired row keeps its columns so a target without it can create it before retiring it");
 		}
 	}
 	

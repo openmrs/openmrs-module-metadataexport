@@ -17,12 +17,6 @@ import org.openmrs.module.metadatamapping.MetadataTermMapping;
 public class MetadataTermMappingLineExporter extends MetadataLineExporter<MetadataTermMapping> {
 	
 	@Override
-	protected void writeRetiredDiscriminators(MetadataTermMapping mapping, ExportLine line) {
-		// every column is read with get(header, true) on import, so a retired row carries all of them
-		export(mapping, line);
-	}
-	
-	@Override
 	public void export(MetadataTermMapping mapping, ExportLine line) {
 		line.put(MetadataTermMappingsLineProcessor.MAPPING_CODE, mapping.getCode());
 		line.put(MetadataTermMappingsLineProcessor.MAPPING_SOURCE, mapping.getMetadataSource().getName());

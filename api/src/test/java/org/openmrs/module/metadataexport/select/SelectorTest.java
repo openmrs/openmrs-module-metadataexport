@@ -38,8 +38,15 @@ class SelectorTest {
 		
 		final Map<String, List<Concept>> dependencies = new HashMap<>();
 		
+		final Map<String, String> exclusions = new HashMap<>();
+		
 		public Domain getDomain() {
 			return Domain.CONCEPTS;
+		}
+		
+		@Override
+		public Map<String, String> exclusions() {
+			return exclusions;
 		}
 		
 		public boolean handles(OpenmrsObject instance) {
@@ -113,6 +120,20 @@ class SelectorTest {
 		ExportManifest manifest = selectorWith(exporter).select(Arrays.asList(a));
 		
 		assertEquals(new HashSet<>(Arrays.asList("a", "b", "c")), new HashSet<>(conceptUuids(manifest)));
+	}
+	
+	@Test
+	void select_doesNotPullInADependencyItsDomainExcludes() {
+		Concept a = concept("a"), excluded = concept("x"), c = concept("c");
+		FakeConceptExporter exporter = new FakeConceptExporter();
+		exporter.dependencies.put("a", Arrays.asList(excluded, c));
+		exporter.dependencies.put("x", Arrays.asList(concept("behind-x")));
+		exporter.exclusions.put("x", "x ('X') is retired and shares its name with the live row y");
+		
+		ExportManifest manifest = selectorWith(exporter).select(Arrays.asList(a));
+		
+		assertEquals(new HashSet<>(Arrays.asList("a", "c")), new HashSet<>(conceptUuids(manifest)),
+		    "an excluded row is unimportable, so closure must not smuggle it (or what lies behind it) into the export");
 	}
 	
 	@Test

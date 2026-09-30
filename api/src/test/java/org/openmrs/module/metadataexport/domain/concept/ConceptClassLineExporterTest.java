@@ -14,7 +14,6 @@ import org.openmrs.ConceptClass;
 import org.openmrs.module.metadataexport.export.ExportLine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ConceptClassLineExporterTest {
 	
@@ -34,7 +33,7 @@ class ConceptClassLineExporterTest {
 	}
 	
 	@Test
-	void retiredClassEmitsUuidAndFlagOnly() {
+	void retiredClassEmitsFullRowPlusFlag() {
 		ConceptClass conceptClass = new ConceptClass();
 		conceptClass.setUuid("old");
 		conceptClass.setName("Old");
@@ -44,6 +43,7 @@ class ConceptClassLineExporterTest {
 		new ConceptClassLineExporter().writeLine(conceptClass, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

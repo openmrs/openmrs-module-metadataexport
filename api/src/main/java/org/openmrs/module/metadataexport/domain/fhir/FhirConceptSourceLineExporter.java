@@ -29,13 +29,4 @@ public class FhirConceptSourceLineExporter extends MetadataLineExporter<FhirConc
 		}
 		line.put(URL_HEADER, source.getUrl());
 	}
-	
-	/**
-	 * Iniz matches existing rows by concept source (not uuid) and requires that column — plus the url
-	 * when the target has no row for that concept source yet — even on retire rows.
-	 */
-	@Override
-	protected void writeRetiredDiscriminators(FhirConceptSource source, ExportLine line) {
-		export(source, line);
-	}
 }

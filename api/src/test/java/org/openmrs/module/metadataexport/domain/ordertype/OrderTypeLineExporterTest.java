@@ -61,7 +61,7 @@ class OrderTypeLineExporterTest {
 		ExportLine line = export(child);
 		
 		assertEquals("parent-uuid", line.get("parent"),
-		    "parent must be referenced by uuid so a retired parent (emitted as uuid-only) still resolves on import");
+		    "parent must be a uuid: Initializer parses it with UUID.fromString before its name fallback");
 	}
 	
 	@Test
@@ -101,7 +101,7 @@ class OrderTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredOrderTypeEmitsUuidAndFlagOnly() {
+	void retiredOrderTypeEmitsFullRowPlusFlag() {
 		OrderType orderType = new OrderType();
 		orderType.setUuid("old");
 		orderType.setName("Retired Order");
@@ -110,7 +110,8 @@ class OrderTypeLineExporterTest {
 		ExportLine line = export(orderType);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Retired Order", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 	
 	private static ConceptClass conceptClass(String uuid) {

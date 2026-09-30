@@ -15,11 +15,13 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class PatientIdentifierTypeDomainExporter extends CsvDomainExporter<PatientIdentifierType> {
@@ -46,6 +48,20 @@ public class PatientIdentifierTypeDomainExporter extends CsvDomainExporter<Patie
 	
 	@Override
 	public Collection<PatientIdentifierType> getAllInstances() {
+		Collection<PatientIdentifierType> all = allRows();
+		return DomainExporter.without(all, DomainExporter.retiredNameClashes(all, "patient identifier type"));
+	}
+	
+	/**
+	 * Retired rows a same-named row would absorb on import; see
+	 * {@link DomainExporter#retiredNameClashes}.
+	 */
+	@Override
+	public Map<String, String> exclusions() {
+		return DomainExporter.retiredNameClashes(allRows(), "patient identifier type");
+	}
+	
+	private static Collection<PatientIdentifierType> allRows() {
 		return Context.getPatientService().getAllPatientIdentifierTypes(true);
 	}
 	

@@ -42,7 +42,7 @@ class OrderFrequencyLineExporterTest {
 	}
 	
 	@Test
-	void retiredFrequencyEmitsUuidAndFlagOnly() {
+	void retiredFrequencyEmitsFullRowPlusFlag() {
 		OrderFrequency frequency = new OrderFrequency();
 		frequency.setUuid("4b33b729-1fe3-4fa5-acc4-084beb069b68");
 		frequency.setFrequencyPerDay(24d);
@@ -54,8 +54,9 @@ class OrderFrequencyLineExporterTest {
 		
 		assertEquals("4b33b729-1fe3-4fa5-acc4-084beb069b68", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("frequency per day"), "retired rows carry only uuid + flag");
-		assertNull(line.get("concept frequency"), "retired rows carry only uuid + flag");
+		assertEquals("24.0", line.get("frequency per day"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("hourly-concept-uuid", line.get("concept frequency"));
 	}
 	
 	@Test

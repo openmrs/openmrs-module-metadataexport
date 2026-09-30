@@ -52,9 +52,4 @@ public class IdentifierSourceLineExporter extends MetadataLineExporter<Identifie
 		line.put(BaseLineProcessor.HEADER_NAME, source.getName());
 		line.put(BaseLineProcessor.HEADER_DESC, source.getDescription());
 	}
-	
-	@Override
-	protected void writeRetiredDiscriminators(IdentifierSource source, ExportLine line) {
-		export(source, line);
-	}
 }

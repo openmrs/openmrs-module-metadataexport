@@ -63,10 +63,11 @@ class CohortAttributeTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredTypeEmitsUuidAndFlagOnly() {
+	void retiredTypeEmitsFullRowPlusFlag() {
 		CohortAttributeType attributeType = new CohortAttributeType();
 		attributeType.setUuid("439559c2-a3a4-4a25-b4b2-1a0299e287ee");
 		attributeType.setName("Old Attribute");
+		attributeType.setDatatypeClassname("org.openmrs.customdatatype.datatype.FreeTextDatatype");
 		attributeType.setRetired(true);
 		
 		ExportLine line = new ExportLine();
@@ -74,7 +75,8 @@ class CohortAttributeTypeLineExporterTest {
 		
 		assertEquals("439559c2-a3a4-4a25-b4b2-1a0299e287ee", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("Datatype classname"), "retired rows carry only uuid + flag");
+		assertEquals("Old Attribute", line.get("name"),
+		    "the domain exporter keeps retired attribute types out of the file; the line exporter itself writes the full row");
+		assertEquals("org.openmrs.customdatatype.datatype.FreeTextDatatype", line.get("Datatype classname"));
 	}
 }

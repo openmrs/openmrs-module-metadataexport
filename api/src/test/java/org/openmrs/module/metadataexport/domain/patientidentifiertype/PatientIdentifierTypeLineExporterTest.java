@@ -62,7 +62,7 @@ class PatientIdentifierTypeLineExporterTest {
 	}
 	
 	@Test
-	void retiredTypeEmitsUuidAndFlagOnly() {
+	void retiredTypeEmitsFullRowPlusFlag() {
 		PatientIdentifierType type = new PatientIdentifierType();
 		type.setUuid("old");
 		type.setName("Old");
@@ -72,6 +72,7 @@ class PatientIdentifierTypeLineExporterTest {
 		new PatientIdentifierTypeLineExporter().writeLine(type, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
+		assertEquals("Old", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 }

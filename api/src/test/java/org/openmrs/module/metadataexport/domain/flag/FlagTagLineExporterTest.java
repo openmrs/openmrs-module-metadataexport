@@ -60,11 +60,13 @@ class FlagTagLineExporterTest {
 	}
 	
 	@Test
-	void retiredTagEmitsUuidAndFlagOnly() {
+	void retiredTagEmitsFullRowPlusFlag() {
 		Tag tag = new Tag();
 		tag.setUuid("829bf278-ba81-4436-b867-c2f6641d060d");
 		tag.setName("Deprecated");
 		tag.setDescription("Deprecated flags");
+		tag.setRoles(new HashSet<>());
+		tag.setDisplayPoints(new HashSet<>());
 		tag.setRetired(true);
 		
 		ExportLine line = new ExportLine();
@@ -72,8 +74,9 @@ class FlagTagLineExporterTest {
 		
 		assertEquals("829bf278-ba81-4436-b867-c2f6641d060d", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("name"), "retired rows carry only uuid + flag");
-		assertNull(line.get("description"), "retired rows carry only uuid + flag");
+		assertEquals("Deprecated", line.get("name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
+		assertEquals("Deprecated flags", line.get("description"));
 	}
 	
 	@Test

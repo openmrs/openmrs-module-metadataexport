@@ -70,7 +70,7 @@ class ProgramWorkflowStateLineExporterTest {
 	}
 	
 	@Test
-	void retiredStateEmitsUuidFlagAndDiscriminators() {
+	void retiredStateEmitsFullRowPlusFlag() {
 		ProgramWorkflowState state = new ProgramWorkflowState();
 		state.setUuid("cfa24690-2700-102b-80cb-0017a47871b2");
 		state.setProgramWorkflow(workflow("extended-discharge-workflow-uuid"));
@@ -83,8 +83,6 @@ class ProgramWorkflowStateLineExporterTest {
 		
 		assertEquals("cfa24690-2700-102b-80cb-0017a47871b2", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		// workflow/state concept back not-null columns; Initial/Terminal are get(header, true) required
-		// columns — all must survive the retired short-circuit.
 		assertEquals("extended-discharge-workflow-uuid", line.get("Workflow"));
 		assertEquals("moribund-concept-uuid", line.get("State concept"));
 		assertEquals("true", line.get("Initial"));

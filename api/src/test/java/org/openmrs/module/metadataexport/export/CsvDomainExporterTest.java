@@ -10,7 +10,6 @@
 package org.openmrs.module.metadataexport.export;
 
 import com.opencsv.CSVReader;
-import org.apache.commons.lang3.BooleanUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.openmrs.Concept;
@@ -49,9 +48,6 @@ class CsvDomainExporterTest {
 		
 		@Override
 		public void export(Concept concept, ExportLine line) {
-			if (BooleanUtils.isTrue(concept.getRetired())) {
-				return;
-			}
 			if ("c2".equals(concept.getUuid())) {
 				line.put("flavor", "F-c2");
 			}
@@ -142,7 +138,7 @@ class CsvDomainExporterTest {
 			
 			assertEquals("r", row3[col.get("uuid")]);
 			assertEquals("true", row3[col.get("void/retire")]);
-			assertEquals("", row3[col.get("name")]);
+			assertEquals("N-r", row3[col.get("name")], "a retired row carries its columns alongside the flag");
 			assertEquals("", row3[col.get("flavor")]);
 		}
 	}

@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.drug;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.ConceptReferenceTerm;
 import org.openmrs.Drug;
 import org.openmrs.DrugReferenceMap;
@@ -33,10 +32,6 @@ public class DrugMappingsExporter extends BaseLineExporter<Drug> {
 	
 	@Override
 	public void export(Drug drug, ExportLine line) {
-		if (BooleanUtils.isTrue(drug.getRetired())) {
-			return;
-		}
-		
 		Map<String, String> codesByHeader = new LinkedHashMap<>();
 		for (DrugReferenceMap map : drug.getDrugReferenceMaps()) {
 			ConceptReferenceTerm term = map.getConceptReferenceTerm();

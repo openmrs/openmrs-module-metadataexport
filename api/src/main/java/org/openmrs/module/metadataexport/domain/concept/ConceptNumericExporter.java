@@ -9,7 +9,6 @@
  */
 package org.openmrs.module.metadataexport.domain.concept;
 
-import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.api.db.hibernate.HibernateUtil;
@@ -41,7 +40,7 @@ public class ConceptNumericExporter extends BaseLineExporter<Concept> {
 		// A numeric concept reached as a lazy association (e.g. an answer or set member) is a
 		// Concept-typed proxy, so instanceof ConceptNumeric would be false; unwrap to the real class.
 		concept = HibernateUtil.getRealObjectFromProxy(concept);
-		if (BooleanUtils.isTrue(concept.getRetired()) || !(concept instanceof ConceptNumeric)) {
+		if (!(concept instanceof ConceptNumeric)) {
 			return;
 		}
 		

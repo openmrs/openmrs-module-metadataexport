@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.drug;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugIngredient;
@@ -18,13 +19,16 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,14 +56,37 @@ public class DrugDomainExporter extends CsvDomainExporter<Drug> {
 	
 	@Override
 	public Collection<Drug> getAllInstances() {
-		return Context.getConceptService().getAllDrugs(true);
+		Collection<Drug> all = allRows();
+		return DomainExporter.without(all, DomainExporter.retiredNameClashes(all, "drug"));
 	}
 	
-	/** Every drug is exportable, so a package naming a few need not load the formulary. */
+	/**
+	 * Retired rows a same-named row would absorb on import; see
+	 * {@link DomainExporter#retiredNameClashes}.
+	 */
+	@Override
+	public Map<String, String> exclusions() {
+		return DomainExporter.retiredNameClashes(allRows(), "drug");
+	}
+	
+	/**
+	 * Every live drug is exportable, so a package naming only live drugs need not load the formulary; a
+	 * retired candidate is checked against {@link #exclusions()}, which does.
+	 */
 	@Override
 	public Collection<Drug> candidatesFor(Collection<String> uuids) {
 		ConceptService service = Context.getConceptService();
-		return uuids.stream().map(service::getDrugByUuid).filter(Objects::nonNull).collect(Collectors.toList());
+		List<Drug> candidates = uuids.stream().map(service::getDrugByUuid).filter(Objects::nonNull)
+		        .collect(Collectors.toList());
+		if (candidates.stream().noneMatch(drug -> BooleanUtils.isTrue(drug.getRetired()))) {
+			return candidates;
+		}
+		Set<String> excluded = exclusions().keySet();
+		return candidates.stream().filter(drug -> !excluded.contains(drug.getUuid())).collect(Collectors.toList());
+	}
+	
+	private static List<Drug> allRows() {
+		return Context.getConceptService().getAllDrugs(true);
 	}
 	
 	@Override

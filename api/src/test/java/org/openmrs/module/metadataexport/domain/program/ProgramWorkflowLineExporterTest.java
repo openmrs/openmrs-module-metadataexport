@@ -49,7 +49,7 @@ class ProgramWorkflowLineExporterTest {
 	}
 	
 	@Test
-	void retiredWorkflowEmitsUuidFlagProgramAndConcept() {
+	void retiredWorkflowEmitsFullRowPlusFlag() {
 		ProgramWorkflow workflow = new ProgramWorkflow();
 		workflow.setUuid("45a28ee9-20a3-4065-9955-9cb7a0c6a24b");
 		workflow.setProgram(program("mental-health-program-uuid"));
@@ -61,8 +61,6 @@ class ProgramWorkflowLineExporterTest {
 		
 		assertEquals("45a28ee9-20a3-4065-9955-9cb7a0c6a24b", line.get("uuid"));
 		assertEquals("true", line.get("void/retire"));
-		// program is get(header, true) + throws if unresolved; workflow concept backs the not-null
-		// program_workflow.concept_id — both must survive the retired short-circuit.
 		assertEquals("mental-health-program-uuid", line.get("program"));
 		assertEquals("some-concept-uuid", line.get("workflow concept"));
 	}

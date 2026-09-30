@@ -9,7 +9,10 @@
  */
 package org.openmrs.module.metadataexport.export;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
+import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.APIException;
 import org.openmrs.module.initializer.Domain;
@@ -18,13 +21,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A self-describing, format-neutral exporter for one Iniz {@link Domain}. The ExporterService holds
@@ -118,6 +124,62 @@ public interface DomainExporter<T extends OpenmrsObject> {
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * {@link #exclusions()} for a domain whose Initializer parser, when a row's uuid is unknown on the
+	 * target, falls back to a lookup by name (concept classes, sources and map types, encounter types
+	 * and roles, visit types, patient identifier types, order types, attribute types, drugs): the
+	 * retired rows of {@code all} that share their name with another row. Such a row can never create
+	 * its own object on a target that lacks it — depending on load order it retires the other row or is
+	 * merged into it — so it is left out, and {@link #without} is the matching filter for
+	 * {@link #getAllInstances}. Names are compared trimmed and case-insensitively, as the lookups run
+	 * against the database collation; {@code noun} names the kind of row in the reason.
+	 */
+	static <R extends OpenmrsMetadata> Map<String, String> retiredNameClashes(Collection<R> all, String noun) {
+		return retiredNameClashes(all, OpenmrsMetadata::getName, noun);
+	}
+	
+	/**
+	 * {@link #retiredNameClashes(Collection, String)} matching rows on {@code key} rather than the bare
+	 * name, for a parser that looks a name up within a narrower scope (e.g. attribute types per
+	 * entity).
+	 */
+	static <R extends OpenmrsMetadata> Map<String, String> retiredNameClashes(Collection<R> all, Function<R, String> key,
+	        String noun) {
+		Map<String, List<R>> byKey = new LinkedHashMap<>();
+		for (R row : all) {
+			String k = key.apply(row);
+			if (StringUtils.isNotBlank(k)) {
+				byKey.computeIfAbsent(k.trim().toLowerCase(Locale.ROOT), ignored -> new ArrayList<>()).add(row);
+			}
+		}
+		Map<String, String> result = new LinkedHashMap<>();
+		for (List<R> sameName : byKey.values()) {
+			if (sameName.size() < 2) {
+				continue;
+			}
+			for (R row : sameName) {
+				if (!BooleanUtils.isTrue(row.getRetired())) {
+					continue;
+				}
+				// Name the live row when there is one: it is what the import binds to on a populated target.
+				R other = sameName.stream().filter(candidate -> candidate != row)
+				        .min(Comparator.comparing(candidate -> BooleanUtils.isTrue(candidate.getRetired()))).get();
+				String state = BooleanUtils.isTrue(other.getRetired()) ? "retired" : "live";
+				result.put(row.getUuid(),
+				    row.getUuid() + " ('" + row.getName() + "') is retired and shares its name with the " + state + " "
+				            + noun + " " + other.getUuid() + ": Initializer resolves this domain by name when a"
+				            + " uuid is unknown on the target, so on import this row would retire or merge into that one"
+				            + " instead of creating its own");
+			}
+		}
+		return result;
+	}
+	
+	/** {@code all} minus the rows {@code excluded} (an {@link #exclusions()} map) names. */
+	static <R extends OpenmrsObject> List<R> without(Collection<R> all, Map<String, String> excluded) {
+		return all.stream().filter(row -> !excluded.containsKey(row.getUuid())).collect(Collectors.toList());
 	}
 	
 	/**

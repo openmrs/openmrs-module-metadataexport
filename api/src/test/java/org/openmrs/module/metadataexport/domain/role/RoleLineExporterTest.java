@@ -63,16 +63,19 @@ class RoleLineExporterTest {
 	}
 	
 	@Test
-	void retiredRoleEmitsUuidAndFlagOnly() {
+	void retiredRoleEmitsFullRowPlusFlag() {
 		Role role = new Role("Organizational: Doctor", "Doctor role");
 		role.setUuid("d2fcb604-2700-102b-80cb-0017a47871b2");
+		role.setInheritedRoles(new HashSet<>());
+		role.setPrivileges(new HashSet<>());
 		role.setRetired(true);
 		
 		ExportLine line = new ExportLine();
 		new RoleLineExporter().writeLine(role, line);
 		
 		assertEquals("true", line.get("void/retire"));
-		assertNull(line.get("Role name"), "retired rows carry only uuid + flag");
+		assertEquals("Organizational: Doctor", line.get("Role name"),
+		    "retired rows carry the full row so a fresh target can create the object before retiring it");
 	}
 	
 	@Test
