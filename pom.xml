@@ -54,7 +54,7 @@
 
     <properties>
         <openmrsPlatformVersion>2.8.3</openmrsPlatformVersion>
-        <initializerVersion>2.12.0</initializerVersion>
+        <initializerVersion>2.12.1</initializerVersion>
         <patientflagsVersion>3.0.10</patientflagsVersion>
         <jacocoVersion>0.8.12</jacocoVersion>
         <emrapiVersion>3.4.0</emrapiVersion>

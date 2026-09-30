@@ -62,8 +62,10 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 		dependencies.addAll(concept.getConceptSets());
 		dependencies.add(concept.getConceptClass());
 		
-		concept.getConceptMappings()
-		        .forEach(mapping -> dependencies.add(mapping.getConceptReferenceTerm().getConceptSource()));
+		concept.getConceptMappings().forEach(mapping -> {
+			dependencies.add(mapping.getConceptReferenceTerm().getConceptSource());
+			dependencies.add(mapping.getConceptMapType());
+		});
 		
 		concept.getActiveAttributes().forEach(conceptAttribute -> {
 			ConceptAttributeType attributeType = conceptAttribute.getAttributeType();
@@ -75,6 +77,7 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 				}
 			}
 		});
+		
 		return dependencies;
 	}
 	

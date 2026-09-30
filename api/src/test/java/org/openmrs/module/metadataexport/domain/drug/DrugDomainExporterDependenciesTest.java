@@ -70,13 +70,15 @@ class DrugDomainExporterDependenciesTest {
 	}
 	
 	@Test
-	void getDependencies_includesMappingSources() {
+	void getDependencies_includesMappingSourcesAndMapTypes() {
 		Drug drug = new Drug();
 		drug.setConcept(concept("drug-concept"));
 		ConceptSource rxnorm = new ConceptSource();
 		rxnorm.setUuid("rxnorm");
-		drug.addDrugReferenceMap(new DrugReferenceMap(new ConceptReferenceTerm(rxnorm, "1191", null), new ConceptMapType()));
+		ConceptMapType sameAs = new ConceptMapType();
+		sameAs.setUuid("same-as");
+		drug.addDrugReferenceMap(new DrugReferenceMap(new ConceptReferenceTerm(rxnorm, "1191", null), sameAs));
 		
-		assertEquals(new HashSet<>(Arrays.asList("drug-concept", "rxnorm")), dependencyUuids(drug));
+		assertEquals(new HashSet<>(Arrays.asList("drug-concept", "rxnorm", "same-as")), dependencyUuids(drug));
 	}
 }

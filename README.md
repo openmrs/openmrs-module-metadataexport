@@ -13,6 +13,7 @@ Currently supported domains:
 * Concepts (names, descriptions, class/datatype/version, numeric, complex, answers,
   mappings, attributes)
 * Concept sources (name, description, HL7 code, unique ID)
+* Concept map types (name, description, is hidden)
 * Encounter types (name, description, view/edit privileges)
 * Privileges (name, description)
 * Concept classes (name, description)
@@ -294,7 +295,7 @@ admin-only API.
 
 Requirements
 ------------
-* Initializer 2.12.0+
+* Initializer 2.12.1+
 * REST Web Services 3.1.0+
 
 Adding a new domain

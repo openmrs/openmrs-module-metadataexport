@@ -73,18 +73,21 @@ class ConceptDomainExporterDependenciesTest {
 	}
 	
 	@Test
-	void getDependencies_includesMappingSources() {
+	void getDependencies_includesMappingSourcesAndMapTypes() {
 		Concept c = concept("c");
 		ConceptSource ciel = new ConceptSource();
 		ConceptSource snomed = new ConceptSource();
 		ConceptMapType sameAs = new ConceptMapType();
+		ConceptMapType narrowerThan = new ConceptMapType();
 		c.addConceptMapping(new ConceptMap(new ConceptReferenceTerm(ciel, "1234", null), sameAs));
-		c.addConceptMapping(new ConceptMap(new ConceptReferenceTerm(snomed, "5678", null), sameAs));
+		c.addConceptMapping(new ConceptMap(new ConceptReferenceTerm(snomed, "5678", null), narrowerThan));
 		
 		Collection<? extends OpenmrsObject> dependencies = exporter.getDependencies(c);
 		
 		assertTrue(dependencies.contains(ciel));
 		assertTrue(dependencies.contains(snomed));
+		assertTrue(dependencies.contains(sameAs));
+		assertTrue(dependencies.contains(narrowerThan));
 	}
 	
 	@Test
