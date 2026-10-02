@@ -264,7 +264,7 @@ class QueueDomainExporterIntegrationTest extends BaseModuleContextSensitiveTest 
 	private static void purgeAllQueues() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (Queue queue : allRows()) {
-			sessionFactory.getCurrentSession().delete(queue);
+			sessionFactory.getCurrentSession().remove(queue);
 		}
 		sessionFactory.getCurrentSession().flush();
 	}

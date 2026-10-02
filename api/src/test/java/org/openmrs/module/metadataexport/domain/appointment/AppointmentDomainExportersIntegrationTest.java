@@ -297,10 +297,10 @@ class AppointmentDomainExportersIntegrationTest extends BaseModuleContextSensiti
 	private static void purgeAll() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (AppointmentServiceDefinition definition : definitionService().getAllAppointmentServices(true)) {
-			sessionFactory.getCurrentSession().delete(definition);
+			sessionFactory.getCurrentSession().remove(definition);
 		}
 		for (Speciality speciality : specialityService().getAllSpecialities()) {
-			sessionFactory.getCurrentSession().delete(speciality);
+			sessionFactory.getCurrentSession().remove(speciality);
 		}
 		sessionFactory.getCurrentSession().flush();
 		sessionFactory.getCurrentSession().clear();

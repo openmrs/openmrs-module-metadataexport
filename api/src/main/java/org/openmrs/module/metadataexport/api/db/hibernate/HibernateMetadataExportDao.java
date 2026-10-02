@@ -12,15 +12,16 @@ package org.openmrs.module.metadataexport.api.db.hibernate;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.openmrs.api.db.hibernate.HibernateUtil;
 import org.openmrs.module.metadataexport.api.db.MetadataExportDao;
 import org.openmrs.module.metadataexport.api.model.ExportBuild;
 import org.openmrs.module.metadataexport.api.model.ExportPackage;
 import org.openmrs.module.metadataexport.api.model.ExportStatus;
 
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,8 +32,7 @@ public class HibernateMetadataExportDao implements MetadataExportDao {
 	
 	@Override
 	public ExportPackage savePackage(ExportPackage exportPackage) {
-		sessionFactory.getCurrentSession().saveOrUpdate(exportPackage);
-		return exportPackage;
+		return HibernateUtil.saveOrUpdate(sessionFactory.getCurrentSession(), exportPackage);
 	}
 	
 	@Override
@@ -87,8 +87,7 @@ public class HibernateMetadataExportDao implements MetadataExportDao {
 	
 	@Override
 	public ExportBuild saveBuild(ExportBuild exportBuild) {
-		sessionFactory.getCurrentSession().saveOrUpdate(exportBuild);
-		return exportBuild;
+		return HibernateUtil.saveOrUpdate(sessionFactory.getCurrentSession(), exportBuild);
 	}
 	
 	@Override

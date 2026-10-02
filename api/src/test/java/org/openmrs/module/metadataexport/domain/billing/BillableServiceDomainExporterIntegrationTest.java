@@ -155,7 +155,7 @@ public class BillableServiceDomainExporterIntegrationTest extends BaseModuleCont
 	private void purgeAllBillableServices() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (BillableService svc : getAllBillableServices(true)) {
-			sessionFactory.getCurrentSession().delete(svc);
+			sessionFactory.getCurrentSession().remove(svc);
 		}
 		sessionFactory.getCurrentSession().flush();
 	}

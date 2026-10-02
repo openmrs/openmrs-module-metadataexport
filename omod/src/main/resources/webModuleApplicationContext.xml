@@ -24,7 +24,7 @@
 		<property name="order" value="0" />
 		<property name="messageConverters">
 			<list>
-				<ref bean="jacksonMessageConverter" />
+				<ref bean="jacksonConverter" />
 			</list>
 		</property>
 	</bean>

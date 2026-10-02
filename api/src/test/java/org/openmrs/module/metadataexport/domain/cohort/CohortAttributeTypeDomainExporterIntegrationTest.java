@@ -39,8 +39,8 @@ class CohortAttributeTypeDomainExporterIntegrationTest extends BaseModuleContext
 	@BeforeEach
 	void seedOneLiveAndOneRetiredAttributeType() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		sessionFactory.getCurrentSession().saveOrUpdate(row(LIVE_UUID, "Sponsor", false));
-		sessionFactory.getCurrentSession().saveOrUpdate(row(RETIRED_UUID, "Old sponsor", true));
+		sessionFactory.getCurrentSession().persist(row(LIVE_UUID, "Sponsor", false));
+		sessionFactory.getCurrentSession().persist(row(RETIRED_UUID, "Old sponsor", true));
 	}
 	
 	private static CohortAttributeType row(String uuid, String name, boolean retired) {

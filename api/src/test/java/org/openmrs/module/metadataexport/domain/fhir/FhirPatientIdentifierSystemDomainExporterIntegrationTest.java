@@ -16,6 +16,7 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.model.FhirPatientIdentifierSystem;
+import org.openmrs.module.metadataexport.TestSchema;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 import java.util.Arrays;
@@ -42,13 +43,15 @@ class FhirPatientIdentifierSystemDomainExporterIntegrationTest extends BaseModul
 	
 	@BeforeEach
 	void seedTwoRowsSharingOneIdentifierType() {
+		TestSchema.dropUniqueConstraints(getRuntimeProperties(), "fhir_patient_identifier_system",
+		    "patient_identifier_type_id", "patient_identifier_type", "patient_identifier_type_id");
 		PatientIdentifierType type = Context.getPatientService().getAllPatientIdentifierTypes(false).get(0);
 		
 		FhirPatientIdentifierSystem live = row(LIVE_UUID, type, "http://openmrs.example.org/openmrs-id", false);
 		FhirPatientIdentifierSystem retired = row(RETIRED_UUID, type, "http://openmrs.example.org/old-id", true);
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		sessionFactory.getCurrentSession().saveOrUpdate(retired);
-		sessionFactory.getCurrentSession().saveOrUpdate(live);
+		sessionFactory.getCurrentSession().persist(retired);
+		sessionFactory.getCurrentSession().persist(live);
 	}
 	
 	private static FhirPatientIdentifierSystem row(String uuid, PatientIdentifierType type, String url, boolean retired) {

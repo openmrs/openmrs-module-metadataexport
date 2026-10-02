@@ -117,7 +117,7 @@ public class CashPointDomainExporterIntegrationTest extends BaseModuleContextSen
 	private void purgeAllCashPoints() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (CashPoint cp : cashPointService().getAllCashPoints(true)) {
-			sessionFactory.getCurrentSession().delete(cp);
+			sessionFactory.getCurrentSession().remove(cp);
 		}
 		sessionFactory.getCurrentSession().flush();
 	}

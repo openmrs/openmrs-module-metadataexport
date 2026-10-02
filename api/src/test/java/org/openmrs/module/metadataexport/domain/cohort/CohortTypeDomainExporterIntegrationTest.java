@@ -38,8 +38,8 @@ class CohortTypeDomainExporterIntegrationTest extends BaseModuleContextSensitive
 	@BeforeEach
 	void seedOneLiveAndOneVoidedCohortType() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		sessionFactory.getCurrentSession().saveOrUpdate(row(LIVE_UUID, "Support Group", false));
-		sessionFactory.getCurrentSession().saveOrUpdate(row(VOIDED_UUID, "Old Group", true));
+		sessionFactory.getCurrentSession().persist(row(LIVE_UUID, "Support Group", false));
+		sessionFactory.getCurrentSession().persist(row(VOIDED_UUID, "Old Group", true));
 	}
 	
 	private static CohortType row(String uuid, String name, boolean voided) {

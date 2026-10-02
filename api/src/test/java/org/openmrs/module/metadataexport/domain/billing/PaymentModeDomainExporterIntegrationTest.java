@@ -116,7 +116,7 @@ public class PaymentModeDomainExporterIntegrationTest extends BaseModuleContextS
 	private void purgeAllPaymentModes() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (PaymentMode mode : paymentModeService().getPaymentModes(true)) {
-			sessionFactory.getCurrentSession().delete(mode);
+			sessionFactory.getCurrentSession().remove(mode);
 		}
 		sessionFactory.getCurrentSession().flush();
 	}

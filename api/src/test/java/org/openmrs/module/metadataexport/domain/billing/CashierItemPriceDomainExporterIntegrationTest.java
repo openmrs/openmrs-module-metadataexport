@@ -292,7 +292,7 @@ public class CashierItemPriceDomainExporterIntegrationTest extends BaseModuleCon
 	private void purgeAllCashierItemPrices() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (CashierItemPrice p : getCashierItemPriceService().getCashierItemPrices(true)) {
-			sessionFactory.getCurrentSession().delete(p);
+			sessionFactory.getCurrentSession().remove(p);
 		}
 		sessionFactory.getCurrentSession().flush();
 	}

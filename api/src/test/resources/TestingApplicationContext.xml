@@ -44,6 +44,10 @@
 		</property>
 	</bean>
 
+	<bean class="org.openmrs.module.metadataexport.ModulesWithoutPlatform3ReleaseBeanFilter"/>
+
+	<bean class="org.openmrs.module.EventDaemonTokenTestSupport" init-method="passEventDaemonToken"/>
+
 	<bean id="initializer.InitializerMessageSource"
 		  class="org.openmrs.module.metadataexport.StubInitializerMessageSource"/>
 

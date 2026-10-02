@@ -21,10 +21,15 @@
 		<!-- Bahmni appointments (hbm files sit at the root of appointments-api.jar) -->
 		<mapping resource="Speciality.hbm.xml"/>
 		<mapping resource="AppointmentServiceDefinition.hbm.xml"/>
+		<mapping resource="AppointmentServiceAttributeType.hbm.xml"/>
+		<mapping resource="AppointmentServiceAttribute.hbm.xml"/>
 		<mapping resource="AppointmentServiceType.hbm.xml"/>
 		<mapping resource="ServiceWeeklyAvailability.hbm.xml"/>
-		<!-- cohort module: CohortType is a JPA entity, its attribute types are hbm-mapped -->
+		<!-- cohort module: CohortType is a JPA entity, its attributes and attribute types are hbm-mapped -->
 		<mapping resource="CohortAttributeType.hbm.xml"/>
+		<mapping resource="CohortAttribute.hbm.xml"/>
+		<mapping resource="CohortMemberAttributeType.hbm.xml"/>
+		<mapping resource="CohortMemberAttribute.hbm.xml"/>
         <!-- Billing module-->
         <mapping resource="Bill.hbm.xml"/>
         <mapping resource="Cashier.hbm.xml"/>

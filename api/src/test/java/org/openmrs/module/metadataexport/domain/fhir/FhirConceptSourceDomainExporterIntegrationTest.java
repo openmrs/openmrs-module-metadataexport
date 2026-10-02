@@ -16,6 +16,7 @@ import org.openmrs.ConceptSource;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.model.FhirConceptSource;
+import org.openmrs.module.metadataexport.TestSchema;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 import java.util.Arrays;
@@ -41,6 +42,8 @@ class FhirConceptSourceDomainExporterIntegrationTest extends BaseModuleContextSe
 	
 	@BeforeEach
 	void seedTwoRowsSharingOneConceptSource() {
+		TestSchema.dropUniqueConstraints(getRuntimeProperties(), "fhir_concept_source", "concept_source_id",
+		    "concept_reference_source", "concept_source_id");
 		ConceptSource conceptSource = new ConceptSource();
 		conceptSource.setName("FHIR test terminology");
 		conceptSource.setDescription("Backs the duplicate-row fixtures");
@@ -49,8 +52,8 @@ class FhirConceptSourceDomainExporterIntegrationTest extends BaseModuleContextSe
 		FhirConceptSource live = row(LIVE_UUID, conceptSource, "http://snomed.info/sct", false);
 		FhirConceptSource retired = row(RETIRED_UUID, conceptSource, "http://snomed.info/old", true);
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		sessionFactory.getCurrentSession().saveOrUpdate(retired);
-		sessionFactory.getCurrentSession().saveOrUpdate(live);
+		sessionFactory.getCurrentSession().persist(retired);
+		sessionFactory.getCurrentSession().persist(live);
 	}
 	
 	private static FhirConceptSource row(String uuid, ConceptSource conceptSource, String url, boolean retired) {

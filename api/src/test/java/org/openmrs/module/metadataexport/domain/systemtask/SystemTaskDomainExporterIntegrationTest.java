@@ -62,7 +62,7 @@ class SystemTaskDomainExporterIntegrationTest extends BaseModuleContextSensitive
 		nurse.setName("Nurse");
 		nurse.setDescription("Ward nursing staff");
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
-		sessionFactory.getCurrentSession().saveOrUpdate(nurse);
+		sessionFactory.getCurrentSession().persist(nurse);
 		sessionFactory.getCurrentSession().flush();
 	}
 	
@@ -179,7 +179,7 @@ class SystemTaskDomainExporterIntegrationTest extends BaseModuleContextSensitive
 	private void purgeAllSystemTasks() {
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		for (SystemTask task : tasksService().getAllSystemTasks(true)) {
-			sessionFactory.getCurrentSession().delete(task);
+			sessionFactory.getCurrentSession().remove(task);
 		}
 		sessionFactory.getCurrentSession().flush();
 	}
