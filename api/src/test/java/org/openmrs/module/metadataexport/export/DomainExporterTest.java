@@ -143,6 +143,73 @@ class DomainExporterTest {
 		    "rows whose keys differ do not clash even when their names match");
 	}
 	
+	@Test
+	void display_isTheMetadataName() {
+		assertEquals("Vitals", new Stub().display(type("et-1", "Vitals", false)));
+	}
+	
+	@Test
+	void display_fallsBackToTheUuidWhenTheNameIsBlank() {
+		Stub exporter = new Stub();
+		
+		assertEquals("et-1", exporter.display(type("et-1", null, false)));
+		assertEquals("et-2", exporter.display(type("et-2", "  ", false)));
+	}
+	
+	@Test
+	void search_blankQueryReturnsEveryRowSortedByDisplayCaseInsensitively() {
+		Stub exporter = new Stub(type("et-1", "vitals", false), type("et-2", "Admission", false),
+		        type("et-3", "Discharge", true));
+		
+		assertEquals(Arrays.asList("et-2", "et-3", "et-1"), uuids(exporter.search(null, true)));
+		assertEquals(Arrays.asList("et-2", "et-3", "et-1"), uuids(exporter.search("", true)));
+		assertEquals(Arrays.asList("et-2", "et-3", "et-1"), uuids(exporter.search("   ", true)));
+	}
+	
+	@Test
+	void search_hidesRetiredRowsUnlessAskedFor() {
+		Stub exporter = new Stub(type("et-1", "Vitals", false), type("et-2", "Discharge", true));
+		
+		assertEquals(Collections.singletonList("et-1"), uuids(exporter.search("", false)));
+		assertEquals(Arrays.asList("et-2", "et-1"), uuids(exporter.search("", true)));
+	}
+	
+	@Test
+	void search_pagesTheMatchesAndCountsThemAll() {
+		Stub exporter = new Stub(type("et-1", "C", false), type("et-2", "A", false), type("et-3", "B", false));
+		
+		assertEquals(Arrays.asList("et-2", "et-3"), uuids(exporter.search("", true, 0, 2)));
+		assertEquals(Collections.singletonList("et-1"), uuids(exporter.search("", true, 2, 2)));
+		assertTrue(exporter.search("", true, 3, 2).isEmpty(), "a start past the end is an empty page, not an error");
+		assertEquals(3, exporter.getCountOfSearch("", true));
+	}
+	
+	@Test
+	void search_matchesDisplayCaseInsensitivelyAndTrimsTheQuery() {
+		Stub exporter = new Stub(type("et-1", "Vitals", false), type("et-2", "Admission", false),
+		        type("et-3", "Activity", false));
+		
+		assertEquals(Arrays.asList("et-3", "et-1"), uuids(exporter.search(" VIT ", true)));
+		assertTrue(exporter.search("xyzzy", true).isEmpty());
+	}
+	
+	@Test
+	void search_breaksDisplayTiesOnUuidSoPagingIsStable() {
+		Stub exporter = new Stub(type("et-b", "Vitals", false), type("et-a", "Vitals", false));
+		
+		assertEquals(Arrays.asList("et-a", "et-b"), uuids(exporter.search("vitals", true)));
+	}
+	
+	@Test
+	void search_doesNotReapplyExclusions() {
+		Stub exporter = new Stub(type("et-1", "Vitals", false));
+		exporter.exclusions.put("et-1", "et-1 is excluded");
+		
+		assertEquals(Collections.singletonList("et-1"), uuids(exporter.search("", true)),
+		    "exporters with exclusions already leave them out of getAllInstances(); search must not reload the table");
+		assertEquals(1, exporter.getAllInstancesCalls);
+	}
+	
 	private static List<String> uuids(Collection<? extends OpenmrsObject> instances) {
 		return instances.stream().map(OpenmrsObject::getUuid).collect(Collectors.toList());
 	}

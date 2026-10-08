@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.metadata;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
@@ -44,6 +45,16 @@ public class MetadataTermMappingDomainExporter extends CsvDomainExporter<Metadat
 	public Collection<MetadataTermMapping> getAllInstances() {
 		return Context.getService(MetadataMappingService.class)
 		        .getMetadataTermMappings(new MetadataTermMappingSearchCriteriaBuilder().setIncludeAll(true).build());
+	}
+	
+	/** Mappings are usually unnamed; "source:code" is how Initializer and the UI refer to them. */
+	@Override
+	public String display(MetadataTermMapping instance) {
+		if (StringUtils.isNotBlank(instance.getName())) {
+			return instance.getName();
+		}
+		String source = instance.getMetadataSource() == null ? "?" : instance.getMetadataSource().getName();
+		return source + ":" + instance.getCode();
 	}
 	
 	@Override

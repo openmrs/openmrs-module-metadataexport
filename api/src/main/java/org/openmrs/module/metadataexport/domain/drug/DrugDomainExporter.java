@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.drug;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.DrugIngredient;
@@ -58,6 +59,24 @@ public class DrugDomainExporter extends CsvDomainExporter<Drug> {
 	public Collection<Drug> getAllInstances() {
 		Collection<Drug> all = allRows();
 		return DomainExporter.without(all, DomainExporter.retiredNameClashes(all, "drug"));
+	}
+	
+	/**
+	 * Uses the index over drug names and the drug's concept names rather than scanning the formulary,
+	 * in the index's relevance order, minus the retired rows {@link #exclusions()} names;
+	 * {@code exclusions()} loads the formulary, so it is only consulted when a hit is retired. A blank
+	 * query lists the formulary, as the default does.
+	 */
+	@Override
+	public List<Drug> search(String q, boolean includeRetired) {
+		if (StringUtils.isBlank(q)) {
+			return super.search(q, includeRetired);
+		}
+		List<Drug> hits = Context.getConceptService().getDrugs(q.trim(), Context.getLocale(), false, includeRetired);
+		if (hits.stream().noneMatch(drug -> BooleanUtils.isTrue(drug.getRetired()))) {
+			return hits;
+		}
+		return DomainExporter.without(hits, exclusions());
 	}
 	
 	/**

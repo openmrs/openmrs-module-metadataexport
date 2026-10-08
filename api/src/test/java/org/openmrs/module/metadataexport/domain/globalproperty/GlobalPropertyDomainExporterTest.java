@@ -105,4 +105,9 @@ class GlobalPropertyDomainExporterTest {
 		Node node = parent.getElementsByTagName(tag).item(0);
 		return node == null ? null : node.getTextContent();
 	}
+	
+	@Test
+	void display_isTheKeyNotTheValue() {
+		assertEquals("locale.allowed.list", exporter.display(new GlobalProperty("locale.allowed.list", "en, km_KH")));
+	}
 }

@@ -9,12 +9,14 @@
  */
 package org.openmrs.module.metadataexport.domain.program;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
 import org.openmrs.ProgramWorkflowState;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.domain.concept.ConceptDomainExporter;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
 import org.springframework.stereotype.Component;
@@ -47,6 +49,19 @@ public class ProgramWorkflowStateDomainExporter extends CsvDomainExporter<Progra
 			}
 		}
 		return states;
+	}
+	
+	/** States rarely carry a name of their own; shown as "workflow concept > state concept". */
+	@Override
+	public String display(ProgramWorkflowState instance) {
+		String state = StringUtils.isNotBlank(instance.getName()) ? instance.getName()
+		        : instance.getConcept() == null ? instance.getUuid()
+		                : ConceptDomainExporter.displayName(instance.getConcept());
+		ProgramWorkflow workflow = instance.getProgramWorkflow();
+		if (workflow == null || workflow.getConcept() == null) {
+			return state;
+		}
+		return ConceptDomainExporter.displayName(workflow.getConcept()) + " > " + state;
 	}
 	
 	@Override

@@ -264,6 +264,8 @@ and a binary download - are plain Spring controllers at the same base path.
 | Method | Path                            | Action                                                     |
 |--------|---------------------------------|------------------------------------------------------------|
 | GET    | `/domains`                      | list the registered, exportable domains (not a resource)   |
+| GET    | `/items?domain={DOMAIN}&q=`     | search one domain's exportable rows for a picker, paged; `includeAll=true` for retired; 400 without `domain`, 404 for an unknown or unsupported domain |
+| GET    | `/items/{uuid}?domain={DOMAIN}` | resolve one saved uuid to `{domain, uuid, display, retired}` (404 unless the domain exports such a row; an excluded row's 404 carries the reason the build would give) |
 | GET    | `/packages`                     | list packages by name, paged; `includeAll=true` for retired|
 | POST   | `/packages`                     | create a package (201)                                     |
 | GET    | `/packages/{uuid}`              | fetch one, incl. `latestBuild`                             |
@@ -273,6 +275,14 @@ and a binary download - are plain Spring controllers at the same base path.
 | GET    | `/builds?package={uuid}`        | build history of a package, paged, newest first (404 if unknown) |
 | GET    | `/builds/{uuid}`                | poll status; `?v=full` adds the parsed `manifest`; updates are refused (400) |
 | GET    | `/builds/{uuid}/download`       | the zip (409 unless COMPLETED, 410 if gone; not a resource)|
+
+An item is `{"domain", "uuid", "display", "retired"}`: the two values a package entry stores plus
+the label a picker shows, in the order the domain's exporter ranks matches (by label, except that
+concepts and drugs search their name index and come back in relevance order). A picker lists a
+domain with a blank `q` (concepts come in id order then, since a dictionary is paged in the
+database rather than sorted in memory), resolves the entries of a saved package with
+`/items/{uuid}?domain=`, and never sees a row the build would refuse, since only exportable rows
+are offered.
 
 A package body is `{"name", "description", "entries": [{"domain", "itemUuids": [...]}]}`; `entries`
 is required on create because an explicit `[]` means "every registered domain", so a missing list is
@@ -300,7 +310,9 @@ curl -u admin:pw -OJ $BASE/builds/<build-uuid>/download
 ```
 
 Privileges are enforced on the service (`@Authorized`), so they apply to every entry point that
-reaches it; `/domains` reads the exporter registry directly and checks the Get privilege itself.
+reaches it; `/domains` and `/items` read the exporter registry directly and check the Get privilege
+themselves. `/items` then runs the domain's own service as the caller, so searching a domain also
+needs that domain's read privilege (for example `Get Concepts`).
 Reads need `Get Metadata Export Packages`; creating, updating, retiring and triggering need
 `Manage Metadata Export Packages`; fetching a build's zip needs `Download Metadata Export Packages`,
 kept separate so a role can pull exports without being able to change them. Both Manage and
@@ -456,6 +468,15 @@ them so a package naming such a row fails with the reason instead of as an unkno
 `candidatesFor(uuids)` only in a domain that exports every row and has a by-uuid service lookup, so a
 package naming a few rows does not load the whole table; a filtering domain must keep the default,
 and no domain should override `getInstancesByUuids` itself.
+
+Two more hooks feed the `/items` picker endpoint and default sensibly: `display(instance)` is the
+label shown for a row (the metadata name, else the uuid; never `toString()`), to override when the
+row's identity lives elsewhere, as a global property's key or a workflow's concept does;
+`search(q, includeRetired)` is the exportable rows matching `q`, in the order to show them (by
+display, case-insensitive), to override only in a domain with a real name index, as drugs do. The
+paged pair `search(q, includeRetired, startIndex, limit)` / `getCountOfSearch(q, includeRetired)`
+windows that list by default; a domain too large to hold in memory (concepts) overrides the pair to
+page in the database instead.
 
 Known limitations
 -----------------

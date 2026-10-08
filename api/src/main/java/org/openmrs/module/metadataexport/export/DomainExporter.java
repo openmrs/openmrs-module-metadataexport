@@ -14,10 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.Retireable;
+import org.openmrs.Voidable;
 import org.openmrs.api.APIException;
 import org.openmrs.module.initializer.Domain;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -87,6 +90,81 @@ public interface DomainExporter<T extends OpenmrsObject> {
 	 */
 	default Collection<T> candidatesFor(Collection<String> uuids) {
 		return getAllInstances();
+	}
+	
+	/**
+	 * The one-line label a picker shows for a row, so a person choosing rows for a package sees names,
+	 * not uuids. The default is the metadata name, which is also what Initializer resolves by, and the
+	 * uuid when a row has no name. It is never {@code toString()}: for most core objects that is
+	 * uninformative, and for a global property it would leak the value. Override when the row's
+	 * identity is held elsewhere (a concept's name, a global property's key, a workflow's concept).
+	 */
+	default String display(T instance) {
+		if (instance instanceof OpenmrsMetadata) {
+			String name = ((OpenmrsMetadata) instance).getName();
+			if (StringUtils.isNotBlank(name)) {
+				return name;
+			}
+		}
+		return instance.getUuid();
+	}
+	
+	/** Retired, or voided for a domain of data rows; what a picker flags and hides by default. */
+	default boolean isRetiredOrVoided(T instance) {
+		if (instance instanceof Retireable) {
+			return BooleanUtils.isTrue(((Retireable) instance).getRetired());
+		}
+		return instance instanceof Voidable && BooleanUtils.isTrue(((Voidable) instance).getVoided());
+	}
+	
+	/**
+	 * The rows a picker offers for {@code q}, in the order to show them: the exportable rows, so a
+	 * package built from a pick never names a row the build would refuse, filtered on {@link #display}
+	 * case-insensitively and sorted by it (uuid as the tiebreak) so paging over the result is stable.
+	 * Blank matches everything, which is how a picker lists a domain; retired rows are left out unless
+	 * asked for, since a picker hides them by default.
+	 * <p>
+	 * The result must be a subset of {@link #getAllInstances()}. The default scans it, the right trade
+	 * for domains of a few thousand rows; it does not re-apply {@link #exclusions()}, because every
+	 * domain with exclusions already leaves them out of {@code getAllInstances()} and recomputing them
+	 * would load the table twice. A domain with a real index (drugs) overrides this to use it, applies
+	 * {@code exclusions()} itself, and may return relevance order instead. A domain too large to hold
+	 * in memory (concepts) leaves this alone and overrides the paged pair below.
+	 */
+	default List<T> search(String q, boolean includeRetired) {
+		String needle = StringUtils.trimToEmpty(q).toLowerCase(Locale.ROOT);
+		List<Map.Entry<String, T>> labelled = new ArrayList<>();
+		for (T row : getAllInstances()) {
+			if (!includeRetired && isRetiredOrVoided(row)) {
+				continue;
+			}
+			String label = display(row);
+			if (needle.isEmpty() || label.toLowerCase(Locale.ROOT).contains(needle)) {
+				labelled.add(new AbstractMap.SimpleImmutableEntry<>(label, row));
+			}
+		}
+		labelled.sort(Map.Entry.<String, T> comparingByKey(String.CASE_INSENSITIVE_ORDER)
+		        .thenComparing(entry -> entry.getValue().getUuid(), Comparator.nullsLast(Comparator.naturalOrder())));
+		return labelled.stream().map(Map.Entry::getValue).collect(Collectors.toList());
+	}
+	
+	/**
+	 * One page of {@link #search(String, boolean)}, {@code limit} rows from {@code startIndex}; empty
+	 * past the end. The default windows the full list, which is fine when that list is small; a domain
+	 * whose list is not (concepts) pages in the database instead and overrides
+	 * {@link #getCountOfSearch} to match, so the two always describe the same result.
+	 */
+	default List<T> search(String q, boolean includeRetired, int startIndex, int limit) {
+		List<T> all = search(q, includeRetired);
+		if (startIndex >= all.size()) {
+			return Collections.emptyList();
+		}
+		return new ArrayList<>(all.subList(startIndex, Math.min(all.size(), startIndex + limit)));
+	}
+	
+	/** How many rows {@link #search(String, boolean)} has in all, for the picker's paging links. */
+	default long getCountOfSearch(String q, boolean includeRetired) {
+		return search(q, includeRetired).size();
 	}
 	
 	/**

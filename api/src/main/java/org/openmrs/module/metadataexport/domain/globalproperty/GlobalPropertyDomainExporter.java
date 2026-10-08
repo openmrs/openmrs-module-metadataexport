@@ -69,6 +69,12 @@ public class GlobalPropertyDomainExporter extends XmlDomainExporter<GlobalProper
 		        .filter(globalProperty -> !isModuleStateProperty(globalProperty.getProperty())).collect(Collectors.toList());
 	}
 	
+	/** The key, never {@code toString()}, which would put the value in a picker. */
+	@Override
+	public String display(GlobalProperty instance) {
+		return StringUtils.defaultIfBlank(instance.getProperty(), instance.getUuid());
+	}
+	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(GlobalProperty instance) {
 		return Collections.emptyList();

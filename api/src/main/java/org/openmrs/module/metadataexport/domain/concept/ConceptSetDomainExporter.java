@@ -53,6 +53,13 @@ public class ConceptSetDomainExporter extends CsvDomainExporter<ConceptSet> {
 		return sessionFactory.getCurrentSession().createQuery("from ConceptSet").list();
 	}
 	
+	/** A set row has no name; it is "which set, which member". */
+	@Override
+	public String display(ConceptSet instance) {
+		return ConceptDomainExporter.displayName(instance.getConceptSet()) + " > "
+		        + ConceptDomainExporter.displayName(instance.getConcept());
+	}
+	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(ConceptSet conceptSet) {
 		List<OpenmrsObject> dependencies = new ArrayList<>();

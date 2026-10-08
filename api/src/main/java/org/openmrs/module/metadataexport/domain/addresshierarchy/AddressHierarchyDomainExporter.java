@@ -78,6 +78,12 @@ public class AddressHierarchyDomainExporter implements DomainExporter<AddressHie
 		return all;
 	}
 	
+	/** Not {@code OpenmrsMetadata}, so the default would show the uuid; the row has a name. */
+	@Override
+	public String display(AddressHierarchyEntry instance) {
+		return StringUtils.defaultIfBlank(instance.getName(), instance.getUuid());
+	}
+	
 	@Override
 	public Collection<? extends OpenmrsObject> getDependencies(AddressHierarchyEntry instance) {
 		return Collections.emptyList();

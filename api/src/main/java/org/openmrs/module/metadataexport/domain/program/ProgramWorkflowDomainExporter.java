@@ -9,11 +9,13 @@
  */
 package org.openmrs.module.metadataexport.domain.program;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.Program;
 import org.openmrs.ProgramWorkflow;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.domain.concept.ConceptDomainExporter;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
 import org.springframework.stereotype.Component;
@@ -44,6 +46,15 @@ public class ProgramWorkflowDomainExporter extends CsvDomainExporter<ProgramWork
 			workflows.addAll(program.getAllWorkflows());
 		}
 		return workflows;
+	}
+	
+	/** Workflows rarely carry a name of their own; Initializer and the UI identify them by concept. */
+	@Override
+	public String display(ProgramWorkflow instance) {
+		if (StringUtils.isNotBlank(instance.getName())) {
+			return instance.getName();
+		}
+		return instance.getConcept() == null ? instance.getUuid() : ConceptDomainExporter.displayName(instance.getConcept());
 	}
 	
 	@Override

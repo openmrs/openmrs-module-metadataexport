@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.appointment;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
@@ -50,6 +51,12 @@ public class SpecialityDomainExporter extends CsvDomainExporter<Speciality> {
 	@Override
 	public Collection<Speciality> getAllInstances() {
 		return Context.getService(SpecialityService.class).getAllSpecialities();
+	}
+	
+	/** Not {@code OpenmrsMetadata}, so the default would show the uuid; the row has a name. */
+	@Override
+	public String display(Speciality instance) {
+		return StringUtils.defaultIfBlank(instance.getName(), instance.getUuid());
 	}
 	
 	@Override
