@@ -51,7 +51,10 @@ public class ProgramWorkflowStateDomainExporter extends CsvDomainExporter<Progra
 		return states;
 	}
 	
-	/** States rarely carry a name of their own; shown as "workflow concept > state concept". */
+	/**
+	 * States rarely carry a name of their own; shown as {@code workflow concept > state} (the state's
+	 * name, else its concept).
+	 */
 	@Override
 	public String display(ProgramWorkflowState instance) {
 		String state = StringUtils.isNotBlank(instance.getName()) ? instance.getName()
