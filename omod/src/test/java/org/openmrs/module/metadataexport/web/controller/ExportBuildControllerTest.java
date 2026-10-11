@@ -169,9 +169,9 @@ class ExportBuildControllerTest extends BaseModuleWebContextSensitiveTest {
 	}
 	
 	/**
-	 * Through the real dispatcher chain rather than a standalone setup: without the
-	 * ExceptionHandlerExceptionResolver in webModuleApplicationContext.xml the advice never runs and a
-	 * logged-out request comes back 200 with a stack-trace body.
+	 * Through the real dispatcher chain rather than a standalone setup, which hands MockMvc the advice
+	 * directly: here the 401 only comes back if the web context's own exception resolvers find the
+	 * advice, as they do on a running server.
 	 */
 	@Test
 	void download_returns401ThroughTheRealDispatcherWhenNotAuthenticated() throws Exception {
