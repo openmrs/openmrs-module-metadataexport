@@ -13,11 +13,13 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.hibernate.SessionFactory;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.model.FhirConceptSource;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -101,8 +103,16 @@ public class FhirConceptSourceDomainExporter extends CsvDomainExporter<FhirConce
 		return exclusions;
 	}
 	
+	/**
+	 * Reads the table directly, so it asks for the privilege fhir2's own DAO declares for this read,
+	 * failing as {@code @Authorized} does (the REST module maps only {@link APIAuthenticationException}
+	 * to 401/403).
+	 */
 	@SuppressWarnings("unchecked")
 	private static List<FhirConceptSource> allRows() {
+		if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPT_SOURCES)) {
+			throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPT_SOURCES);
+		}
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		return sessionFactory.getCurrentSession().createQuery("from FhirConceptSource").list();
 	}

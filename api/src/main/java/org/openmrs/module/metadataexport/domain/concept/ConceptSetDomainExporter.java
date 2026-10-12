@@ -12,10 +12,12 @@ package org.openmrs.module.metadataexport.domain.concept;
 import org.hibernate.SessionFactory;
 import org.openmrs.ConceptSet;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -49,8 +51,20 @@ public class ConceptSetDomainExporter extends CsvDomainExporter<ConceptSet> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Collection<ConceptSet> getAllInstances() {
+		// core has no service method listing set memberships; ask for what one would, failing as
+		// @Authorized does (the REST module maps only APIAuthenticationException to 401/403)
+		if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
+			throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
+		}
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		return sessionFactory.getCurrentSession().createQuery("from ConceptSet").list();
+	}
+	
+	/** A set row has no name; it is "which set, which member". */
+	@Override
+	public String display(ConceptSet instance) {
+		return ConceptDomainExporter.displayName(instance.getConceptSet()) + " > "
+		        + ConceptDomainExporter.displayName(instance.getConcept());
 	}
 	
 	@Override

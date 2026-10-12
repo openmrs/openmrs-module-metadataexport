@@ -13,18 +13,27 @@ import org.apache.commons.lang3.StringUtils;
 import org.openmrs.Concept;
 import org.openmrs.ConceptAnswer;
 import org.openmrs.ConceptAttributeType;
+import org.openmrs.ConceptName;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.openmrs.ConceptSearchResult;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.ConceptService;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.SearchPage;
+import org.openmrs.util.LocaleUtility;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -44,6 +53,64 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 	@Override
 	public Collection<Concept> getAllInstances() {
 		return Context.getConceptService().getAllConcepts();
+	}
+	
+	/** A concept has no name column of its own; the picker shows its preferred name. */
+	@Override
+	public String display(Concept concept) {
+		return displayName(concept);
+	}
+	
+	/**
+	 * The preferred name of {@code concept} in the user's locale order, or its uuid when it has none;
+	 * shared with the domains whose rows are identified by a concept (workflows, states, sets, ranges).
+	 */
+	public static String displayName(Concept concept) {
+		ConceptName name = concept.getName();
+		return name != null && StringUtils.isNotBlank(name.getName()) ? name.getName() : concept.getUuid();
+	}
+	
+	/**
+	 * Pages in the database, since a dictionary is too large to hold in memory per request: a blank
+	 * query walks the concepts in id order (the only order that needs no name join), a search uses the
+	 * concept name index in its relevance order. Every allowed locale is searched, since the locale a
+	 * name was entered in need not be the picker user's own. The blank branches read Hibernate, so they
+	 * ask for the privilege the service branches get from {@code @Authorized}, failing as it does (the
+	 * REST module maps only {@link APIAuthenticationException} to 401/403).
+	 */
+	@Override
+	public SearchPage<Concept> search(String q, boolean includeRetired, int startIndex, int limit) {
+		if (StringUtils.isBlank(q)) {
+			if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
+				throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
+			}
+			List<Concept> page = session()
+			        .createQuery("from Concept c" + liveOnly(includeRetired) + " order by c.conceptId", Concept.class)
+			        .setFirstResult(startIndex).setMaxResults(limit).list();
+			long total = session().createQuery("select count(c) from Concept c" + liveOnly(includeRetired), Long.class)
+			        .uniqueResult();
+			return new SearchPage<>(page, total);
+		}
+		ConceptService service = Context.getConceptService();
+		List<Concept> page = new ArrayList<>();
+		for (ConceptSearchResult result : service.getConcepts(q.trim(), locales(), includeRetired, null, null, null, null,
+		    null, startIndex, limit)) {
+			page.add(result.getConcept());
+		}
+		return new SearchPage<>(page,
+		        service.getCountOfConcepts(q.trim(), locales(), includeRetired, null, null, null, null, null));
+	}
+	
+	private static Session session() {
+		return Context.getRegisteredComponent("sessionFactory", SessionFactory.class).getCurrentSession();
+	}
+	
+	private static String liveOnly(boolean includeRetired) {
+		return includeRetired ? "" : " where c.retired = false";
+	}
+	
+	private static List<Locale> locales() {
+		return new ArrayList<>(LocaleUtility.getLocalesInOrder());
 	}
 	
 	/** Every concept is exportable, so a package naming a few need not load the dictionary. */

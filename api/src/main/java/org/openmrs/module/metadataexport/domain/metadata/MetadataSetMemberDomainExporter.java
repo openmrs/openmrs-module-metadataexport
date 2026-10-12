@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.metadata;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsMetadata;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
@@ -50,6 +51,15 @@ public class MetadataSetMemberDomainExporter extends CsvDomainExporter<MetadataS
 			members.addAll(service.getMetadataSetMembers(metadataSet, RetiredHandlingMode.INCLUDE_RETIRED));
 		}
 		return members;
+	}
+	
+	/** Members are usually unnamed; fall back to what they point at. */
+	@Override
+	public String display(MetadataSetMember instance) {
+		if (StringUtils.isNotBlank(instance.getName())) {
+			return instance.getName();
+		}
+		return instance.getMetadataClass() + " " + instance.getMetadataUuid();
 	}
 	
 	@Override

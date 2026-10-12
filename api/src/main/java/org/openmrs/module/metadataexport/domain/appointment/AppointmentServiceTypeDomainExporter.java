@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.appointment;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
@@ -59,6 +60,12 @@ public class AppointmentServiceTypeDomainExporter extends CsvDomainExporter<Appo
 			types.addAll(definition.getServiceTypes(false));
 		}
 		return types;
+	}
+	
+	/** Not {@code OpenmrsMetadata}, so the default would show the uuid; the row has a name. */
+	@Override
+	public String display(AppointmentServiceType instance) {
+		return StringUtils.defaultIfBlank(instance.getName(), instance.getUuid());
 	}
 	
 	@Override

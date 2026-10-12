@@ -10,6 +10,7 @@
 package org.openmrs.module.metadataexport.domain.metadata;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
 import org.openmrs.api.context.Context;
@@ -53,6 +54,12 @@ public class MetadataSharingDomainExporter implements DomainExporter<ExportedPac
 	@Override
 	public Collection<ExportedPackage> getAllInstances() {
 		return Context.getService(MetadataSharingService.class).getAllExportedPackages();
+	}
+	
+	/** Not {@code OpenmrsMetadata}, so the default would show the uuid; the row has a name. */
+	@Override
+	public String display(ExportedPackage instance) {
+		return StringUtils.defaultIfBlank(instance.getName(), instance.getUuid());
 	}
 	
 	@Override

@@ -9,6 +9,7 @@
  */
 package org.openmrs.module.metadataexport.domain.cohort;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.annotation.OpenmrsProfile;
@@ -57,6 +58,12 @@ public class CohortTypeDomainExporter extends CsvDomainExporter<CohortType> {
 		// true on a void/retire line: it bootstraps the row, skips the fill and saves it with no
 		// name or description. Iniz itself does not drop voided rows.
 		return sessionFactory.getCurrentSession().createQuery("from CohortType where voided = false").list();
+	}
+	
+	/** Not {@code OpenmrsMetadata}, so the default would show the uuid; the row has a name. */
+	@Override
+	public String display(CohortType instance) {
+		return StringUtils.defaultIfBlank(instance.getName(), instance.getUuid());
 	}
 	
 	@Override

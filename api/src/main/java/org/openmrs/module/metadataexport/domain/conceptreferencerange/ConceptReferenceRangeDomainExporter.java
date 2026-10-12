@@ -9,13 +9,17 @@
  */
 package org.openmrs.module.metadataexport.domain.conceptreferencerange;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.openmrs.ConceptReferenceRange;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.domain.concept.ConceptDomainExporter;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -49,9 +53,22 @@ public class ConceptReferenceRangeDomainExporter extends CsvDomainExporter<Conce
 	@Override
 	@SuppressWarnings("unchecked")
 	public Collection<ConceptReferenceRange> getAllInstances() {
-		// feels like this needs to be in core
+		// core has no service method listing every range; ask for what one would, failing as
+		// @Authorized does (the REST module maps only APIAuthenticationException to 401/403)
+		if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
+			throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
+		}
 		SessionFactory sessionFactory = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
 		return sessionFactory.getCurrentSession().createQuery("from ConceptReferenceRange").list();
+	}
+	
+	/**
+	 * A range has no name; it is the numeric concept's name and the criteria that selects the range.
+	 */
+	@Override
+	public String display(ConceptReferenceRange instance) {
+		String concept = ConceptDomainExporter.displayName(instance.getConceptNumeric());
+		return StringUtils.isBlank(instance.getCriteria()) ? concept : concept + " [" + instance.getCriteria() + "]";
 	}
 	
 	@Override

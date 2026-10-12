@@ -42,4 +42,15 @@ class ProgramWorkflowDomainExporterTest {
 		assertTrue(dependencies.contains(concept), "referenced workflow concept must be pulled into the closure");
 	}
 	
+	@Test
+	void display_prefersTheWorkflowNameAndFallsBackToTheUuidWithoutAConcept() {
+		ProgramWorkflow named = new ProgramWorkflow();
+		named.setUuid("wf-1");
+		named.setName("TB treatment");
+		assertEquals("TB treatment", exporter.display(named));
+		
+		ProgramWorkflow bare = new ProgramWorkflow();
+		bare.setUuid("wf-2");
+		assertEquals("wf-2", exporter.display(bare));
+	}
 }

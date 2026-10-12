@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.openmrs.ConceptNumeric;
 import org.openmrs.ConceptReferenceRange;
 import org.openmrs.OpenmrsObject;
+import org.openmrs.api.APIAuthenticationException;
+import org.openmrs.api.context.Context;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 import java.util.Collection;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConceptReferenceRangeDomainExporterTest extends BaseModuleContextSensitiveTest {
@@ -49,5 +52,21 @@ class ConceptReferenceRangeDomainExporterTest extends BaseModuleContextSensitive
 		
 		assertEquals(1, dependencies.size());
 		assertTrue(dependencies.contains(conceptNumeric), "referenced concept must be pulled into the closure");
+	}
+	
+	/**
+	 * The read goes to Hibernate, so it asks for what a core service method would. Butch has no
+	 * privileges.
+	 */
+	@Test
+	void getAllInstances_refusesACallerWithoutGetConcepts() {
+		Context.becomeUser("3-4");
+		try {
+			APIAuthenticationException e = assertThrows(APIAuthenticationException.class, exporter::getAllInstances);
+			assertEquals("Privilege required: Get Concepts", e.getMessage());
+		}
+		finally {
+			authenticate();
+		}
 	}
 }

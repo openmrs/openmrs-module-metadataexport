@@ -58,6 +58,14 @@ public class AmpathFormTranslationDomainExporter extends JsonDomainExporter<Form
 		return AmpathFormScan.run().exportableTranslations();
 	}
 	
+	/** A translation resource is identified by its form and its own (locale-bearing) name. */
+	@Override
+	public String display(FormResource instance) {
+		String resource = StringUtils.defaultIfBlank(instance.getName(), instance.getUuid());
+		Form form = instance.getForm();
+		return form == null || StringUtils.isBlank(form.getName()) ? resource : form.getName() + ": " + resource;
+	}
+	
 	/**
 	 * The translation-named resources left out, including those of forms that are themselves not
 	 * exported, with the reason.

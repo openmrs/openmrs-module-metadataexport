@@ -60,6 +60,14 @@ public class AutoGenerationOptionDomainExporter extends CsvDomainExporter<AutoGe
 		return exportable(allOptions());
 	}
 	
+	/** Options are unnamed; one is "this identifier type at this location (or anywhere)". */
+	@Override
+	public String display(AutoGenerationOption instance) {
+		String type = instance.getIdentifierType() == null ? instance.getUuid() : instance.getIdentifierType().getName();
+		String where = instance.getLocation() == null ? "any location" : instance.getLocation().getName();
+		return type + " @ " + where;
+	}
+	
 	@Override
 	public Map<String, String> exclusions() {
 		return exclusionsOf(allOptions());
