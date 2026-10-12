@@ -14,6 +14,7 @@ import org.openmrs.Concept;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.metadataexport.export.SearchPage;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
 
 import java.util.Arrays;
@@ -63,34 +64,36 @@ class ConceptDomainExporterIntegrationTest extends BaseModuleContextSensitiveTes
 	
 	@Test
 	void search_usesTheConceptIndexAndReturnsEachConceptOnce() {
-		List<Concept> hits = exporter.search("cd4", true, 0, 50);
+		SearchPage<Concept> hits = exporter.search("cd4", true, 0, 50);
 		
-		assertEquals(1, hits.size(), "CD4 COUNT has three names matching 'cd4' but is one concept");
-		assertEquals("a09ab2c5-878e-4905-b25d-5784167d0216", hits.get(0).getUuid());
-		assertEquals(1, exporter.getCountOfSearch("cd4", true));
-		assertTrue(exporter.search("xyzzy", true, 0, 50).isEmpty());
+		assertEquals(1, hits.getRows().size(), "CD4 COUNT has three names matching 'cd4' but is one concept");
+		assertEquals("a09ab2c5-878e-4905-b25d-5784167d0216", hits.getRows().get(0).getUuid());
+		assertEquals(1, hits.getTotal());
+		assertTrue(exporter.search("xyzzy", true, 0, 50).getRows().isEmpty());
 	}
 	
 	@Test
 	void search_blankPagesTheDictionaryInIdOrder() {
 		long live = exporter.getAllInstances().stream().filter(concept -> !concept.getRetired()).count();
 		
-		List<Concept> first = exporter.search("  ", false, 0, 2);
-		List<Concept> second = exporter.search(null, false, 2, 2);
+		List<Concept> first = exporter.search("  ", false, 0, 2).getRows();
+		SearchPage<Concept> second = exporter.search(null, false, 2, 2);
 		
 		assertEquals(2, first.size());
-		assertEquals(2, second.size());
-		assertTrue(first.get(1).getConceptId() < second.get(0).getConceptId(), "pages continue in id order");
-		assertEquals(live, exporter.getCountOfSearch("", false));
-		assertEquals(exporter.getAllInstances().size(), exporter.getCountOfSearch("", true));
+		assertEquals(2, second.getRows().size());
+		assertTrue(first.get(1).getConceptId() < second.getRows().get(0).getConceptId(), "pages continue in id order");
+		assertEquals(live, second.getTotal());
+		assertEquals(exporter.getAllInstances().size(), exporter.search("", true, 0, 2).getTotal());
 	}
 	
 	@Test
 	void search_findsRetiredConceptsOnlyWhenAskedFor() {
-		assertTrue(exporter.search("week", true, 0, 50).stream().anyMatch(concept -> RETIRED_UUID.equals(concept.getUuid())),
-		    "retired '1/day x 7 days/week' must be a hit when retired rows are asked for");
 		assertTrue(
-		    exporter.search("week", false, 0, 50).stream().noneMatch(concept -> RETIRED_UUID.equals(concept.getUuid())));
+		    exporter.search("week", true, 0, 50).getRows().stream()
+		            .anyMatch(concept -> RETIRED_UUID.equals(concept.getUuid())),
+		    "retired '1/day x 7 days/week' must be a hit when retired rows are asked for");
+		assertTrue(exporter.search("week", false, 0, 50).getRows().stream()
+		        .noneMatch(concept -> RETIRED_UUID.equals(concept.getUuid())));
 	}
 	
 	/**
@@ -102,9 +105,7 @@ class ConceptDomainExporterIntegrationTest extends BaseModuleContextSensitiveTes
 		Context.becomeUser("3-4");
 		try {
 			assertThrows(APIAuthenticationException.class, () -> exporter.search("", true, 0, 5));
-			assertThrows(APIAuthenticationException.class, () -> exporter.getCountOfSearch("", true));
 			assertThrows(APIAuthenticationException.class, () -> exporter.search("cd4", true, 0, 5));
-			assertThrows(APIAuthenticationException.class, () -> exporter.getCountOfSearch("cd4", true));
 		}
 		finally {
 			authenticate();

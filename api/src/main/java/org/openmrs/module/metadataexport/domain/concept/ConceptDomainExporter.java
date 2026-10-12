@@ -24,6 +24,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
+import org.openmrs.module.metadataexport.export.SearchPage;
 import org.openmrs.util.LocaleUtility;
 import org.openmrs.util.PrivilegeConstants;
 import org.springframework.stereotype.Component;
@@ -78,34 +79,26 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 	 * REST module maps only {@link APIAuthenticationException} to 401/403).
 	 */
 	@Override
-	public List<Concept> search(String q, boolean includeRetired, int startIndex, int limit) {
+	public SearchPage<Concept> search(String q, boolean includeRetired, int startIndex, int limit) {
 		if (StringUtils.isBlank(q)) {
 			if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
 				throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
 			}
-			return session()
+			List<Concept> page = session()
 			        .createQuery("from Concept c" + liveOnly(includeRetired) + " order by c.conceptId", Concept.class)
 			        .setFirstResult(startIndex).setMaxResults(limit).list();
+			long total = session().createQuery("select count(c) from Concept c" + liveOnly(includeRetired), Long.class)
+			        .uniqueResult();
+			return new SearchPage<>(page, total);
 		}
+		ConceptService service = Context.getConceptService();
 		List<Concept> page = new ArrayList<>();
-		for (ConceptSearchResult result : Context.getConceptService().getConcepts(q.trim(), locales(), includeRetired, null,
-		    null, null, null, null, startIndex, limit)) {
+		for (ConceptSearchResult result : service.getConcepts(q.trim(), locales(), includeRetired, null, null, null, null,
+		    null, startIndex, limit)) {
 			page.add(result.getConcept());
 		}
-		return page;
-	}
-	
-	@Override
-	public long getCountOfSearch(String q, boolean includeRetired) {
-		if (StringUtils.isBlank(q)) {
-			if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
-				throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
-			}
-			return session().createQuery("select count(c) from Concept c" + liveOnly(includeRetired), Long.class)
-			        .uniqueResult();
-		}
-		return Context.getConceptService().getCountOfConcepts(q.trim(), locales(), includeRetired, null, null, null, null,
-		    null);
+		return new SearchPage<>(page,
+		        service.getCountOfConcepts(q.trim(), locales(), includeRetired, null, null, null, null, null));
 	}
 	
 	private static Session session() {

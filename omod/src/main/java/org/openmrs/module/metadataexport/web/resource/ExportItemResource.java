@@ -17,6 +17,7 @@ import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.MetadataExportConstants;
 import org.openmrs.module.metadataexport.export.DomainExporter;
 import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
+import org.openmrs.module.metadataexport.export.SearchPage;
 import org.openmrs.module.metadataexport.web.controller.MetadataExportRestConstants;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.annotation.Resource;
@@ -49,8 +50,8 @@ import java.util.Locale;
  * and are left out of a search unless {@code includeAll=true}. Resolving finds any row the domain
  * exports, retired or not; a row the domain excludes is not found (404) with the reason the build
  * would give, so a UI can tell "excluded, and why" from "deleted". Paging is the exporter's
- * ({@link DomainExporter#search(String, boolean, int, int)}), so a dictionary is never loaded
- * whole.
+ * ({@link DomainExporter#search(String, boolean, int, int)}, page and total from one call), so a
+ * dictionary is never loaded whole and an in-memory domain is scanned once per request.
  * <p>
  * The resource never touches {@code MetadataExportService}, so it checks the Get privilege itself,
  * throwing what {@code @Authorized} throws: the REST base controller maps only
@@ -109,12 +110,13 @@ public class ExportItemResource extends BaseDelegatingReadableResource<ExportIte
 		String q = context.getParameter("q");
 		boolean includeRetired = Boolean.TRUE.equals(context.getIncludeAll());
 		int startIndex = RestPaging.startIndex(context);
+		SearchPage<OpenmrsObject> result = exporter.search(q, includeRetired, startIndex, context.getLimit());
 		List<ExportItem> page = new ArrayList<>();
-		for (OpenmrsObject row : exporter.search(q, includeRetired, startIndex, context.getLimit())) {
+		for (OpenmrsObject row : result.getRows()) {
 			page.add(toItem(exporter, row));
 		}
-		long total = exporter.getCountOfSearch(q, includeRetired);
-		return new AlreadyPaged<>(context, page, RestPaging.hasMore(startIndex, page.size(), total), total);
+		return new AlreadyPaged<>(context, page, RestPaging.hasMore(startIndex, page.size(), result.getTotal()),
+		        result.getTotal());
 	}
 	
 	/** One shape for every representation: a picker needs nothing more, and lists are refs. */

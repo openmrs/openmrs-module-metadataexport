@@ -479,9 +479,10 @@ label shown for a row (the metadata name, else the uuid; never `toString()`), to
 row's identity lives elsewhere, as a global property's key or a workflow's concept does;
 `search(q, includeRetired)` is the exportable rows matching `q`, in the order to show them (by
 display, case-insensitive), to override only in a domain with a real name index, as drugs do. The
-paged pair `search(q, includeRetired, startIndex, limit)` / `getCountOfSearch(q, includeRetired)`
-windows that list by default; a domain too large to hold in memory (concepts) overrides the pair to
-page in the database instead. An exporter that reads its table through Hibernate rather than a
+paged `search(q, includeRetired, startIndex, limit)` returns a `SearchPage` (the rows plus the
+total) from one call, because the picker wants both on every request; by default it windows that
+list, computed once, and a domain too large to hold in memory (concepts) overrides it to page in
+the database instead. An exporter that reads its table through Hibernate rather than a
 service opens that read with its own `Context.hasPrivilege` check, naming the privilege the service
 would have required and throwing `APIAuthenticationException` as `@Authorized` does (the only
 exception the REST module maps to 401/403), so the picker enforces what the core API does.

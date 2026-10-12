@@ -149,22 +149,19 @@ public interface DomainExporter<T extends OpenmrsObject> {
 	}
 	
 	/**
-	 * One page of {@link #search(String, boolean)}, {@code limit} rows from {@code startIndex}; empty
-	 * past the end. The default windows the full list, which is fine when that list is small; a domain
-	 * whose list is not (concepts) pages in the database instead and overrides
-	 * {@link #getCountOfSearch} to match, so the two always describe the same result.
+	 * One page of {@link #search(String, boolean)}, {@code limit} rows from {@code startIndex} (empty
+	 * past the end), with the size of the whole result. The default windows the full list, computed
+	 * once for both, which is fine when that list is small; a domain whose list is not (concepts) pages
+	 * in the database instead, running its page and count queries in this one call so the two always
+	 * describe the same result.
 	 */
-	default List<T> search(String q, boolean includeRetired, int startIndex, int limit) {
+	default SearchPage<T> search(String q, boolean includeRetired, int startIndex, int limit) {
 		List<T> all = search(q, includeRetired);
 		if (startIndex >= all.size()) {
-			return Collections.emptyList();
+			return new SearchPage<>(Collections.emptyList(), all.size());
 		}
-		return new ArrayList<>(all.subList(startIndex, Math.min(all.size(), startIndex + limit)));
-	}
-	
-	/** How many rows {@link #search(String, boolean)} has in all, for the picker's paging links. */
-	default long getCountOfSearch(String q, boolean includeRetired) {
-		return search(q, includeRetired).size();
+		return new SearchPage<>(new ArrayList<>(all.subList(startIndex, Math.min(all.size(), startIndex + limit))),
+		        all.size());
 	}
 	
 	/**

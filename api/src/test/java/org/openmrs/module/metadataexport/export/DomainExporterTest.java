@@ -178,10 +178,15 @@ class DomainExporterTest {
 	void search_pagesTheMatchesAndCountsThemAll() {
 		Stub exporter = new Stub(type("et-1", "C", false), type("et-2", "A", false), type("et-3", "B", false));
 		
-		assertEquals(Arrays.asList("et-2", "et-3"), uuids(exporter.search("", true, 0, 2)));
-		assertEquals(Collections.singletonList("et-1"), uuids(exporter.search("", true, 2, 2)));
-		assertTrue(exporter.search("", true, 3, 2).isEmpty(), "a start past the end is an empty page, not an error");
-		assertEquals(3, exporter.getCountOfSearch("", true));
+		SearchPage<EncounterType> first = exporter.search("", true, 0, 2);
+		SearchPage<EncounterType> last = exporter.search("", true, 2, 2);
+		SearchPage<EncounterType> past = exporter.search("", true, 3, 2);
+		
+		assertEquals(Arrays.asList("et-2", "et-3"), uuids(first.getRows()));
+		assertEquals(Collections.singletonList("et-1"), uuids(last.getRows()));
+		assertTrue(past.getRows().isEmpty(), "a start past the end is an empty page, not an error");
+		assertEquals(3, first.getTotal());
+		assertEquals(3, past.getTotal(), "the total is the whole result, whatever the page");
 	}
 	
 	@Test
