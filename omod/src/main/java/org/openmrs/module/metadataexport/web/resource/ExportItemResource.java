@@ -52,8 +52,15 @@ import java.util.Locale;
  * ({@link DomainExporter#search(String, boolean, int, int)}), so a dictionary is never loaded
  * whole.
  * <p>
- * The resource never touches {@code MetadataExportService}, so it checks the Get privilege itself;
- * the exporters then run as the caller, so each domain's own read privilege applies too.
+ * The resource never touches {@code MetadataExportService}, so it checks the Get privilege itself,
+ * throwing what {@code @Authorized} throws: the REST base controller maps only
+ * {@link APIAuthenticationException} to 401/403, and would answer the
+ * {@code ContextAuthenticationException} of {@code Context.requirePrivilege} with a 500. The
+ * exporters then run as the caller, so a domain also needs the read privilege its own service
+ * requires: from {@code @Authorized} where the exporter reads through a core or module service, and
+ * from the exporter's own check where it reads a table directly (concept sets, reference ranges,
+ * the blank concept listing, the two fhir2 domains). The cohort module declares no read privileges,
+ * so its two domains need only the Get privilege.
  */
 @Resource(name = MetadataExportRestConstants.NAMESPACE
         + "/items", supportedClass = ExportItem.class, supportedOpenmrsVersions = {
@@ -74,7 +81,9 @@ public class ExportItemResource extends BaseDelegatingReadableResource<ExportIte
 	
 	@Override
 	public Object retrieve(String uuid, RequestContext context) throws ResponseException {
-		requireGetPrivilege();
+		if (!Context.hasPrivilege(MetadataExportConstants.GET_PRIVILEGE)) {
+			throw new APIAuthenticationException("Privilege required: " + MetadataExportConstants.GET_PRIVILEGE);
+		}
 		DomainExporter<OpenmrsObject> exporter = exporter(context);
 		for (OpenmrsObject row : exporter.candidatesFor(Collections.singleton(uuid))) {
 			if (uuid.equals(row.getUuid())) {
@@ -93,7 +102,9 @@ public class ExportItemResource extends BaseDelegatingReadableResource<ExportIte
 	
 	@Override
 	protected PageableResult doSearch(RequestContext context) {
-		requireGetPrivilege();
+		if (!Context.hasPrivilege(MetadataExportConstants.GET_PRIVILEGE)) {
+			throw new APIAuthenticationException("Privilege required: " + MetadataExportConstants.GET_PRIVILEGE);
+		}
 		DomainExporter<OpenmrsObject> exporter = exporter(context);
 		String q = context.getParameter("q");
 		boolean includeRetired = Boolean.TRUE.equals(context.getIncludeAll());
@@ -156,16 +167,5 @@ public class ExportItemResource extends BaseDelegatingReadableResource<ExportIte
 	private static ExportItem toItem(DomainExporter<OpenmrsObject> exporter, OpenmrsObject row) {
 		return new ExportItem(exporter.getDomain().name(), row.getUuid(), exporter.display(row),
 		        exporter.isRetiredOrVoided(row));
-	}
-	
-	/**
-	 * What {@code @Authorized} does on the service. The REST base controller maps only
-	 * {@link APIAuthenticationException} to 401/403; {@code Context.requirePrivilege} throws a
-	 * {@code ContextAuthenticationException}, which it would answer with a 500.
-	 */
-	private static void requireGetPrivilege() {
-		if (!Context.hasPrivilege(MetadataExportConstants.GET_PRIVILEGE)) {
-			throw new APIAuthenticationException("Privilege required: " + MetadataExportConstants.GET_PRIVILEGE);
-		}
 	}
 }

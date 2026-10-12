@@ -19,11 +19,13 @@ import org.hibernate.SessionFactory;
 import org.openmrs.ConceptSearchResult;
 import org.openmrs.OpenmrsObject;
 import org.openmrs.api.ConceptService;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
 import org.openmrs.module.metadataexport.export.BaseLineExporter;
 import org.openmrs.module.metadataexport.export.CsvDomainExporter;
 import org.openmrs.util.LocaleUtility;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -71,11 +73,16 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 	 * Pages in the database, since a dictionary is too large to hold in memory per request: a blank
 	 * query walks the concepts in id order (the only order that needs no name join), a search uses the
 	 * concept name index in its relevance order. Every allowed locale is searched, since the locale a
-	 * name was entered in need not be the picker user's own.
+	 * name was entered in need not be the picker user's own. The blank branches read Hibernate, so they
+	 * ask for the privilege the service branches get from {@code @Authorized}, failing as it does (the
+	 * REST module maps only {@link APIAuthenticationException} to 401/403).
 	 */
 	@Override
 	public List<Concept> search(String q, boolean includeRetired, int startIndex, int limit) {
 		if (StringUtils.isBlank(q)) {
+			if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
+				throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
+			}
 			return session()
 			        .createQuery("from Concept c" + liveOnly(includeRetired) + " order by c.conceptId", Concept.class)
 			        .setFirstResult(startIndex).setMaxResults(limit).list();
@@ -91,6 +98,9 @@ public class ConceptDomainExporter extends CsvDomainExporter<Concept> {
 	@Override
 	public long getCountOfSearch(String q, boolean includeRetired) {
 		if (StringUtils.isBlank(q)) {
+			if (!Context.hasPrivilege(PrivilegeConstants.GET_CONCEPTS)) {
+				throw new APIAuthenticationException("Privilege required: " + PrivilegeConstants.GET_CONCEPTS);
+			}
 			return session().createQuery("select count(c) from Concept c" + liveOnly(includeRetired), Long.class)
 			        .uniqueResult();
 		}

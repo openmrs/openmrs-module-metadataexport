@@ -311,8 +311,13 @@ curl -u admin:pw -OJ $BASE/builds/<build-uuid>/download
 
 Privileges are enforced on the service (`@Authorized`), so they apply to every entry point that
 reaches it; `/domains` and `/items` read the exporter registry directly and check the Get privilege
-themselves. `/items` then runs the domain's own service as the caller, so searching a domain also
-needs that domain's read privilege (for example `Get Concepts`).
+themselves. `/items` then runs the exporter as the caller, so searching or resolving a domain also
+needs the read privilege that domain's own service requires (for example `Get Concepts`): where
+the exporter reads through a core or module service, that service's `@Authorized` enforces it, and
+where it reads a table directly because no service method exists (concept sets, concept reference
+ranges, the blank concept listing, the two fhir2 domains) the exporter asks for the same privilege
+itself. The two cohort domains need only the Get privilege, since the cohort module declares no
+read privileges. Builds run as the daemon user, so a package exports every row regardless.
 Reads need `Get Metadata Export Packages`; creating, updating, retiring and triggering need
 `Manage Metadata Export Packages`; fetching a build's zip needs `Download Metadata Export Packages`,
 kept separate so a role can pull exports without being able to change them. Both Manage and
@@ -476,7 +481,10 @@ row's identity lives elsewhere, as a global property's key or a workflow's conce
 display, case-insensitive), to override only in a domain with a real name index, as drugs do. The
 paged pair `search(q, includeRetired, startIndex, limit)` / `getCountOfSearch(q, includeRetired)`
 windows that list by default; a domain too large to hold in memory (concepts) overrides the pair to
-page in the database instead.
+page in the database instead. An exporter that reads its table through Hibernate rather than a
+service opens that read with its own `Context.hasPrivilege` check, naming the privilege the service
+would have required and throwing `APIAuthenticationException` as `@Authorized` does (the only
+exception the REST module maps to 401/403), so the picker enforces what the core API does.
 
 Known limitations
 -----------------

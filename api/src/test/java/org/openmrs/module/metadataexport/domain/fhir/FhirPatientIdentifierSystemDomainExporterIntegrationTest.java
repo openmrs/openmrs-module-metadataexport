@@ -13,6 +13,7 @@ import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openmrs.PatientIdentifierType;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir2.model.FhirPatientIdentifierSystem;
@@ -95,5 +96,21 @@ class FhirPatientIdentifierSystemDomainExporterIntegrationTest extends BaseModul
 		    () -> exporter.getInstancesByUuids(Collections.singletonList("7e3f4d5a-3f10-11e4-adec-0800271c1b75")));
 		
 		assertTrue(e.getMessage().contains("Unknown uuids"));
+	}
+	
+	/**
+	 * The read goes to Hibernate, so it asks for what fhir2's own DAO declares. Butch has no
+	 * privileges.
+	 */
+	@Test
+	void getAllInstances_refusesACallerWithoutGetIdentifierTypes() {
+		Context.becomeUser("3-4");
+		try {
+			APIAuthenticationException e = assertThrows(APIAuthenticationException.class, exporter::getAllInstances);
+			assertEquals("Privilege required: Get Identifier Types", e.getMessage());
+		}
+		finally {
+			authenticate();
+		}
 	}
 }

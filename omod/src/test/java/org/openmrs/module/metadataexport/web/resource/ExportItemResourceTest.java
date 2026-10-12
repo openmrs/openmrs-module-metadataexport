@@ -10,11 +10,14 @@
 package org.openmrs.module.metadataexport.web.resource;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.openmrs.Drug;
 import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.ConceptService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.initializer.Domain;
+import org.openmrs.module.metadataexport.MetadataExportConstants;
 import org.openmrs.module.metadataexport.export.DomainExporterRegistry;
 import org.openmrs.module.metadataexport.web.controller.MetadataExportRestController;
 import org.openmrs.module.webservices.rest.SimpleObject;
@@ -22,6 +25,7 @@ import org.openmrs.module.webservices.rest.web.response.IllegalRequestException;
 import org.openmrs.module.webservices.rest.web.response.ObjectNotFoundException;
 import org.openmrs.module.webservices.rest.web.response.ResourceDoesNotSupportOperationException;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.jupiter.MainResourceControllerTest;
+import org.openmrs.util.PrivilegeConstants;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -276,6 +280,65 @@ class ExportItemResourceTest extends MainResourceControllerTest {
 			assertEquals(401, response.getStatus());
 		}
 		finally {
+			authenticate();
+		}
+	}
+	
+	/**
+	 * The module's Get privilege alone opens no domain: one read through a core or module service is
+	 * refused by {@code @Authorized}, and one the exporter reads from a table directly asks for the
+	 * same privilege itself, so the picker never shows a caller rows the core API would refuse them.
+	 * Butch (user 3-4) holds the Provider role, which has no privileges in the standard dataset. The
+	 * two fhir2 exporters are not registered in this test context (their module is not started); their
+	 * own api tests pin the same check.
+	 */
+	@ParameterizedTest
+	@CsvSource({ "CONCEPTS, Get Concepts", "CONCEPT_SETS, Get Concepts", "CONCEPT_REFERENCE_RANGE, Get Concepts" })
+	void searchWithOnlyThePackageGetPrivilegeIsRefusedWithTheDomainsOwnReadPrivilege(String domain, String privilege) {
+		Context.becomeUser("3-4");
+		Context.addProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+		try {
+			APIAuthenticationException e = assertThrows(APIAuthenticationException.class, () -> handle(items(domain)));
+			assertEquals("Privilege required: " + privilege, e.getMessage());
+		}
+		finally {
+			Context.removeProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+			authenticate();
+		}
+	}
+	
+	/**
+	 * Resolve loads the domain the same way, and the check comes before the lookup, so any uuid shows
+	 * it.
+	 */
+	@Test
+	void resolveWithOnlyThePackageGetPrivilegeIsRefusedToo() {
+		Context.becomeUser("3-4");
+		Context.addProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+		try {
+			APIAuthenticationException e = assertThrows(APIAuthenticationException.class,
+			    () -> handle(item(CD4_COUNT, "CONCEPT_SETS")));
+			assertEquals("Privilege required: " + PrivilegeConstants.GET_CONCEPTS, e.getMessage());
+		}
+		finally {
+			Context.removeProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+			authenticate();
+		}
+	}
+	
+	@Test
+	void thePackageGetPrivilegeWithTheDomainsReadPrivilegeIsEnough() throws Exception {
+		Context.becomeUser("3-4");
+		Context.addProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
+		Context.addProxyPrivilege(PrivilegeConstants.GET_CONCEPTS);
+		try {
+			SimpleObject page = deserialize(handle(items("CONCEPT_SETS")));
+			
+			assertFalse(((List<?>) page.get("results")).isEmpty());
+		}
+		finally {
+			Context.removeProxyPrivilege(PrivilegeConstants.GET_CONCEPTS);
+			Context.removeProxyPrivilege(MetadataExportConstants.GET_PRIVILEGE);
 			authenticate();
 		}
 	}

@@ -11,6 +11,7 @@ package org.openmrs.module.metadataexport.domain.concept;
 
 import org.junit.jupiter.api.Test;
 import org.openmrs.Concept;
+import org.openmrs.api.APIAuthenticationException;
 import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.test.jupiter.BaseModuleContextSensitiveTest;
@@ -90,5 +91,23 @@ class ConceptDomainExporterIntegrationTest extends BaseModuleContextSensitiveTes
 		    "retired '1/day x 7 days/week' must be a hit when retired rows are asked for");
 		assertTrue(
 		    exporter.search("week", false, 0, 50).stream().noneMatch(concept -> RETIRED_UUID.equals(concept.getUuid())));
+	}
+	
+	/**
+	 * The indexed branches go through the service and its {@code @Authorized}; the blank branches read
+	 * Hibernate and must refuse the same caller the same way. Butch (3-4) has no privileges.
+	 */
+	@Test
+	void search_refusesACallerWithoutGetConceptsOnEveryBranch() {
+		Context.becomeUser("3-4");
+		try {
+			assertThrows(APIAuthenticationException.class, () -> exporter.search("", true, 0, 5));
+			assertThrows(APIAuthenticationException.class, () -> exporter.getCountOfSearch("", true));
+			assertThrows(APIAuthenticationException.class, () -> exporter.search("cd4", true, 0, 5));
+			assertThrows(APIAuthenticationException.class, () -> exporter.getCountOfSearch("cd4", true));
+		}
+		finally {
+			authenticate();
+		}
 	}
 }
