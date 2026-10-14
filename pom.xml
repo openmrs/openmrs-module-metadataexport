@@ -68,7 +68,7 @@
         <metadatamappingVersion>3.0.0-SNAPSHOT</metadatamappingVersion>
         <metadatasharingVersion>1.2.2</metadatasharingVersion>
         <addresshierarchyVersion>4.0.0-SNAPSHOT</addresshierarchyVersion>
-		<cohortModuleVersion>4.0.0-SNAPSHOT</cohortModuleVersion>
+		<cohortModuleVersion>5.0.0-SNAPSHOT</cohortModuleVersion>
 		<tasksVersion>3.0.0-SNAPSHOT</tasksVersion>
 		<queueVersion>4.0.0-SNAPSHOT</queueVersion>
 		<webservicesRestVersion>5.0.0-SNAPSHOT</webservicesRestVersion>
